@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // Biblioteca de documentos: o tailwind.config.ts de docs/ e o insumo
+    // original do Doc 08, em sintaxe da v3. Registro historico, nao codigo.
+    "docs/**",
+
+    // Gerados pelo Supabase CLI ao subir a pilha local.
+    "supabase/.temp/**",
+    "lib/supabase/types.ts",
   ]),
 ]);
 

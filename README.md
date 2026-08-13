@@ -34,7 +34,45 @@ O documento 07 (UX — Fluxos e Arquitetura de Informação) é o único não cr
 
 ## Stack
 
-Supabase (PostgreSQL) · Vercel · Next.js (App Router) + TypeScript · Tailwind CSS + shadcn/ui · TanStack Query · dnd-kit · Recharts (fase 2) · lucide-react · fonte Archivo.
+Supabase (PostgreSQL) · Vercel · Next.js 16 (App Router) + TypeScript · Tailwind CSS v4 + shadcn/ui · TanStack Query · dnd-kit · Recharts (fase 2) · lucide-react · fonte Archivo.
+
+## Como rodar
+
+Precisa de Node 20+ e Docker (o Supabase local sobe em contêiner).
+
+```bash
+npm install
+cp .env.example .env.local     # preencha NEXT_PUBLIC_SUPABASE_ANON_KEY
+npx supabase start             # sobe o banco, aplica migrações e a semente
+npm run dev
+```
+
+`npx supabase status` mostra as chaves do ambiente local e a URL do Studio. Para recriar o banco do zero — reaplicando todas as migrações e a semente — use `npx supabase db reset`.
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção, com checagem de tipos |
+| `npm run lint` | ESLint |
+| `npx supabase db reset` | Recria o banco local a partir das migrações |
+| `npx supabase gen types typescript --local` | Regenera `lib/supabase/types.ts` |
+
+⚠️ **Toda mudança de estrutura do banco vira arquivo em `supabase/migrations/`.** Nunca pelo painel do Supabase — dois ambientes exigem estrutura reprodutível.
+
+## Estrutura
+
+```
+app/            rotas (App Router) e tokens de tema
+components/
+  ui/           shadcn/ui
+  dominio/      componentes do domínio
+lib/supabase/   clientes de servidor e navegador, tipos gerados
+supabase/
+  migrations/   estrutura versionada
+  seed.sql      funil e etapas
+proxy.ts        renovação de sessão e barreira de autenticação
+docs/           biblioteca de documentos
+```
 
 ## Convenções
 
