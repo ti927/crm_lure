@@ -1,0 +1,215 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./tokens.css";
+
+/* Tema escuro por classe no <html> — D-091 exige os dois temas. */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Ponte tokens -> utilitarios do Tailwind.
+
+   @theme inline nao emite as variaveis, apenas injeta o var() no
+   utilitario gerado. E o que faz `bg-surface` seguir o tema em
+   tempo de execucao, resolvendo contra :root ou .dark.
+   ============================================================ */
+@theme inline {
+  /* ---------- Nomes que o shadcn/ui espera ---------- */
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-on);
+  --color-secondary: var(--surface-sunken);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--surface-sunken);
+  --color-muted-foreground: var(--text-muted);
+  /* Atencao: `accent` no vocabulario do shadcn e o fundo sutil de hover,
+     nao o amarelo da marca. O amarelo da marca e `primary`. */
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--focus-ring);
+
+  /* ---------- Superficies e texto, nomes da Lure ---------- */
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-brand: var(--accent);
+  --color-brand-hover: var(--accent-hover);
+  --color-brand-active: var(--accent-active);
+  --color-brand-on: var(--accent-on);
+  --color-brand-ink: var(--accent-ink);
+
+  /* ---------- Neutros ---------- */
+  --color-neutral-0: var(--neutral-0);
+  --color-neutral-25: var(--neutral-25);
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
+  --color-neutral-900: var(--neutral-900);
+  --color-neutral-950: var(--neutral-950);
+  --color-neutral-1000: var(--neutral-1000);
+
+  /* ---------- Paleta de marca ----------
+     Valores fixos: nao mudam entre temas. As variantes -ink servem a
+     texto/borda no claro; -on-dark, a texto sobre superficie escura. */
+  --color-yellow: var(--brand-yellow);
+  --color-cyan: var(--brand-cyan);
+  --color-magenta: var(--brand-magenta);
+  --color-green: var(--brand-green);
+  --color-olive: var(--brand-olive);
+  --color-purple: var(--brand-purple);
+  --color-wine: var(--brand-wine);
+  --color-green-dark: var(--brand-green-dark);
+  --color-yellow-ink: var(--brand-yellow-ink);
+  --color-cyan-ink: var(--brand-cyan-ink);
+  --color-magenta-ink: var(--brand-magenta-ink);
+  --color-green-ink: var(--brand-green-ink);
+  --color-olive-ink: var(--brand-olive-ink);
+  --color-purple-ink: var(--brand-purple-ink);
+  --color-wine-ink: var(--brand-wine-ink);
+  --color-green-dark-ink: var(--brand-green-dark-ink);
+
+  /* ---------- Semanticas ---------- */
+  --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
+  --color-success-bg: var(--success-bg);
+  --color-danger: var(--danger);
+  --color-danger-ink: var(--danger-ink);
+  --color-danger-bg: var(--danger-bg);
+  --color-warning: var(--warning);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-bg: var(--warning-bg);
+  --color-info: var(--info);
+  --color-info-ink: var(--info-ink);
+  --color-info-bg: var(--info-bg);
+
+  /* ---------- Etapas do funil ----------
+     A distincao de etapa NUNCA depende so de cor: o nome da etapa
+     sempre aparece escrito no cartao e na linha da lista (Doc 08 §3.2). */
+  --color-stage-1: var(--stage-1);
+  --color-stage-1-ink: var(--stage-1-ink);
+  --color-stage-2: var(--stage-2);
+  --color-stage-2-ink: var(--stage-2-ink);
+  --color-stage-3: var(--stage-3);
+  --color-stage-3-ink: var(--stage-3-ink);
+  --color-stage-4: var(--stage-4);
+  --color-stage-4-ink: var(--stage-4-ink);
+  --color-stage-5: var(--stage-5);
+  --color-stage-5-ink: var(--stage-5-ink);
+  --color-stage-6: var(--stage-6);
+  --color-stage-6-ink: var(--stage-6-ink);
+
+  /* ---------- Status do negocio ---------- */
+  --color-status-parado: var(--status-parado);
+  --color-status-parado-ink: var(--status-parado-ink);
+  --color-status-negociacao: var(--status-negociacao);
+  --color-status-negociacao-ink: var(--status-negociacao-ink);
+  --color-status-ganho: var(--status-ganho);
+  --color-status-ganho-ink: var(--status-ganho-ink);
+  --color-status-perdido: var(--status-perdido);
+  --color-status-perdido-ink: var(--status-perdido-ink);
+
+  /* ---------- Series de grafico (fase 2) ---------- */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  /* ---------- Sombra ---------- */
+  --shadow-xs: var(--elev-xs);
+  --shadow-sm: var(--elev-sm);
+  --shadow-md: var(--elev-md);
+  --shadow-overlay: var(--elev-overlay);
+}
+
+/* ============================================================
+   Escalas estaticas — iguais nos dois temas.
+
+   O bloco `spacing` do config original foi REMOVIDO (P-025, Doc 08
+   nota 1): redefinia `3` para 6px e `5` para 12px, e os componentes
+   do shadcn/ui vem escritos com a escala padrao. Fica a escala padrao
+   do Tailwind, de base 4px — a mesma base do manual.
+   ============================================================ */
+@theme {
+  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Escala densa da Lure: 13px de corpo de tabela, 14px de formulario.
+     Sobrepoe a escala padrao do Tailwind de proposito. */
+  --text-2xs: 10px;   --text-2xs--line-height: 14px;
+  --text-xs:  11px;   --text-xs--line-height:  16px;
+  --text-sm:  12px;   --text-sm--line-height:  16px;
+  --text-base:13px;   --text-base--line-height:18px;
+  --text-md:  14px;   --text-md--line-height:  20px;
+  --text-lg:  16px;   --text-lg--line-height:  22px;
+  --text-xl:  18px;   --text-xl--line-height:  24px;
+  --text-2xl: 22px;   --text-2xl--line-height: 28px;
+  --text-3xl: 28px;   --text-3xl--line-height: 34px;
+
+  --tracking-caps: 0.06em;
+
+  --radius-none: 0px;
+  --radius-sm:   2px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-pill: 999px;
+}
+
+/* ============================================================
+   Utilitarios de dominio.
+   Densidade de D-090: linha de tabela de 44px.
+   ============================================================ */
+@utility h-row-compact { height: var(--row-h-compact); }
+@utility h-row-cozy    { height: var(--row-h-cozy); }
+@utility h-control-sm  { height: var(--control-h-sm); }
+@utility h-control-md  { height: var(--control-h-md); }
+@utility h-control-lg  { height: var(--control-h-lg); }
+
+/* Faixa de etapa do cartao do Kanban e da linha da Lista.
+   Nome de dominio de proposito: `border-accent` colidiria com o utilitario
+   de cor que o Tailwind gera a partir de --color-accent.
+   A largura vem daqui; a cor, de border-l-stage-N. */
+@utility faixa-etapa { border-left-width: var(--border-w-accent); }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans text-base antialiased;
+  }
+
+  /* Reais alinham na vertical nas colunas de valor (Doc 08 §5). */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Foco visivel unico para todo o sistema */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
