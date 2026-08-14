@@ -25,7 +25,7 @@ Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e 
 | 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.4.md) | Schema físico, gatilhos, políticas |
 | 10 | [Plano de Fases de Construção](docs/10-plano-de-fases-de-construcao-v0.2.md) | Ordem das fases F0 a F10 |
 | 11 | [Backlog e Critérios de Aceite](docs/11-backlog-e-criterios-de-aceite-v0.2.md) | 126 itens com critério de pronto |
-| 12 | [CLAUDE.md](docs/12-claude-md-v0.2.md) | Fonte do `CLAUDE.md` da raiz |
+| 12 | [CLAUDE.md](docs/12-claude-md-v0.3.md) | Fonte do `CLAUDE.md` da raiz |
 | 13 | [Glossário](docs/13-glossario-v0.1.md) | Vocabulário do projeto |
 | 14 | [Migração do Pipedrive](docs/14-migracao-do-pipedrive-v0.2.md) | Mapeamento campo a campo |
 | 14* | [Referência da API Pipedrive](docs/14-referencia-api-pipedrive-v0.1.md) | Endpoints para a extração |

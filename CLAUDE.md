@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.2 · 14/08/2026
+> Documento 12 da biblioteca do projeto · v0.3 · 14/08/2026
 
 ---
 
@@ -23,7 +23,8 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.**
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 100 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 106 decisões registradas no Doc 03 — provavelmente a resposta existe.
+8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
 
@@ -45,7 +46,7 @@ Os 2.453 negócios entram de uma vez. Se isso disparar o gatilho normalmente, o 
 
 A carga roda com `set local app.carga_migracao = true`, e os eventos gerados ficam marcados em `origem_carga`. Todo indicador filtra `origem_carga = false`.
 
-⚠️ **A carga roda direto em produção** (D-101) — não existe ambiente de nuvem intermediário. O ensaio acontece no banco local, com `supabase db reset`, e é a única rede que existe. Ensaie até rodar duas vezes seguidas sem divergência antes de tocar na base real.
+⚠️ **A carga roda direto em produção, uma única vez, e não há ensaio** (D-101 + D-106; a D-102 foi revogada). Não existe ambiente intermediário nem banco descartável onde errar antes. As mitigações que restam são a ordem de carga do Doc 14, a marcação `origem_carga` e o **backup verificado antes de começar** (D-089). Trate a carga como operação de uma tentativa só.
 
 ⚠️ Ao ler `app.carga_migracao`, use `nullif(current_setting(...), '')` antes de converter para booleano. Depois que um `set local` sai de escopo, a variável fica valendo string vazia em vez de deixar de existir, e a conversão direta levanta erro — quebrando toda escrita em `negocio` na mesma conexão. Ver Doc 09, correção C-02.
 
@@ -110,12 +111,12 @@ Outras regras que costumam ser esquecidas:
 
 Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor pontuando**. Nenhuma cor de marca aparece sem significar algo — etapa, status, estado semântico ou série de gráfico.
 
-- Tokens em `lure-crm-tokens.css`; tema no `tailwind.config.ts`.
+- Tokens em **`app/tokens.css`**; a ponte para os utilitários do Tailwind fica no bloco `@theme inline` de **`app/globals.css`**. **Não existe `tailwind.config.ts`** — o Tailwind v4 define o tema em CSS (P-025). O `docs/lure-crm-tokens.css` é registro do insumo original, não o arquivo em uso.
 - **`#ffdd00` nunca é cor de texto.** Funciona como fundo com texto preto. Para texto ou borda, usar a variante `-ink`.
 - **A distinção de etapa nunca depende só de cor** — o nome da etapa sempre aparece escrito.
 - Linha de tabela: **44px**. Tema claro e escuro, ambos.
 
-⚠️ O bloco `spacing` do `tailwind.config.ts` redefine a escala padrão e quebra os componentes do shadcn/ui. **Remover antes de começar.**
+⚠️ **Nome de classe do Tailwind nunca pode ser montado em tempo de execução.** O v4 varre o código à procura de literais; `bg-status-${x}` simplesmente não é gerado, e a cor some sem erro nenhum. Escreva as classes por extenso em mapas — é o que `components/dominio/etiquetas.tsx` faz.
 
 ---
 
@@ -164,7 +165,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **100 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **106 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -174,5 +175,6 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.3** — 14/08/2026 — **Sessão 05.** Regra 8 acrescentada: há um ambiente só, e `npm run dev` aponta para a base real. A seção "A carga da migração" corrigida por **D-106**, que revogou a D-102 — não há ensaio, a carga é operação de uma tentativa só, e o backup verificado passa a ser a mitigação principal. Identidade visual corrigida: os tokens estão em `app/tokens.css` e a ponte em `app/globals.css`, **não** em `tailwind.config.ts`, que não existe — o texto anterior contradizia a própria tabela de stack. O aviso do bloco `spacing` saiu (resolvido em P-025) e deu lugar ao que de fato morde no Tailwind v4: nome de classe montado em tempo de execução não é gerado. Contagem de decisões atualizada para 106.
 - **v0.2** — 14/08/2026 — D-101: base única na nuvem, carga direto em produção, ensaio no banco local. Aviso de C-02 (o `nullif` na leitura de `app.carga_migracao`) acrescentado à seção do que não pode dar errado. Stack atualizada para Next.js 16 e Tailwind v4 (P-025 encerrada).
 - **v0.1** — 13/08/2026 — Criação ao fim da Fase 1, com 100 decisões registradas e o MVP recortado pelo Bloco 12.
