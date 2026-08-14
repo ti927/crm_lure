@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | Backlog e Critérios de Aceite |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.1 |
-| **Data** | 13/08/2026 |
+| **Versão** | v0.2 |
+| **Data** | 14/08/2026 |
 | **Status** | rascunho — aguarda validação do maestro |
 
 > Cada item tem critério **verificável**. "Funciona" não é critério; "arrastar o cartão da etapa 2 para a 3 grava um evento com valor anterior e novo" é.
@@ -24,7 +24,7 @@ Nenhuma tarefa é considerada pronta sem isto:
 | T3 | Nenhuma consulta carrega a base inteira; listas paginam no servidor (R-006) |
 | T4 | Textos, datas e valores em português do Brasil, dd/mm/aaaa, R$ 0.000,00 (D-087) |
 | T5 | Nenhum segredo em variável `NEXT_PUBLIC_` |
-| T6 | Alteração de estrutura de banco entra como migração versionada, nunca pelo painel (D-082) |
+| T6 | Alteração de estrutura de banco entra como migração versionada, nunca pelo painel. Com base única (D-101), o repositório é a única descrição confiável do schema |
 | T7 | Nomes de tabela e coluna em português, `snake_case` (D-099) |
 
 ---
@@ -36,7 +36,7 @@ Nenhuma tarefa é considerada pronta sem isto:
 | B-001 | Projeto Next.js com Tailwind e shadcn/ui | Página inicial renderiza com a fonte Archivo e os tokens da Lure aplicados |
 | B-002 | Corrigir o `tailwind.config.ts` | Bloco `spacing` removido; um componente do shadcn renderiza com espaçamento correto; versão do Tailwind confirmada e registrada |
 | B-003 | Alternador de tema | Botão alterna claro/escuro; a escolha persiste ao recarregar |
-| B-004 | Dois projetos no Supabase | Ambientes de desenvolvimento e produção existem; limitador de gastos **ligado** |
+| B-004 | Projeto único no Supabase (D-101) | O projeto de produção existe, dentro da organização Pro já assinada; limitador de gastos **ligado**; banco local sobe com `npx supabase start` |
 | B-005 | Migração inicial do schema | `supabase db reset` recria o schema inteiro do zero, sem intervenção manual |
 | B-006 | Tipo `status_negocio` | Tentar gravar um quinto valor de status resulta em erro do banco |
 | B-007 | ⚠️ **Gatilho do log** | Alterar etapa, valor, responsável ou status de um negócio insere linha em `evento_negocio` com tipo, valor anterior, valor novo, autor e data |
@@ -44,7 +44,7 @@ Nenhuma tarefa é considerada pronta sem isto:
 | B-009 | Marcação de carga | Com `app.carga_migracao = true`, os eventos gerados nascem com `origem_carga = true` |
 | B-010 | Política de acesso por domínio | Conta de fora do domínio autentica no Google mas não lê nenhuma linha |
 | B-011 | Criação automática de usuário | Primeiro login de conta do domínio cria linha em `usuario`, ativa, com papel `completo` |
-| B-012 | Deploy na Vercel | `git push` publica; as duas URLs de retorno OAuth funcionam |
+| B-012 | Deploy na Vercel | `git push` publica; o login por Google funciona no endereço publicado e em `localhost` |
 
 ## F1 — Extração do Pipedrive ⚠️ *prioridade máxima*
 
@@ -57,7 +57,7 @@ Nenhuma tarefa é considerada pronta sem isto:
 | B-024 | Conferência | Contagens do JSON batem com as do Pipedrive: 2.453 negócios, 422 organizações, atividades, pessoas, anotações, produtos, funis, etapas, usuários |
 | B-025 | Investigação dos changelogs (P-021) | Relatório curto respondendo: dá para reconstituir a trajetória de etapa e valor dos negócios? |
 
-## F2 — Carga em desenvolvimento
+## F2 — Carga de ensaio, no banco local
 
 | # | Item | Critério de aceite |
 |---|---|---|
@@ -158,8 +158,8 @@ Nenhuma tarefa é considerada pronta sem isto:
 
 | # | Item | Critério de aceite |
 |---|---|---|
-| B-120 | Ensaio da migração | A carga roda em desenvolvimento do zero ao fim, com contagens batendo, ao menos duas vezes |
-| B-121 | Carga em produção | Contagens conferidas: 2.453 negócios, 422 organizações, e as demais entidades |
+| B-120 | ⚠️ **Ensaio da migração** | A carga roda **no banco local** do zero ao fim, com contagens batendo, ao menos duas vezes seguidas. Com D-101 este é o único ensaio que existe: a próxima execução é na base real |
+| B-121 | Carga em produção | Contagens conferidas: 2.453 negócios, 422 organizações, e as demais entidades. Backup do Supabase verificado **antes** de começar |
 | B-122 | Log gravando | Primeiro negócio alterado em produção gera evento com `origem_carga = false` |
 | B-123 | ⭐ **Ensaio de operação** | Os dois sócios trabalham um dia inteiro sem abrir o Pipedrive, **antes de 3/9** |
 | B-124 | Login do domínio | Todas as contas da equipe entram |
@@ -176,4 +176,5 @@ Não construir. Registrados para não serem esquecidos na fase 2: telas de estat
 
 ## Changelog
 
+- **v0.2** — 14/08/2026 — **D-101 incorporada.** B-004 passa a pedir um projeto único; B-012 deixa de falar em duas URLs de retorno; a F2 vira "carga de ensaio, no banco local"; B-120 ganha o aviso de que é o único ensaio existente e B-121 passa a exigir backup verificado antes da carga. T6 reescrito.
 - **v0.1** — 13/08/2026 — Criação a partir do Doc 10. 126 itens com critério verificável, agrupados por fase, mais sete critérios transversais.

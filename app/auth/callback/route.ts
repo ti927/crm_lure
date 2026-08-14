@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Retorno do Google OAuth. Uma URL por ambiente, apontada no Google Cloud
- * (P-026, D-082):
+ * Retorno do Google OAuth.
+ *
+ * ⚠️ Estas URLs NAO vao no Google Cloud. Quem recebe o retorno do Google e
+ * o Supabase, em https://<ref>.supabase.co/auth/v1/callback — e essa e a
+ * unica que o Google Cloud precisa conhecer (P-026, Doc 09 secao 4.1).
+ *
+ * As de baixo vao na configuracao do proprio Supabase, em
+ * Authentication > URL Configuration:
  *   http://localhost:3000/auth/callback
- *   https://<dominio-de-producao>/auth/callback
+ *   https://<dominio-na-vercel>/auth/callback
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);

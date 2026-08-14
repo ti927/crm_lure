@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.1 · 13/08/2026
+> Documento 12 da biblioteca do projeto · v0.2 · 14/08/2026
 
 ---
 
@@ -17,7 +17,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 
 ## Regras de trabalho — não violar
 
-1. **Nunca altere a estrutura do banco pelo painel do Supabase.** Toda mudança vira arquivo em `supabase/migrations/`, versionado no git, aplicado por CLI. Dois ambientes precisam de estrutura reprodutível.
+1. **Nunca altere a estrutura do banco pelo painel do Supabase.** Toda mudança vira arquivo em `supabase/migrations/`, versionado no git, aplicado por CLI. Há **uma única base na nuvem** (D-101): o repositório é a única descrição confiável do schema, e o banco local precisa poder ser recriado igual a ela.
 2. **Nomes de tabela e coluna em português, `snake_case`** (`negocio`, `motivo_perda`, `responsavel_id`). Código da aplicação em inglês onde for convenção do framework.
 3. **Nunca carregue a base inteira no navegador.** São 2.453 negócios hoje. Paginação no servidor, lista virtualizada, Kanban carregando por partes.
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
@@ -44,6 +44,10 @@ A tabela `evento_negocio` registra toda mudança de **etapa, valor, responsável
 Os 2.453 negócios entram de uma vez. Se isso disparar o gatilho normalmente, o log nasce com milhares de eventos falsos datados do dia da migração, e todo cálculo de lead time vira ficção.
 
 A carga roda com `set local app.carga_migracao = true`, e os eventos gerados ficam marcados em `origem_carga`. Todo indicador filtra `origem_carga = false`.
+
+⚠️ **A carga roda direto em produção** (D-101) — não existe ambiente de nuvem intermediário. O ensaio acontece no banco local, com `supabase db reset`, e é a única rede que existe. Ensaie até rodar duas vezes seguidas sem divergência antes de tocar na base real.
+
+⚠️ Ao ler `app.carga_migracao`, use `nullif(current_setting(...), '')` antes de converter para booleano. Depois que um `set local` sai de escopo, a variável fica valendo string vazia em vez de deixar de existir, e a conversão direta levanta erro — quebrando toda escrita em `negocio` na mesma conexão. Ver Doc 09, correção C-02.
 
 ### 3. A trava de desfecho
 
@@ -82,10 +86,10 @@ Outras regras que costumam ser esquecidas:
 
 | Camada | Escolha |
 |---|---|
-| Banco | Supabase (PostgreSQL) |
-| Hospedagem | Vercel |
-| Aplicação | Next.js (App Router) + TypeScript |
-| Estilo | Tailwind CSS + shadcn/ui |
+| Banco | Supabase (PostgreSQL) — **uma base na nuvem** (D-101), mais o banco local em contêiner |
+| Hospedagem | Vercel — **um deploy** |
+| Aplicação | Next.js 16 (App Router) + TypeScript |
+| Estilo | Tailwind CSS **v4** + shadcn/ui — tema em CSS, sem `tailwind.config.ts` (P-025) |
 | Dados no cliente | TanStack Query |
 | Kanban | dnd-kit |
 | Gráficos | Recharts (fase 2) |
@@ -170,4 +174,5 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.2** — 14/08/2026 — D-101: base única na nuvem, carga direto em produção, ensaio no banco local. Aviso de C-02 (o `nullif` na leitura de `app.carga_migracao`) acrescentado à seção do que não pode dar errado. Stack atualizada para Next.js 16 e Tailwind v4 (P-025 encerrada).
 - **v0.1** — 13/08/2026 — Criação ao fim da Fase 1, com 100 decisões registradas e o MVP recortado pelo Bloco 12.

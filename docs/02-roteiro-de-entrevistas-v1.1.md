@@ -4,9 +4,9 @@
 |---|---|
 | **Documento** | Roteiro de Entrevistas |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.0 |
-| **Data** | 13/08/2026 |
-| **Status** | **concluído** — Fase 1 encerrada |
+| **Versão** | v1.1 |
+| **Data** | 14/08/2026 |
+| **Status** | **concluído** — Fase 1 encerrada. Respostas não são reescritas; revisões posteriores entram como nota |
 
 > **Regra:** uma pergunta por vez. As perguntas são um mapa, não um script rígido. As respostas do maestro ficam registradas abaixo de cada pergunta.
 >
@@ -182,6 +182,7 @@
   - *Resposta:* **dois — desenvolvimento e produção** (D-082). O argumento decisivo foi ensaiar a migração onde errar é de graça.
   - *Regra decorrente:* nenhuma alteração de estrutura à mão pelo painel do Supabase; tudo por migração versionada.
   - *Nota:* o ambiente de desenvolvimento recebe cópia da base real — testar filtro e paginação com dez registros esconde o que 2.453 revelam (R-006).
+  - ⚠️ **Revisto em 14/08/2026 (D-101).** O maestro decidiu por **uma base só**, por custo, com a carga rodando direto em produção. A regra da migração versionada permanece; o ensaio migra para o banco local em contêiner (D-102), e a nota sobre construir contra a base real continua valendo — ela passa a se referir ao banco local. *A resposta acima fica registrada como foi dada.*
 - **10.4** Quem mantém o sistema depois de pronto? — *respondida em 10.1: Claude Code, conduzido pelo maestro.*
 - **10.5** Restrições de orçamento, prazo ou licenciamento?
   - *Resposta:* **planos Pro já existentes** em Supabase e Vercel (D-083). Prazo já respondido em 8.2 (R-008).
@@ -189,6 +190,7 @@
 - **10.6** Autenticação Google OAuth sobre o Supabase.
   - *Resposta:* **primeiro login do domínio cria o usuário**, ativo, papel único (D-084).
   - *Pendência de execução:* apontar as URLs de retorno no app do Google Cloud — **duas**, uma por ambiente.
+  - ⚠️ **Corrigido em 14/08/2026.** Com base única (D-101) é **uma** URL no Google Cloud — e ela aponta para o **Supabase**, não para a aplicação: `https://<ref>.supabase.co/auth/v1/callback`. As URLs da aplicação vão na configuração do próprio Supabase. Ver Doc 09, seção 4.1.
 
 ## Bloco 9 — Requisitos Não-Funcionais
 
@@ -246,6 +248,7 @@
 
 ## Changelog
 
+- **v1.1** — 14/08/2026 — Notas de revisão em 10.3 (D-101 reduz os dois ambientes a uma base só) e 10.6 (a URL de retorno do OAuth aponta para o Supabase, não para a aplicação). **As respostas originais não foram alteradas** — este documento é registro histórico, e reescrever o que foi dito destruiria o rastro da decisão.
 - **v1.0** — 13/08/2026 — **Bloco 12 concluído e Fase 1 encerrada.** 80 perguntas respondidas em 12 blocos. Documento fecha como registro histórico das entrevistas.
 - **v0.9** — 13/08/2026 — Bloco 10 concluído (10.2 a 10.6), Bloco 9 concluído e Bloco 11 concluído com o manual de marca Lure. Registrada a correção de rumo em 10.2 e a correção de volume em 9.2.
 - **v0.8** — 13/08/2026 — Blocos 7 e 8 concluídos. Bloco 10 iniciado e antecipado na ordem (D-070); 10.1 respondida com as três primeiras decisões técnicas. Perguntas 7.3b, 8.5b, 8.5c, 10.2 e 10.3 acrescentadas por decorrência.

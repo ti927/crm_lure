@@ -1,11 +1,11 @@
-﻿# 03 — Log de Decisões (v0.9)
+﻿# 03 — Log de Decisões (v0.10)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.9 |
-| **Data** | 13/08/2026 |
+| **Versão** | v0.10 |
+| **Data** | 14/08/2026 |
 | **Status** | vivo |
 
 > Registro de toda decisão validada pelo maestro. Nada entra aqui sem confirmação explícita.
@@ -147,7 +147,7 @@
 | # | Data | Decisão | Justificativa | Situação |
 |---|---|---|---|---|
 | D-081 | 13/08/2026 | **Camadas de regra.** No **banco**: o log de eventos é gerado por **gatilho**, a cada alteração de etapa, valor, responsável ou status, qualquer que seja a origem da escrita; o log é **somente inserção**, sem alteração nem exclusão. Na **aplicação (Next.js)**: as regras de processo — trava de D-047, motivo de perda, follow-up de 90 dias, chamada ao Bubble, mesclagem, transferência. No **cliente**: validação de formulário e diálogos | Encerra A-10. Não é questão de segurança contra o usuário (papel único, D-049), e sim de **integridade**: o dado será escrito por três caminhos ao longo do tempo — tela, script de migração e futuro agente de IA (E-012). Regra que mora na tela não vale para os outros dois, e buraco no log **não é recuperável** | ✅ |
-| D-082 | 13/08/2026 | **Dois ambientes**: desenvolvimento e produção. Dois projetos no Supabase, dois deploys na Vercel. Alterações de estrutura por **migrações versionadas no repositório** — nunca à mão pelo painel | A migração de 2.453 negócios precisa ser ensaiada até dar certo antes de valer. Pré-visualizações por branch da Vercel entram como facilidade, não como terceiro ambiente | ✅ |
+| D-082 | 13/08/2026 | ~~**Dois ambientes**: desenvolvimento e produção. Dois projetos no Supabase, dois deploys na Vercel.~~ **Revista por D-101 em 14/08/2026** — permanece válida apenas a segunda metade: alterações de estrutura por **migrações versionadas no repositório**, nunca à mão pelo painel | A migração de 2.453 negócios precisa ser ensaiada até dar certo antes de valer. Pré-visualizações por branch da Vercel entram como facilidade, não como terceiro ambiente | ⛔ revista |
 | D-083 | 13/08/2026 | **Sem custo incremental de assinatura.** O maestro já mantém planos Pro em Supabase e Vercel para outros sistemas; o CRM entra na infraestrutura existente | Supabase Pro é cobrado **por organização**, não por projeto; projetos adicionais a partir de ~US$ 10/mês. Vercel cobra por assento de quem publica código, não por usuário do sistema. **Limitador de gastos deve permanecer ligado.** Encerra a parte de infraestrutura de P-006 | ✅ |
 | D-084 | 13/08/2026 | **Google OAuth via Supabase.** Restrição por domínio na camada de política do banco. O **primeiro login de conta do domínio cria o Usuário** automaticamente, com papel único, ativo. Sem convite nem cadastro prévio | Formaliza D-050 e R-007. Consequência aceita: qualquer conta do domínio vê a base inteira, inclusive valores e motivos de perda — item de fase 2 | ✅ |
 
@@ -189,6 +189,13 @@
 | D-099 | 13/08/2026 | **Nomes de tabela e coluna em português**, `snake_case` (`negocio`, `motivo_perda`, `responsavel_id`). Código da aplicação segue a convenção do framework | Toda a documentação e o vocabulário do maestro estão em português; cada tradução mental é uma chance de erro de mapeamento, sobretudo na migração. Alto custo de reverter depois de semanas de código | ✅ |
 | D-100 | 13/08/2026 | **Exclusão real** de registros, com `on delete restrict` nos vínculos que importam. Sem exclusão lógica (`deleted_at`) | D-088 pede exclusão de Pessoa como função normal. Exclusão lógica dobraria a complexidade de toda consulta. O `restrict` evita o acidente de apagar organização com negócios — mitigação necessária porque o backup é diário (D-089) | ✅ |
 | — | 13/08/2026 | Aprovadas em bloco, sem controvérsia: chave primária `uuid`, valor `numeric(14,2)`, data e hora `timestamptz`, status como `enum` do Postgres, migrações por Supabase CLI versionadas no git | Padrão de mercado; nenhuma delas tem alternativa relevante para este projeto | ✅ |
+
+### Decisões da fase de construção
+
+| # | Data | Decisão | Justificativa | Situação |
+|---|---|---|---|---|
+| D-101 | 14/08/2026 | **Um único projeto no Supabase e um único deploy na Vercel.** A carga de migração é executada **direto na base de produção**, antes da virada. **Revoga a primeira metade de D-082** | Custo. O projeto adicional sairia por ~US$ 10/mês e o projeto inteiro existe para cortar custo. O maestro assumiu conscientemente o risco de prazo e de carga sem ambiente de nuvem intermediário | ✅ |
+| D-102 | 14/08/2026 | **O ensaio da migração passa a ser feito no banco local** do Supabase CLI, em contêiner, e não em projeto de nuvem. `supabase db reset` recria o schema do zero quantas vezes for necessário | Preserva o critério 1 de D-098 sem custo. É o mesmo PostgreSQL e as mesmas migrações; a base tem 2.453 negócios, volume em que a diferença entre contêiner e nuvem é irrelevante | 🟡 proposta do consultor — o maestro decidiu D-101, não isto |
 
 ---
 
@@ -277,6 +284,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.10** — 14/08/2026 — **Fase de construção iniciada.** D-101: um único projeto no Supabase, um único deploy na Vercel, carga direto em produção — **revoga a primeira metade de D-082**, que passa a ⛔ revista. D-102 registrada como proposta do consultor: ensaiar a migração no banco local do CLI, que preserva o critério 1 de D-098 sem custo.
 - **v0.9** — 13/08/2026 — Convenções técnicas do Doc 09 validadas (D-099, D-100). **Cem decisões registradas.**
 - **v0.8** — 13/08/2026 — **Bloco 12 concluído** (D-093 a D-098) e Fase 1 encerrada. Estatísticas, mesclagem, transferência e telas de configuração saem do MVP; celular entra em modo consulta. Critério de pronto definido. Situação de todos os extras atualizada. P-013 encerrada.
 - **v0.7** — 13/08/2026 — Conclusão do Bloco 10 (D-081 a D-084), Bloco 9 (D-085 a D-089) e Bloco 11 (D-090 a D-092). Extra E-013 (mobile) criado. A-10 encerrado por D-081. Parte de infraestrutura de P-006 encerrada por D-083.

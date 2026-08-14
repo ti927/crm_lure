@@ -4,11 +4,11 @@
 |---|---|
 | **Documento** | Plano de Fases de Construção |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.1 |
-| **Data** | 13/08/2026 |
-| **Status** | rascunho — aguarda validação do maestro |
+| **Versão** | v0.2 |
+| **Data** | 14/08/2026 |
+| **Status** | rascunho — F0 em execução |
 
-> Roteiro de execução para o Claude Code. **Prazo imutável: 3/9/2026** (R-008). Hoje é 13/08 — restam 21 dias.
+> Roteiro de execução para o Claude Code. **Prazo imutável: 3/9/2026** (R-008). Em 14/08 restam 20 dias.
 
 ---
 
@@ -31,12 +31,12 @@ Quatro regras determinaram a ordem abaixo. Elas importam mais que o cronograma, 
 - Repositório, Next.js + TypeScript + Tailwind + shadcn/ui
 - Remover o bloco `spacing` do `tailwind.config.ts` (P-025); confirmar Tailwind v3 × v4
 - Tokens da Lure aplicados; alternador de tema claro/escuro
-- Dois projetos no Supabase (D-082); Supabase CLI e `supabase/migrations/`
+- **Um** projeto no Supabase (D-101); Supabase CLI e `supabase/migrations/`; banco local em contêiner para a construção
 - Primeira migração: schema completo do Doc 09
 - **Gatilho do log de eventos e revogação de update/delete**
 - Políticas de acesso por domínio; gatilho de criação de usuário no primeiro login
-- Google OAuth com as duas URLs de retorno (P-026)
-- Deploy inicial na Vercel, dois ambientes
+- Google OAuth com a URL de retorno apontada para o Supabase (P-026, Doc 09 §4.1)
+- Deploy inicial na Vercel, ambiente único
 
 **Encerra quando:** um usuário do domínio faz login, um negócio criado à mão muda de etapa, e o evento aparece em `evento_negocio`.
 
@@ -57,17 +57,20 @@ Quatro regras determinaram a ordem abaixo. Elas importam mais que o cronograma, 
 
 ---
 
-### F2 — Carga em desenvolvimento
-**Objetivo:** dado real no banco de desenvolvimento, cedo.
+### F2 — Carga de ensaio, no banco local
+**Objetivo:** dado real no banco de construção, cedo — e o roteiro da carga em produção ensaiado até não errar.
 
 - Mapeamento campo a campo (Doc 14)
 - Transformações: UTC → Brasília, status, motivo de perda como lista, valores
 - Carga com `app.carga_migracao = true`
 - Conferência de contagens e amostragem manual
+- **Repetir do zero** com `supabase db reset` até rodar duas vezes seguidas sem erro nem divergência
 
-**Encerra quando:** o ambiente de desenvolvimento tem a base real e o log não foi contaminado.
+**Encerra quando:** o banco local tem a base real, o log não foi contaminado, e a carga rodou limpa do início ao fim duas vezes.
 
 > A partir daqui, **toda tela é construída contra 2.453 registros de verdade**. É o que faz os problemas de volume aparecerem na semana 1 e não na véspera.
+
+⚠️ **Esta fase mudou de peso com a D-101.** Antes ela era conveniência — dado real cedo para construir as telas. Agora ela é a **única** rede de proteção da carga: como não há ambiente de nuvem intermediário, a próxima vez que este roteiro rodar é na base que os sócios vão usar. Cortar ou apressar a F2 é a decisão que mais custa caro neste plano.
 
 ---
 
@@ -117,8 +120,8 @@ Quatro regras determinaram a ordem abaixo. Elas importam mais que o cronograma, 
 - Marcar atividade como concluída
 
 ### F10 — Virada
-- Migração ensaiada até as contagens baterem
-- Carga em produção
+- Migração ensaiada no banco local até as contagens baterem
+- **Carga em produção** — a primeira e única vez que este roteiro roda na base real (D-101)
 - ⭐ **Ensaio de operação real: os dois sócios um dia inteiro sem abrir o Pipedrive**
 - Verificação dos sete critérios de D-098
 - Desligamento do Pipedrive
@@ -130,7 +133,7 @@ Quatro regras determinaram a ordem abaixo. Elas importam mais que o cronograma, 
 ```
 F1 Extração ──────────────┐
                           ▼
-F0 Fundação ──► F2 Carga em desenvolvimento
+F0 Fundação ──► F2 Carga de ensaio (banco local)
                           │
                           ├──► F3 Lista ──► F4 Detalhe ──► F5 Kanban
                           │                     │
@@ -172,7 +175,8 @@ Ordem de sacrifício, do que dói menos ao que dói mais. Registrada agora, com 
 | Risco | Mitigação |
 |---|---|
 | A extração não acontece a tempo | F1 é a primeira fase e independe de tudo |
-| A migração falha na véspera | Ensaiada em desenvolvimento desde F2, não em F10 |
+| A migração falha na véspera | Ensaiada no banco local desde F2, não em F10. ⚠️ **Mitigação enfraquecida por D-101**: sem ambiente de nuvem, a carga real acontece direto em produção. Risco assumido pelo maestro |
+| A carga falha no meio, em produção | Ordem de carga do Doc 14 respeitada; `origem_carga = true` marcando tudo; backup diário do Supabase (D-089). Nenhuma dessas substitui um ambiente separado |
 | Telas construídas com dados de teste quebram com a base real | F2 antes de F3: toda tela nasce contra 2.453 registros |
 | O log entra depois | F0 o coloca antes de qualquer tela |
 | Escopo cresce durante a construção | Doc 05 marca o que é fase 2; CLAUDE.md lista o que não construir |
@@ -181,4 +185,5 @@ Ordem de sacrifício, do que dói menos ao que dói mais. Registrada agora, com 
 
 ## Changelog
 
+- **v0.2** — 14/08/2026 — **D-101 incorporada**: um projeto no Supabase, um deploy na Vercel, carga direto em produção. A F2 deixa de ser "carga em desenvolvimento" e passa a ser "carga de ensaio, no banco local" — e muda de peso, porque vira a única rede de proteção da carga real. Risco de falha da carga em produção acrescentado à seção 5.
 - **v0.1** — 13/08/2026 — Criação a partir do escopo recortado no Bloco 12 e da arquitetura do Doc 09. Onze fases, com ordem de sacrifício definida antecipadamente.

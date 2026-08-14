@@ -10,24 +10,24 @@ Leia [CLAUDE.md](CLAUDE.md) por inteiro. Ele carrega as regras que não podem se
 
 ## Biblioteca de documentos
 
-Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v1.0.md), que diz onde o projeto está e qual é a próxima ação.
+Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v1.1.md), que diz onde o projeto está e qual é a próxima ação.
 
 | # | Documento | Para quê |
 |---|---|---|
-| 00 | [Status e Retomada](docs/00-status-e-retomada-v1.0.md) | Onde o projeto está e o que vem a seguir |
+| 00 | [Status e Retomada](docs/00-status-e-retomada-v1.1.md) | Onde o projeto está e o que vem a seguir |
 | 01 | [Plano de Execução](docs/01-plano-de-execucao-v0.2.md) | Método da consultoria |
-| 02 | [Roteiro de Entrevistas](docs/02-roteiro-de-entrevistas-v1.0.md) | As 80 perguntas e suas respostas |
-| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.9.md) | **100 decisões com justificativa.** Consulte antes de perguntar |
+| 02 | [Roteiro de Entrevistas](docs/02-roteiro-de-entrevistas-v1.1.md) | As 80 perguntas e suas respostas |
+| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.10.md) | **102 decisões com justificativa.** Consulte antes de perguntar |
 | 04 | [Visão de Produto](docs/04-visao-de-produto-v0.1.md) | Por que o sistema existe |
 | 05 | [Requisitos Funcionais](docs/05-requisitos-funcionais-v0.1.md) | 153 requisitos |
 | 06 | [Modelo de Domínio](docs/06-modelo-de-dominio-v0.5.md) | Entidades e regras, conceitual |
 | 08 | [UI e Design System](docs/08-ui-e-design-system-v0.1.md) | Cores, tipografia, densidade |
-| 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.2.md) | Schema físico, gatilhos, políticas |
-| 10 | [Plano de Fases de Construção](docs/10-plano-de-fases-de-construcao-v0.1.md) | Ordem das fases F0 a F10 |
-| 11 | [Backlog e Critérios de Aceite](docs/11-backlog-e-criterios-de-aceite-v0.1.md) | 126 itens com critério de pronto |
-| 12 | [CLAUDE.md](docs/12-claude-md-v0.1.md) | Fonte do `CLAUDE.md` da raiz |
+| 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.3.md) | Schema físico, gatilhos, políticas |
+| 10 | [Plano de Fases de Construção](docs/10-plano-de-fases-de-construcao-v0.2.md) | Ordem das fases F0 a F10 |
+| 11 | [Backlog e Critérios de Aceite](docs/11-backlog-e-criterios-de-aceite-v0.2.md) | 126 itens com critério de pronto |
+| 12 | [CLAUDE.md](docs/12-claude-md-v0.2.md) | Fonte do `CLAUDE.md` da raiz |
 | 13 | [Glossário](docs/13-glossario-v0.1.md) | Vocabulário do projeto |
-| 14 | [Migração do Pipedrive](docs/14-migracao-do-pipedrive-v0.1.md) | Mapeamento campo a campo |
+| 14 | [Migração do Pipedrive](docs/14-migracao-do-pipedrive-v0.2.md) | Mapeamento campo a campo |
 | 14* | [Referência da API Pipedrive](docs/14-referencia-api-pipedrive-v0.1.md) | Endpoints para a extração |
 
 O documento 07 (UX — Fluxos e Arquitetura de Informação) é o único não criado; o material está distribuído nos documentos 05, 08 e 11.
@@ -47,6 +47,8 @@ npx supabase start             # sobe o banco, aplica migrações e a semente
 npm run dev
 ```
 
+A construção acontece contra o **banco local**. Há uma única base na nuvem, que é a de produção (D-101) — apontar o `.env.local` para ela significa trabalhar direto nos dados reais.
+
 `npx supabase status` mostra as chaves do ambiente local e a URL do Studio. Para recriar o banco do zero — reaplicando todas as migrações e a semente — use `npx supabase db reset`.
 
 | Comando | O que faz |
@@ -57,7 +59,7 @@ npm run dev
 | `npx supabase db reset` | Recria o banco local a partir das migrações |
 | `npx supabase gen types typescript --local` | Regenera `lib/supabase/types.ts` |
 
-⚠️ **Toda mudança de estrutura do banco vira arquivo em `supabase/migrations/`.** Nunca pelo painel do Supabase — dois ambientes exigem estrutura reprodutível.
+⚠️ **Toda mudança de estrutura do banco vira arquivo em `supabase/migrations/`.** Nunca pelo painel do Supabase. Há **uma única base na nuvem** (D-101): o repositório é a única descrição confiável do schema, e o banco local precisa poder ser recriado idêntico a ela.
 
 ## Estrutura
 

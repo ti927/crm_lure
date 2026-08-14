@@ -12,8 +12,12 @@
 --
 -- O dominio vira entao o corpo desta funcao. Fica melhor do que a
 -- configuracao de servidor pretendida: uma configuracao pode divergir
--- entre os dois ambientes sem deixar rastro, a funcao nao — ela e
--- migracao versionada em git (D-082).
+-- entre o banco local e a producao sem deixar rastro, a funcao nao —
+-- ela e migracao versionada em git. Com base unica (D-101) isso pesa
+-- mais, porque o repositorio e a unica descricao confiavel do schema.
+--
+-- ⚠️ P-029: o valor abaixo decide quem entra no sistema. Deduzido do
+-- e-mail do maestro, aguarda confirmacao.
 --
 -- ⚠️ Para trocar o dominio, crie uma migracao nova com um
 -- `create or replace` desta funcao. Nunca pelo painel — regra 1 do

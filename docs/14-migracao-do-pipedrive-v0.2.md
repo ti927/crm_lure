@@ -1,11 +1,11 @@
-﻿# 14 — Migração do Pipedrive (v0.1)
+﻿# 14 — Migração do Pipedrive (v0.2)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Migração do Pipedrive |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.1 |
-| **Data** | 13/08/2026 |
+| **Versão** | v0.2 |
+| **Data** | 14/08/2026 |
 | **Status** | rascunho — aguarda validação do maestro |
 
 > Estratégia de dados legados. O material técnico de apoio — endpoints, autenticação, paginação e limites de uso — está em `14-referencia-api-pipedrive-v0.1`, que continua válido como anexo deste documento.
@@ -157,13 +157,15 @@ Aparecem com chaves em formato de hash e só são interpretáveis pelos `*Fields
 
 ## 6. Carga
 
-1. Rodar **sempre primeiro no ambiente de desenvolvimento** (D-082).
+1. Rodar **sempre primeiro no banco local**, em contêiner (D-101, D-102). Não existe ambiente de desenvolvimento na nuvem: depois do ensaio local, a próxima execução é na base de produção.
 2. Executar com `set local app.carga_migracao = true`. ⚠️ **Sem isso, o log nasce com milhares de eventos falsos** datados do dia da migração, e todo cálculo de lead time é contaminado.
 3. Ordem de carga, respeitando dependências:
    `papel` → `usuario` → listas configuráveis → `funil` → `etapa` → `area_produto` → `produto` → `organizacao` → `pessoa` → `pessoa_organizacao` → `forma_contato` → `negocio` → `negocio_pessoa` → `atividade` → `anotacao`
 4. Conferir contagens.
-5. Repetir até não haver erro nem divergência.
-6. Só então carregar em produção.
+5. Repetir do zero, com `supabase db reset`, até rodar **duas vezes seguidas** sem erro nem divergência.
+6. **Verificar o backup do Supabase** (D-089) e só então carregar em produção.
+
+⚠️ **Com D-101 este roteiro roda uma única vez na base real.** Não há ambiente de nuvem intermediário onde errar sem consequência, e a base de produção é a que os sócios vão usar no dia seguinte. O ensaio local do item 5 não é formalidade — é a única rede que existe. As mitigações que restam depois dele são a ordem de carga do item 3, a marcação `origem_carga` do item 2 e o backup do item 6.
 
 ---
 
@@ -215,4 +217,5 @@ Sem isto, a migração não está concluída (critério 1 de D-098):
 
 ## Changelog
 
+- **v0.2** — 14/08/2026 — **D-101 incorporada à seção 6.** O ensaio passa a ser no banco local em contêiner; a carga real roda uma única vez, direto em produção. Acrescentados: exigência de duas execuções limpas antes de tocar na base real, verificação do backup antes da carga, e o registro de que o ensaio local é a única rede que resta.
 - **v0.1** — 13/08/2026 — Criação ao fim da Fase 1. Estratégia em duas etapas, mapeamento campo a campo e oito regras de transformação. Substitui o rascunho técnico como documento oficial; a referência da API permanece como anexo.

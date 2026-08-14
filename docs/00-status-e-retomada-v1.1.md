@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.0 |
-| **Última atualização** | 13/08/2026 — Sessão 03 |
+| **Versão** | v1.1 |
+| **Última atualização** | 14/08/2026 — Sessão 04 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -22,24 +22,26 @@ Cole o texto abaixo como primeira mensagem da nova sessão:
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.0.md` |
+| `00-status-e-retomada-v1.1.md` |
 | `01-plano-de-execucao-v0.2.md` |
-| `02-roteiro-de-entrevistas-v1.0.md` |
-| `03-log-de-decisoes-v0.9.md` |
+| `02-roteiro-de-entrevistas-v1.1.md` |
+| `03-log-de-decisoes-v0.10.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.2.md` |
-| `10-plano-de-fases-de-construcao-v0.1.md` |
-| `11-backlog-e-criterios-de-aceite-v0.1.md` |
-| `12-claude-md-v0.1.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `09-arquitetura-tecnica-v0.3.md` |
+| `10-plano-de-fases-de-construcao-v0.2.md` |
+| `11-backlog-e-criterios-de-aceite-v0.2.md` |
+| `12-claude-md-v0.2.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
-| `14-migracao-do-pipedrive-v0.1.md` |
+| `14-migracao-do-pipedrive-v0.2.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
-| `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08)* |
+| `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
 > Ao subir uma versão nova, **remova a anterior da biblioteca** — manter as duas gera ambiguidade na retomada.
+
+> **A biblioteca agora vive no repositório**, em `docs/`. O git guarda o histórico; o nome do arquivo guarda a versão corrente.
 
 ---
 
@@ -61,7 +63,7 @@ Cole o texto abaixo como primeira mensagem da nova sessão:
 
 **Sistema vizinho.** A empresa opera um **sistema interno em Bubble.io**, para onde o cliente migra depois do ganho. Única integração do MVP.
 
-**Stack decidida.** Supabase · Vercel · Next.js + TypeScript · Tailwind · shadcn/ui · TanStack Query · dnd-kit · Recharts. Dois ambientes; regras de processo na aplicação e **log de eventos por gatilho no banco**.
+**Stack decidida.** Supabase · Vercel · Next.js 16 + TypeScript · Tailwind v4 · shadcn/ui · TanStack Query · dnd-kit · Recharts. **Uma base na nuvem** (D-101), mais o banco local em contêiner; regras de processo na aplicação e **log de eventos por gatilho no banco**.
 
 **Identidade visual.** Manual da **Lure** (BR/BAUEN, 2015): preto e branco de base, cor pontuando. Paleta de oito cores; Archivo no lugar da Flama. Tema claro e escuro.
 
@@ -81,34 +83,55 @@ Cole o texto abaixo como primeira mensagem da nova sessão:
 
 ## 4. ONDE ESTAMOS
 
-**Fase:** documentação **concluída**. 13 dos 14 documentos escritos.
-**Perguntas respondidas:** 80 · 12 blocos · **100 decisões** · 153 requisitos · 126 itens de backlog
+**Fase:** **construção**. Documentação concluída (13 dos 14 documentos); **F0 em execução**.
+**Perguntas respondidas:** 80 · 12 blocos · **102 decisões** · 153 requisitos · 126 itens de backlog
 
-### 4.1 Próxima ação
+**Repositório:** `https://github.com/ti927/crm_lure.git` — biblioteca em `docs/`, `CLAUDE.md` na raiz.
 
-⚠️ **A documentação está completa. O projeto sai da mesa de engenharia de requisitos e entra em construção.**
+### 4.1 O que já está de pé (F0)
 
-**Primeiro:** executar **F1 — extração da base do Pipedrive** (Doc 10, P-020). Única tarefa com prazo próprio; a API fecha com o contrato em 3/9 e ela não depende de mais nada.
+| Item | Situação |
+|---|---|
+| Repositório, biblioteca versionada, `CLAUDE.md` | ✅ |
+| Next.js 16 + TypeScript + Tailwind v4 + shadcn/ui | ✅ P-025 encerrada em favor da **v4** |
+| Tokens da Lure com as três correções do Doc 08; dois temas | ✅ conferidos na tela |
+| Schema do Doc 09 em três migrações versionadas + semente do funil | ✅ |
+| Gatilho do log, imutabilidade, marcação de carga | ✅ verificado contra PostgreSQL real |
+| Acesso por domínio e criação automática de usuário | ✅ verificado |
+| Clientes Supabase, barreira de autenticação, login por Google | ✅ código pronto, **sem credenciais ainda** |
 
-**Em paralelo:** **F0 — Fundação** (Doc 10). Repositório, dois projetos no Supabase, primeira migração com o schema do Doc 09, **gatilho do log**, Google OAuth, deploy na Vercel.
+⚠️ **Três trechos do Doc 09 não funcionavam como estavam escritos** e foram corrigidos — ver Doc 09, seção 3.11 (C-01, C-02, C-03). O mais grave, C-02, quebraria toda escrita em `negocio` depois da carga de migração.
 
-**Como conduzir o Claude Code:** o `12-claude-md` vai para a raiz do repositório com o nome `CLAUDE.md`. O Doc 10 dá a ordem das fases; o Doc 11 dá os critérios de aceite item a item.
+### 4.2 Próxima ação
 
-### 4.2 Validações que ainda dependem do maestro
+**Bloqueado no maestro — F0 não fecha sem isto:**
+
+1. Criar **o projeto no Supabase** (um só, D-101), dentro da organização Pro já assinada, e passar URL e chaves
+2. **Google Cloud**: cliente OAuth com a URL de retorno apontando para o Supabase (Doc 09, §4.1)
+3. Habilitar o provedor Google no painel do Supabase
+4. **Deploy na Vercel**
+
+**Correndo em paralelo, e com prazo próprio:** **F1 — extração da base do Pipedrive** (P-020). A API fecha com o contrato em 3/9. Precisa de um token da API do Pipedrive.
+
+**Depois:** F2 — carga de ensaio no banco local. Com D-101, essa fase deixou de ser conveniência e virou a única rede de proteção da carga real.
+
+### 4.3 Validações que ainda dependem do maestro
 
 | Item | Onde |
 |---|---|
 | Doc 08 (design system), Doc 10 (fases), Doc 11 (backlog), Doc 14 (migração) — todos em rascunho | aguardam leitura |
 | Regra de conversão de status na migração | Doc 14, seção 5.1 |
-| P-022 · P-024 · P-025 · P-026 — ações práticas fora da conversa | seção 8 |
+| D-102 — ensaiar a migração no banco local | 🟡 proposta do consultor. O maestro decidiu D-101, não isto |
+| P-029 — o domínio gravado em `public.dominio_empresa()` | decide quem entra no sistema |
+| P-022 · P-024 · P-026 — ações práticas fora da conversa | seção 8 |
 
-### 4.3 Recorte do MVP (Bloco 12)
+### 4.4 Recorte do MVP (Bloco 12)
 
 **Entra:** Negócios (Kanban, Lista de dez colunas, detalhe em três zonas, Linha do Tempo) · Atividades (lista e calendário) · Contatos · Produtos/Serviços · trava de desfecho e seletor Bubble · quatro automações com notificação interna · **log de eventos por gatilho** · exportação CSV · dois temas · Google OAuth · migração completa · **celular em modo consulta e marcação**.
 
 **Fica para a fase 2:** telas de estatísticas · mesclagem · transferência · telas de configuração · criação e edição pelo celular · metas · Google Agenda · API para agentes de IA · construtor de relatórios.
 
-### 4.4 Tarefa fora do fluxo de entrevistas
+### 4.5 Tarefa fora do fluxo de entrevistas
 
 ⚠️ **A extração da base do Pipedrive (P-020) não depende de mais nenhuma decisão.** É código pequeno, independente da stack, e precisa acontecer **antes de 3/9**, quando o acesso à API se encerra junto com o contrato. O material de referência para escrevê-la já está na biblioteca (`14-referencia-api-pipedrive-v0.1`). Persistir os dados brutos em JSON desacopla a migração do prazo do sistema.
 
@@ -140,28 +163,28 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.0 | vivo | — |
+| 00 | Status e Retomada | v1.1 | vivo | — |
 | 01 | Plano de Execução | v0.2 | validado | — |
-| 02 | Roteiro de Entrevistas | v1.0 | **concluído** | — |
-| 03 | Log de Decisões | v0.9 | vivo | — |
+| 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
+| 03 | Log de Decisões | v0.10 | vivo | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.1 | rascunho — **aguarda validação** | criado 13/08 |
-| 09 | Arquitetura Técnica | v0.2 | rascunho — convenções validadas | criado 13/08 |
-| 10 | Plano de Fases de Construção | v0.1 | rascunho — 11 fases | criado 13/08 |
-| 11 | Backlog e Critérios de Aceite | v0.1 | rascunho — 126 itens | criado 13/08 |
-| 12 | CLAUDE.md | v0.1 | rascunho | criado 13/08 |
+| 09 | Arquitetura Técnica | v0.3 | rascunho — convenções validadas; **seção 3.11 com as correções C-01 a C-03** | atualizado 14/08 |
+| 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
+| 11 | Backlog e Critérios de Aceite | v0.2 | rascunho — 126 itens | atualizado 14/08 |
+| 12 | CLAUDE.md | v0.2 | rascunho — **na raiz do repositório** | atualizado 14/08 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
-| 14 | Migração do Pipedrive | v0.1 | rascunho — mapeamento completo | criado 13/08 |
+| 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 14* | *Referência da API Pipedrive* | v0.1 | **anexo do Doc 14** | endpoints e limites de uso |
 
 ---
 
 ## 7. DECISÕES JÁ TOMADAS
 
-Registro completo no documento **03 — Log de Decisões**: **100 decisões (D-001 a D-100)**, 13 extras (E-001 a E-013) e 9 restrições de arquitetura (R-001 a R-009).
+Registro completo no documento **03 — Log de Decisões**: **102 decisões (D-001 a D-102)**, 13 extras (E-001 a E-013) e 9 restrições de arquitetura (R-001 a R-009).
 
 **As mais estruturais:**
 
@@ -180,7 +203,7 @@ Registro completo no documento **03 — Log de Decisões**: **100 decisões (D-0
 - **Migração completa** dos dados do Pipedrive.
 - **Stack:** Supabase · Vercel · Next.js + TypeScript · Tailwind · shadcn/ui · TanStack Query · dnd-kit · Recharts.
 - **Log de eventos gerado por gatilho no banco**, tabela somente inserção. Regras de processo na aplicação.
-- **Dois ambientes**, com migrações versionadas. Sem alteração de estrutura à mão.
+- **Uma base na nuvem** (D-101, revoga metade de D-082), com migrações versionadas. Sem alteração de estrutura à mão. A carga roda direto em produção; o ensaio, no banco local.
 - **Primeiro login do domínio cria o usuário**, ativo, papel único.
 - **Desktop e celular**, com telas próprias no celular para as telas densas.
 - **Brasil como localização única**, real como moeda única.
@@ -198,7 +221,7 @@ Registro completo no documento **03 — Log de Decisões**: **100 decisões (D-0
 | # | Item | Bloqueia | Situação |
 |---|---|---|---|
 | P-005 | Inventário funcional do que a equipe usa no Pipedrive | Doc 05 | Amplamente coberto pelos prints; revisar na Fase 2 |
-| P-006 | Estimar custo de manutenção contínua | Doc 09/10 | **Infraestrutura encerrada** (D-083): planos Pro já existentes; projeto adicional ~US$ 10/mês. Sobra o custo do tempo do maestro conduzindo o Claude Code |
+| P-006 | Estimar custo de manutenção contínua | Doc 09/10 | **Infraestrutura encerrada** (D-083 + D-101): planos Pro já existentes e **um projeto só**, sem os ~US$ 10/mês do projeto adicional. Sobra o custo do tempo do maestro conduzindo o Claude Code |
 | P-014 | Modelar a entidade Notificação | Doc 06 | A-07, ainda aberto |
 | P-016 | Revisitar cartão do Kanban: responsável e indicador de atividade | Doc 07 | Revisar no Bloco 11 |
 | P-018 | Definir papéis e permissões granulares | Fase 2 | Adiado por decisão do maestro (D-049) |
@@ -207,12 +230,14 @@ Registro completo no documento **03 — Log de Decisões**: **100 decisões (D-0
 | P-022 | Habilitar a Data API do Bubble e obter token | Doc 09 | Depende de ação do maestro no sistema Bubble |
 | P-023 | Mapear os eixos admissíveis de cada um dos treze indicadores | Doc 05/07 | A-09 — trabalho de Fase 2 |
 | P-024 | Obter os vetores do logotipo, símbolo "+" e monograma | Doc 08 | Estão no pacote que acompanha o manual — depende do maestro |
-| P-025 | Confirmar Tailwind v3 × v4 e remover o bloco `spacing` do config | Doc 08/09 | Nota técnica — ver Doc 08, seção 7 |
 | P-027 | Modelar a entidade Notificação no schema | Doc 09 | A-07 — pendente desde o Bloco 4 |
 | P-028 | Validar a regra de conversão de status na migração | Doc 14 | 🟡 proposta do consultor — seção 5.1 |
-| P-026 | Apontar as duas URLs de retorno OAuth no Google Cloud | Doc 09 | Uma por ambiente (D-082) |
+| P-026 | Apontar a URL de retorno OAuth no Google Cloud | F0 | **Uma** (D-101), e ela aponta para o **Supabase**, não para a aplicação — ver Doc 09, §4.1 |
+| P-029 | Confirmar o domínio gravado em `public.dominio_empresa()` | Doc 09 | 🟡 o consultor gravou `lureconsultoria.com.br`, deduzido do e-mail do maestro. **Decide quem entra no sistema** |
+| P-030 | Criar o projeto no Supabase e passar URL e chaves | **F0** | Bloqueia o encerramento de F0 |
+| P-031 | Publicar na Vercel | **F0** | Bloqueia o encerramento de F0 |
 
-Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P-004, P-007, P-008, **P-009 e P-013 (escopo — Bloco 12)**, P-010, P-011, P-012, P-015, P-017, P-019.
+Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P-004, P-007, P-008, **P-009 e P-013 (escopo — Bloco 12)**, P-010, P-011, P-012, P-015, P-017, P-019, **P-025 (Tailwind — v4, bloco `spacing` removido)**.
 
 ---
 
@@ -220,7 +245,8 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 | Risco | Observação |
 |---|---|
-| ⚠️ **Prazo × escopo** | 21 dias entre 13/08 e 3/9, nenhuma linha de código escrita. **O Bloco 12 reduziu o escopo de forma relevante** — saíram estatísticas, mesclagem, transferência, telas de configuração e a metade de escrita do mobile. O que resta ainda é substancial: Kanban com arrastar-e-soltar, Lista de dez colunas com filtro em todas, detalhe em três zonas, atividades com calendário, quatro automações, log por gatilho, dois temas, celular em consulta e migração completa. **Risco assumido pelo maestro** |
+| ⚠️ **Prazo × escopo** | 20 dias entre 14/08 e 3/9. **F0 está quase fechada** — falta o que depende do maestro. O que resta é substancial: Kanban com arrastar-e-soltar, Lista de dez colunas com filtro em todas, detalhe em três zonas, atividades com calendário, quatro automações, celular em consulta e a migração completa. **Risco assumido pelo maestro** |
+| ⚠️ **Carga direto em produção** | D-101 eliminou o ambiente de nuvem intermediário. A carga dos 2.453 negócios roda uma única vez, na base que os sócios vão usar. Se falhar no meio, o conserto é em produção. Mitigações que restam: ensaio no banco local (D-102), ordem de carga do Doc 14, marcação `origem_carga` e backup verificado antes de começar. **Nenhuma delas substitui um ambiente separado. Risco assumido pelo maestro** |
 | ⚠️ **Janela de extração** | Depois de 3/9 o acesso à API do Pipedrive se encerra junto com o contrato. Se a extração não acontecer antes, os 2.453 negócios ficam inacessíveis |
 | Perda de histórico | O log de eventos precisa existir desde o primeiro dia em produção — não é recuperável depois. Os indicadores 7, 8 e 9 dependem disso |
 | Economia menor que a esperada | O custo real não está na hospedagem, e sim na manutenção |
@@ -239,11 +265,13 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 01 | 10/08/2026 | Método e biblioteca. Documentos 00, 01, 02, 03 e 06. **Blocos 1 a 4** — 32 perguntas, 41 decisões. | Pergunta 5.1 formulada |
 | 02 | 12/08/2026 | Doc 06 reescrito (v0.3). Separação Status × Etapa, funil de seis etapas, trava única. **Blocos 5 e 6** — 20 decisões (D-042 a D-061). | Bloco 7 a iniciar |
 | 03 | 13/08/2026 | Doc 06 **validado**. **Blocos 7, 8, 10, 9, 11 e 12 concluídos** — Fase 1 encerrada com 100 decisões. Estatísticas como catálogo; migração completa; **prazo imutável de 3/9 revelado**; integração Bubble; **stack definida**; log por gatilho; dois ambientes; desktop e celular; **manual Lure incorporado** (Doc 08); **MVP recortado**; **Docs 09 e 12 escritos** — caminho crítico concluído. | Desenvolvimento desbloqueado; Docs 10 e 11 a escrever |
+| 04 | 14/08/2026 | **Primeira sessão de construção.** Repositório criado e publicado; biblioteca movida para `docs/`. **P-025 encerrada em favor do Tailwind v4.** F0 executada até onde não depende do maestro: scaffold, tokens da Lure com as três correções do Doc 08, dois temas conferidos na tela, schema do Doc 09 em três migrações, gatilho do log, acesso por domínio, clientes Supabase e login por Google. **Três defeitos do Doc 09 encontrados e corrigidos** (C-01 a C-03) ao aplicar as migrações contra um PostgreSQL real. **D-101**: base única, carga direto em produção — biblioteca inteira revista de acordo. | F0 bloqueada em P-030 e P-031; F1 sem token |
 
 ---
 
 ## Changelog
 
+- **v1.1** — 14/08/2026 — **Construção iniciada; D-101 propagada por toda a biblioteca.** Base única no Supabase, carga direto em produção, ensaio no banco local — Docs 02, 03, 09, 10, 11, 12 e 14 revistos. Seção 4 reescrita: o projeto deixa de estar "sem nenhuma linha de código" e passa a ter F0 quase fechada. P-025 encerrada (Tailwind v4); P-029, P-030 e P-031 criadas. Risco de carga direto em produção acrescentado à seção 9. Registro das correções C-01 a C-03 do Doc 09.
 - **v1.0** — 13/08/2026 — **Biblioteca concluída.** Criados os Docs 04 (Visão de Produto), 05 (Requisitos Funcionais, 153 itens), 10 (Plano de Fases, 11 fases com ordem de sacrifício), 11 (Backlog, 126 critérios de aceite), 13 (Glossário) e 14 (Migração, com mapeamento campo a campo). Resta apenas o Doc 07. A próxima ação passa a ser **construção**, não documentação.
 - **v0.12** — 13/08/2026 — **Caminho crítico concluído.** Docs 09 (Arquitetura Técnica) e 12 (CLAUDE.md) criados. Convenções técnicas validadas (D-099, D-100) — **100 decisões**. Próxima ação passa a ser a extração do Pipedrive e os Docs 10 e 11.
 - **v0.11** — 13/08/2026 — **Bloco 12 concluído e Fase 1 encerrada.** 98 decisões. MVP recortado: estatísticas, mesclagem, transferência e telas de configuração fora; celular em modo consulta. Critério de pronto definido (D-098). P-009 e P-013 encerradas. Próxima ação passa a ser o Doc 09 e o Doc 12.
