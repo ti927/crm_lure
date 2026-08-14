@@ -1,4 +1,4 @@
-﻿# 09 — Arquitetura Técnica (v0.2)
+﻿# 09 — Arquitetura Técnica (v0.3)
 
 | Campo | Valor |
 |---|---|

@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v1.0)
+﻿# 00 — Status e Retomada (v1.2)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.1 |
+| **Versão** | v1.2 |
 | **Última atualização** | 14/08/2026 — Sessão 04 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -14,16 +14,26 @@
 
 ## 1. COMO RETOMAR — leia isto primeiro
 
-Cole o texto abaixo como primeira mensagem da nova sessão:
+⚠️ **A biblioteca deixou de ser um anexo de conversa e passou a ser o repositório.** Desde 14/08/2026 os documentos vivem em `docs/`, dentro de `https://github.com/ti927/crm_lure.git`. Isso muda como se retoma.
 
-> Retomando o projeto CRM. Leia todos os documentos da biblioteca deste projeto, começando por `00-status-e-retomada`. Continue exatamente do ponto indicado em "Próxima ação". Mantenha as regras de trabalho da seção 3: uma pergunta por vez e nenhuma decisão, especialmente técnica, sem minha validação explícita.
+### 1.1 Retomando no Claude Code — o caminho normal
 
-**Documentos que precisam estar na biblioteca:**
+Abra a pasta do repositório e cole:
+
+> Retomando o projeto CRM. Leia `CLAUDE.md` e depois `docs/00-status-e-retomada`, e siga a partir de "Próxima ação" (seção 4.2). Mantenha as regras de trabalho da seção 3: uma pergunta por vez e nenhuma decisão, especialmente técnica, sem minha validação explícita.
+
+Não é preciso anexar nada. O `CLAUDE.md` da raiz é carregado sozinho, e o resto da biblioteca está a um `Read` de distância.
+
+### 1.2 Retomando numa conversa avulsa, sem o repositório
+
+Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o Claude não enxerga nada — e sem o Doc 03 ele vai reperguntar coisas já decididas.
+
+**Documentos da biblioteca:**
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.1.md` |
-| `01-plano-de-execucao-v0.2.md` |
+| `00-status-e-retomada-v1.2.md` |
+| `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
 | `03-log-de-decisoes-v0.10.md` |
 | `06-modelo-de-dominio-v0.5.md` |
@@ -39,9 +49,9 @@ Cole o texto abaixo como primeira mensagem da nova sessão:
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
 | `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
-> Ao subir uma versão nova, **remova a anterior da biblioteca** — manter as duas gera ambiguidade na retomada.
+> Ao subir uma versão nova, **renomeie o arquivo com `git mv`** — a versão faz parte do nome, e o `git mv` preserva o histórico daquele documento. Nunca deixe as duas versões lado a lado: o git guarda o passado, o nome do arquivo guarda o presente.
 
-> **A biblioteca agora vive no repositório**, em `docs/`. O git guarda o histórico; o nome do arquivo guarda a versão corrente.
+> Ao renomear, conferir se a tabela acima, o `README.md` e as referências cruzadas entre documentos ainda apontam para arquivos que existem.
 
 ---
 
@@ -163,8 +173,8 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.1 | vivo | — |
-| 01 | Plano de Execução | v0.2 | validado | — |
+| 00 | Status e Retomada | v1.2 | vivo | — |
+| 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
 | 03 | Log de Decisões | v0.10 | vivo | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
@@ -271,6 +281,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v1.2** — 14/08/2026 — Seção 1 reescrita: a biblioteca deixou de ser anexo de conversa e virou repositório, então a retomada no Claude Code (1.1) e a retomada avulsa (1.2) passam a ser caminhos distintos. Instrução de versionamento troca "remova a anterior" por `git mv`, que preserva o histórico do documento, com lembrete de conferir as referências cruzadas depois de renomear.
 - **v1.1** — 14/08/2026 — **Construção iniciada; D-101 propagada por toda a biblioteca.** Base única no Supabase, carga direto em produção, ensaio no banco local — Docs 02, 03, 09, 10, 11, 12 e 14 revistos. Seção 4 reescrita: o projeto deixa de estar "sem nenhuma linha de código" e passa a ter F0 quase fechada. P-025 encerrada (Tailwind v4); P-029, P-030 e P-031 criadas. Risco de carga direto em produção acrescentado à seção 9. Registro das correções C-01 a C-03 do Doc 09.
 - **v1.0** — 13/08/2026 — **Biblioteca concluída.** Criados os Docs 04 (Visão de Produto), 05 (Requisitos Funcionais, 153 itens), 10 (Plano de Fases, 11 fases com ordem de sacrifício), 11 (Backlog, 126 critérios de aceite), 13 (Glossário) e 14 (Migração, com mapeamento campo a campo). Resta apenas o Doc 07. A próxima ação passa a ser **construção**, não documentação.
 - **v0.12** — 13/08/2026 — **Caminho crítico concluído.** Docs 09 (Arquitetura Técnica) e 12 (CLAUDE.md) criados. Convenções técnicas validadas (D-099, D-100) — **100 decisões**. Próxima ação passa a ser a extração do Pipedrive e os Docs 10 e 11.

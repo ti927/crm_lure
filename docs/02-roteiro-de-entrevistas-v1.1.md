@@ -1,4 +1,4 @@
-﻿# 02 — Roteiro de Entrevistas (v1.0)
+﻿# 02 — Roteiro de Entrevistas (v1.1)
 
 | Campo | Valor |
 |---|---|
