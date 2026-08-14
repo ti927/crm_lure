@@ -1,4 +1,4 @@
-﻿# 10 — Plano de Fases de Construção (v0.1)
+﻿# 10 — Plano de Fases de Construção (v0.2)
 
 | Campo | Valor |
 |---|---|

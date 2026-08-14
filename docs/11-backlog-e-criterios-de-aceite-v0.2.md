@@ -1,4 +1,4 @@
-﻿# 11 — Backlog e Critérios de Aceite (v0.1)
+﻿# 11 — Backlog e Critérios de Aceite (v0.2)
 
 | Campo | Valor |
 |---|---|

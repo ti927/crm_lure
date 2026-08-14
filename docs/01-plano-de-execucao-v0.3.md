@@ -1,12 +1,16 @@
-﻿# 01 — Plano de Execução do Projeto (v0.2)
+﻿# 01 — Plano de Execução do Projeto (v0.3)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Plano de Execução |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.2 |
-| **Data** | 10/08/2026 |
-| **Status** | validado |
+| **Versão** | v0.3 |
+| **Data** | 14/08/2026 |
+| **Status** | validado — **consultoria encerrada na Fase 6 em 13/08/2026** |
+
+> ✅ **Este documento descreve um trabalho concluído.** A consultoria de engenharia de requisitos terminou em 13/08/2026, com a biblioteca entregue. A construção começou em 14/08/2026 e é conduzida pelo Doc 10 (fases) e pelo Doc 11 (critérios de aceite), com o Doc 00 seguindo como o registro vivo de onde o projeto está.
+>
+> O que continua valendo daqui para a frente são os **princípios de trabalho da seção 3** e o **padrão de versionamento da seção 6** — eles governam a construção tanto quanto governaram as entrevistas.
 
 ---
 
@@ -62,8 +66,12 @@ Escolha de stack, arquitetura, banco, hospedagem, estratégia de dados e seguran
 Fatiamento em fases executáveis, backlog com critérios de aceite, e o arquivo de contexto permanente para o Claude Code.
 **Entregáveis:** Docs 10, 11, 12, 14. Entrevista do bloco 12.
 
-### Fase 6 — Handoff
+### Fase 6 — Handoff ✅ *concluída em 13/08/2026*
 Revisão final da biblioteca, checagem de consistência entre documentos e liberação para início do desenvolvimento.
+
+**Resultado:** 13 dos 14 documentos escritos — o Doc 07 (UX) foi deliberadamente não criado, com o material distribuído nos Docs 05, 08 e 11. Biblioteca entregue com 100 decisões registradas, 153 requisitos e 126 itens de backlog.
+
+> **A partir daqui o método muda.** A consultoria produzia documentos; a construção produz código, e o Doc 00 passa a registrar fases executadas em vez de blocos de entrevista. As três regras que não mudam: o maestro decide, nenhuma decisão técnica por inércia, e uma pergunta por vez.
 
 ## 5. Biblioteca de documentos
 
@@ -91,7 +99,7 @@ Revisão final da biblioteca, checagem de consistência entre documentos e liber
 - Status possíveis: `rascunho` · `em revisão` · `validado` · `vivo` · `obsoleto`.
 - Versões: `v0.x` enquanto rascunho; `v1.0` na validação do maestro; incrementos a partir daí.
 - Todo documento fecha com changelog datado.
-- Nomenclatura de arquivo: `NN-nome-do-documento-vX.Y.md` — a versão faz parte do nome, para que se saiba qual arquivo manter e qual descartar da biblioteca.
+- Nomenclatura de arquivo: `NN-nome-do-documento-vX.Y.md` — a versão faz parte do nome, para que se saiba qual arquivo manter e qual descartar da biblioteca. Desde que a biblioteca vive no repositório, a renomeação é feita com `git mv`, que preserva o histórico do documento.
 - O título (H1) de cada documento também traz a versão.
 - Codificação: UTF-8 com BOM. Arquivos CSV, quando houver, com separador ponto-e-vírgula.
 
@@ -109,5 +117,6 @@ Revisão final da biblioteca, checagem de consistência entre documentos e liber
 
 ## Changelog
 
+- **v0.3** — 14/08/2026 — **Fase 6 marcada como concluída em 13/08/2026** e documento fechado como registro de trabalho encerrado, com a nota de que os princípios da seção 3 e o versionamento da seção 6 continuam governando a construção. Versionamento passa a citar `git mv`.
 - **v0.2** — 10/08/2026 — Versão passa a constar no nome do arquivo e no título do documento.
 - **v0.1** — 10/08/2026 — Criação do documento. Método aprovado pelo maestro.

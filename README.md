@@ -10,12 +10,12 @@ Leia [CLAUDE.md](CLAUDE.md) por inteiro. Ele carrega as regras que não podem se
 
 ## Biblioteca de documentos
 
-Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v1.1.md), que diz onde o projeto está e qual é a próxima ação.
+Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v1.2.md), que diz onde o projeto está e qual é a próxima ação.
 
 | # | Documento | Para quê |
 |---|---|---|
-| 00 | [Status e Retomada](docs/00-status-e-retomada-v1.1.md) | Onde o projeto está e o que vem a seguir |
-| 01 | [Plano de Execução](docs/01-plano-de-execucao-v0.2.md) | Método da consultoria |
+| 00 | [Status e Retomada](docs/00-status-e-retomada-v1.2.md) | Onde o projeto está e o que vem a seguir |
+| 01 | [Plano de Execução](docs/01-plano-de-execucao-v0.3.md) | Método da consultoria — encerrada na Fase 6 |
 | 02 | [Roteiro de Entrevistas](docs/02-roteiro-de-entrevistas-v1.1.md) | As 80 perguntas e suas respostas |
 | 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.10.md) | **102 decisões com justificativa.** Consulte antes de perguntar |
 | 04 | [Visão de Produto](docs/04-visao-de-produto-v0.1.md) | Por que o sistema existe |
