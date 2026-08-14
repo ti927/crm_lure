@@ -1,11 +1,11 @@
-﻿# 00 — Status e Retomada (v1.2)
+﻿# 00 — Status e Retomada (v1.3)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.2 |
-| **Última atualização** | 14/08/2026 — Sessão 04 |
+| **Versão** | v1.3 |
+| **Última atualização** | 14/08/2026 — Sessão 05 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -32,15 +32,15 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.2.md` |
+| `00-status-e-retomada-v1.3.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.10.md` |
+| `03-log-de-decisoes-v0.11.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.3.md` |
+| `09-arquitetura-tecnica-v0.4.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.2.md` |
 | `12-claude-md-v0.2.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
@@ -93,8 +93,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ## 4. ONDE ESTAMOS
 
-**Fase:** **construção**. Documentação concluída (13 dos 14 documentos); **F0 em execução**.
-**Perguntas respondidas:** 80 · 12 blocos · **102 decisões** · 153 requisitos · 126 itens de backlog
+**Fase:** **construção**. Documentação concluída (13 dos 14 documentos); **F0 quase fechada — a base de produção está no ar**; F3 iniciada.
+**Perguntas respondidas:** 80 · 12 blocos · **106 decisões** · 153 requisitos · 126 itens de backlog
+
+⚠️ **A ordem das fases mudou** (D-105): o maestro pediu front-end funcionando antes da migração, então a sequência passou a ser F0 → F3 → OAuth/Vercel → F1 → F2. O Doc 10 continua descrevendo a ordem original, que era a recomendada.
 
 **Repositório:** `https://github.com/ti927/crm_lure.git` — biblioteca em `docs/`, `CLAUDE.md` na raiz.
 
@@ -108,7 +110,25 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | Schema do Doc 09 em três migrações versionadas + semente do funil | ✅ |
 | Gatilho do log, imutabilidade, marcação de carga | ✅ verificado contra PostgreSQL real |
 | Acesso por domínio e criação automática de usuário | ✅ verificado |
-| Clientes Supabase, barreira de autenticação, login por Google | ✅ código pronto, **sem credenciais ainda** |
+| Clientes Supabase, barreira de autenticação, login por Google | ✅ código pronto, **provedor Google ainda não habilitado** |
+| **Projeto no Supabase criado** — `qyitrhflinkfcylobsfp`, região us-east-1 | ✅ **P-030 encerrada** |
+| **Schema aplicado em produção** — as três migrações, com histórico registrado | ✅ 20 tabelas |
+| **Semente aplicada** — funil Comercial e as seis etapas | ✅ `funil` 1 · `etapa` 6 · `papel` 1 |
+| Acesso anônimo verificado contra a base real | ✅ leitura e escrita **negadas** (`42501`) |
+
+### 4.1.1 O que já está de pé (F3 — Lista de negócios)
+
+| Item | Situação |
+|---|---|
+| Moldura do sistema: barra lateral, cabeçalho, tema, sair | ✅ código pronto |
+| Lista com as dez colunas de D-104 | ✅ código pronto |
+| Paginação no servidor, 50 por página (R-006) | ✅ |
+| Ordenação em todas as dez colunas | ✅ |
+| Busca por título ou organização | ✅ — ver correção **C-04** do Doc 09 |
+| Filtro por etapa e por status | ✅ |
+| Filtro nas dez colunas (B-042) · persistência (B-045) · CSV (B-047) | ⬜ pendente |
+
+⚠️ **Nada disso foi aberto no navegador.** Sem o provedor Google habilitado, o `proxy.ts` manda toda rota para `/login`. O código compila e passa no ESLint, e todas as consultas foram validadas contra o PostgREST real — mas **nenhum componente foi conferido nos dois temas**, o que é a regra 4 do `CLAUDE.md`. É a primeira coisa a fazer quando o login funcionar.
 
 ⚠️ **Três trechos do Doc 09 não funcionavam como estavam escritos** e foram corrigidos — ver Doc 09, seção 3.11 (C-01, C-02, C-03). O mais grave, C-02, quebraria toda escrita em `negocio` depois da carga de migração.
 
@@ -116,14 +136,18 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 **Bloqueado no maestro — F0 não fecha sem isto:**
 
-1. Criar **o projeto no Supabase** (um só, D-101), dentro da organização Pro já assinada, e passar URL e chaves
-2. **Google Cloud**: cliente OAuth com a URL de retorno apontando para o Supabase (Doc 09, §4.1)
-3. Habilitar o provedor Google no painel do Supabase
-4. **Deploy na Vercel**
+1. **Google Cloud**: cliente OAuth *Web application*, com a URL de retorno apontando para o **Supabase**, não para a aplicação (Doc 09, §4.1):
+   `https://qyitrhflinkfcylobsfp.supabase.co/auth/v1/callback`
+2. Habilitar o provedor **Google** no painel do Supabase e colar Client ID e Secret
+3. Em *Authentication → URL Configuration*: `http://localhost:3000/**` e, depois, a URL da Vercel
+4. **Desabilitar o provedor Email** — hoje ele está ativo com cadastro aberto (P-032)
+5. **Deploy na Vercel**, região `iad1` para ficar colada ao banco (D-103)
 
-**Correndo em paralelo, e com prazo próprio:** **F1 — extração da base do Pipedrive** (P-020). A API fecha com o contrato em 3/9. Precisa de um token da API do Pipedrive.
+**Logo depois:** abrir cada tela da F3 nos dois temas e corrigir o que aparecer — a dívida registrada em 4.1.1.
 
-**Depois:** F2 — carga de ensaio no banco local. Com D-101, essa fase deixou de ser conveniência e virou a única rede de proteção da carga real.
+**Com prazo próprio e não recuperável:** **F1 — extração da base do Pipedrive** (P-020). A API fecha com o contrato em **3/9**. Precisa de um token da API do Pipedrive. Adiada por D-105.
+
+**Depois:** F2 — a carga. ⚠️ D-106 revogou a D-102: **não há ensaio**. Ela roda uma única vez, direto na base definitiva.
 
 ### 4.3 Validações que ainda dependem do maestro
 
@@ -131,8 +155,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 |---|---|
 | Doc 08 (design system), Doc 10 (fases), Doc 11 (backlog), Doc 14 (migração) — todos em rascunho | aguardam leitura |
 | Regra de conversão de status na migração | Doc 14, seção 5.1 |
-| D-102 — ensaiar a migração no banco local | 🟡 proposta do consultor. O maestro decidiu D-101, não isto |
-| P-029 — o domínio gravado em `public.dominio_empresa()` | decide quem entra no sistema |
+| ~~D-102 — ensaiar a migração~~ | ⛔ **revogada por D-106** em 14/08. Não haverá ambiente de ensaio |
 | P-022 · P-024 · P-026 — ações práticas fora da conversa | seção 8 |
 
 ### 4.4 Recorte do MVP (Bloco 12)
@@ -173,16 +196,16 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.2 | vivo | — |
+| 00 | Status e Retomada | v1.3 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.10 | vivo | — |
+| 03 | Log de Decisões | v0.11 | vivo | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.1 | rascunho — **aguarda validação** | criado 13/08 |
-| 09 | Arquitetura Técnica | v0.3 | rascunho — convenções validadas; **seção 3.11 com as correções C-01 a C-03** | atualizado 14/08 |
+| 09 | Arquitetura Técnica | v0.4 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-04** | atualizado 14/08 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.2 | rascunho — 126 itens | atualizado 14/08 |
 | 12 | CLAUDE.md | v0.2 | rascunho — **na raiz do repositório** | atualizado 14/08 |
@@ -243,11 +266,10 @@ Registro completo no documento **03 — Log de Decisões**: **102 decisões (D-0
 | P-027 | Modelar a entidade Notificação no schema | Doc 09 | A-07 — pendente desde o Bloco 4 |
 | P-028 | Validar a regra de conversão de status na migração | Doc 14 | 🟡 proposta do consultor — seção 5.1 |
 | P-026 | Apontar a URL de retorno OAuth no Google Cloud | F0 | **Uma** (D-101), e ela aponta para o **Supabase**, não para a aplicação — ver Doc 09, §4.1 |
-| P-029 | Confirmar o domínio gravado em `public.dominio_empresa()` | Doc 09 | 🟡 o consultor gravou `lureconsultoria.com.br`, deduzido do e-mail do maestro. **Decide quem entra no sistema** |
-| P-030 | Criar o projeto no Supabase e passar URL e chaves | **F0** | Bloqueia o encerramento de F0 |
-| P-031 | Publicar na Vercel | **F0** | Bloqueia o encerramento de F0 |
+| P-031 | Publicar na Vercel, região `iad1` | **F0** | Bloqueia o encerramento de F0 |
+| P-032 | **Desabilitar o provedor Email** no Supabase | segurança | Hoje ativo com cadastro aberto. Como a chave anônima é pública, qualquer pessoa cria conta por e-mail e senha. Não vê dado nenhum — a RLS barra quem não é do domínio, verificado — mas polui `auth.users` e contraria D-050 |
 
-Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P-004, P-007, P-008, **P-009 e P-013 (escopo — Bloco 12)**, P-010, P-011, P-012, P-015, P-017, P-019, **P-025 (Tailwind — v4, bloco `spacing` removido)**.
+Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P-004, P-007, P-008, **P-009 e P-013 (escopo — Bloco 12)**, P-010, P-011, P-012, P-015, P-017, P-019, **P-025 (Tailwind — v4, bloco `spacing` removido)**, **P-029 (domínio `lureconsultoria.com.br` confirmado pelo maestro em 14/08)**, **P-030 (projeto Supabase criado e schema aplicado em 14/08)**.
 
 ---
 
@@ -257,7 +279,8 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 |---|---|
 | ⚠️ **Prazo × escopo** | 20 dias entre 14/08 e 3/9. **F0 está quase fechada** — falta o que depende do maestro. O que resta é substancial: Kanban com arrastar-e-soltar, Lista de dez colunas com filtro em todas, detalhe em três zonas, atividades com calendário, quatro automações, celular em consulta e a migração completa. **Risco assumido pelo maestro** |
 | ⚠️ **Carga direto em produção** | D-101 eliminou o ambiente de nuvem intermediário. A carga dos 2.453 negócios roda uma única vez, na base que os sócios vão usar. Se falhar no meio, o conserto é em produção. Mitigações que restam: ensaio no banco local (D-102), ordem de carga do Doc 14, marcação `origem_carga` e backup verificado antes de começar. **Nenhuma delas substitui um ambiente separado. Risco assumido pelo maestro** |
-| ⚠️ **Janela de extração** | Depois de 3/9 o acesso à API do Pipedrive se encerra junto com o contrato. Se a extração não acontecer antes, os 2.453 negócios ficam inacessíveis |
+| ⚠️ **Sem ensaio da carga** | **Novo em 14/08.** D-106 revoga a D-102: não haverá ambiente de ensaio. A carga dos 2.453 negócios roda **uma única vez, direto na base definitiva**. Mitigações que restam: ordem de carga do Doc 14, marcação `origem_carga` e backup verificado antes de começar. **Risco assumido pelo maestro** |
+| ⚠️ **Janela de extração** | Depois de 3/9 o acesso à API do Pipedrive se encerra junto com o contrato. Se a extração não acontecer antes, os 2.453 negócios ficam inacessíveis. **Agravado por D-105**, que adiou a F1 para depois do front-end |
 | Perda de histórico | O log de eventos precisa existir desde o primeiro dia em produção — não é recuperável depois. Os indicadores 7, 8 e 9 dependem disso |
 | Economia menor que a esperada | O custo real não está na hospedagem, e sim na manutenção |
 | Escopo crescendo por configurabilidade | Vários itens exigem telas de administração. O Bloco 12 precisa separar bem MVP de fase 2 |
@@ -276,11 +299,13 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 02 | 12/08/2026 | Doc 06 reescrito (v0.3). Separação Status × Etapa, funil de seis etapas, trava única. **Blocos 5 e 6** — 20 decisões (D-042 a D-061). | Bloco 7 a iniciar |
 | 03 | 13/08/2026 | Doc 06 **validado**. **Blocos 7, 8, 10, 9, 11 e 12 concluídos** — Fase 1 encerrada com 100 decisões. Estatísticas como catálogo; migração completa; **prazo imutável de 3/9 revelado**; integração Bubble; **stack definida**; log por gatilho; dois ambientes; desktop e celular; **manual Lure incorporado** (Doc 08); **MVP recortado**; **Docs 09 e 12 escritos** — caminho crítico concluído. | Desenvolvimento desbloqueado; Docs 10 e 11 a escrever |
 | 04 | 14/08/2026 | **Primeira sessão de construção.** Repositório criado e publicado; biblioteca movida para `docs/`. **P-025 encerrada em favor do Tailwind v4.** F0 executada até onde não depende do maestro: scaffold, tokens da Lure com as três correções do Doc 08, dois temas conferidos na tela, schema do Doc 09 em três migrações, gatilho do log, acesso por domínio, clientes Supabase e login por Google. **Três defeitos do Doc 09 encontrados e corrigidos** (C-01 a C-03) ao aplicar as migrações contra um PostgreSQL real. **D-101**: base única, carga direto em produção — biblioteca inteira revista de acordo. | F0 bloqueada em P-030 e P-031; F1 sem token |
+| 05 | 14/08/2026 | **A base de produção entrou no ar.** Projeto do Supabase criado (`qyitrhflinkfcylobsfp`, us-east-1) e as três migrações mais a semente aplicadas — **P-029 e P-030 encerradas**. Conexão verificada de ponta a ponta: 20 tabelas, tipos do código batendo com o banco, leitura e escrita anônimas negadas. **F3 iniciada fora de ordem** (D-105): moldura do sistema e Lista de negócios com as dez colunas de D-104, paginação no servidor, ordenação em todas, busca e filtros. **C-04 encontrada** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca; corrigida em dois passos. D-103 (região), D-106 (ambiente único, **revoga D-102**). P-032 criada. | F0 bloqueada no Google OAuth e na Vercel; nada da F3 conferido em tela |
 
 ---
 
 ## Changelog
 
+- **v1.3** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar e o front-end começou.** Seção 4.1 registra o projeto do Supabase criado e o schema aplicado; **4.1.1 criada** com o estado da Lista de negócios e a dívida de verificação — nada foi aberto no navegador porque o login ainda não existe, o que deixa a regra 4 do `CLAUDE.md` em aberto. Seção 4.2 reescrita: o que falta para fechar a F0 é o Google OAuth e a Vercel. **D-103 a D-106** acrescentadas ao Doc 03; **D-106 revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base definitiva, o que vira risco próprio na seção 9. **P-029 e P-030 encerradas**, P-032 criada (provedor Email ativo com cadastro aberto). Ordem das fases alterada por D-105, com o risco da janela de 3/9 assumido pelo maestro.
 - **v1.2** — 14/08/2026 — Seção 1 reescrita: a biblioteca deixou de ser anexo de conversa e virou repositório, então a retomada no Claude Code (1.1) e a retomada avulsa (1.2) passam a ser caminhos distintos. Instrução de versionamento troca "remova a anterior" por `git mv`, que preserva o histórico do documento, com lembrete de conferir as referências cruzadas depois de renomear.
 - **v1.1** — 14/08/2026 — **Construção iniciada; D-101 propagada por toda a biblioteca.** Base única no Supabase, carga direto em produção, ensaio no banco local — Docs 02, 03, 09, 10, 11, 12 e 14 revistos. Seção 4 reescrita: o projeto deixa de estar "sem nenhuma linha de código" e passa a ter F0 quase fechada. P-025 encerrada (Tailwind v4); P-029, P-030 e P-031 criadas. Risco de carga direto em produção acrescentado à seção 9. Registro das correções C-01 a C-03 do Doc 09.
 - **v1.0** — 13/08/2026 — **Biblioteca concluída.** Criados os Docs 04 (Visão de Produto), 05 (Requisitos Funcionais, 153 itens), 10 (Plano de Fases, 11 fases com ordem de sacrifício), 11 (Backlog, 126 critérios de aceite), 13 (Glossário) e 14 (Migração, com mapeamento campo a campo). Resta apenas o Doc 07. A próxima ação passa a ser **construção**, não documentação.

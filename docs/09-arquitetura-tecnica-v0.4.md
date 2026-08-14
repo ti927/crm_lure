@@ -1,12 +1,12 @@
-﻿# 09 — Arquitetura Técnica (v0.3)
+﻿# 09 — Arquitetura Técnica (v0.4)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.3 |
+| **Versão** | v0.4 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — convenções validadas (D-099, D-100); seção 4 reescrita por D-101 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-04 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -359,15 +359,18 @@ Repetir para todas as tabelas de domínio. Três exceções, que escrevem regras
 
 ### 3.11 Correções aplicadas ao aplicar as migrações
 
-Três coisas descritas neste documento **não funcionam como estavam escritas**. Não são opiniões — foram descobertas aplicando as migrações contra um PostgreSQL real, em 14/08/2026.
+Quatro coisas descritas neste documento **não funcionam como estavam escritas**. Não são opiniões — foram descobertas contra o PostgreSQL e o PostgREST reais, em 14/08/2026.
 
 | # | O que estava escrito | O que acontece | Correção |
 |---|---|---|---|
 | **C-01** | O domínio viria de `current_setting('app.dominio_empresa')`, sem dizer onde o valor seria definido | O caminho natural — `alter database ... set` — é **negado pelo Supabase**: o papel que aplica migrações não é dono do banco (`SQLSTATE 42501`) | O domínio virou o corpo da função `public.dominio_empresa()`. Fica melhor do que a configuração de servidor pretendida: uma configuração pode divergir entre bancos sem deixar rastro, uma migração versionada não |
 | **C-02** | `coalesce(current_setting('app.carga_migracao', true)::boolean, false)` | Depois que um `set local` sai de escopo, o PostgreSQL **não** devolve a variável ao estado de inexistente — ela fica como marcador de valor **vazio**. `current_setting` passa a devolver `''`, o `coalesce` não pega, e `''::boolean` levanta `invalid input syntax for type boolean`. Na prática: **toda escrita em `negocio` quebraria depois da carga de migração, na mesma conexão** — e com pool de conexões isso vaza para produção | `nullif(..., '')` antes da conversão. Coberto por teste de regressão |
 | **C-03** | Apenas as políticas de RLS | Política de RLS **sozinha não dá acesso a nada**. O PostgreSQL exige dois sinais verdes: o privilégio de tabela e a política. Sem o `grant`, a conta do domínio esbarra em `permission denied for table negocio` antes de a política ser sequer avaliada | `grant` explícito por tabela, junto da política |
+| **C-04** | A busca da Lista por título **ou** organização (Doc 10, F3) sairia como um `or` do PostgREST cobrindo as duas colunas | O PostgREST aceita filtrar por coluna de tabela vinculada isoladamente (`organizacao.nome=ilike.*x*`) e aceita `or` entre colunas próprias, mas **não aceita coluna vinculada dentro de um `or`**: devolve `PGRST100 — failed to parse logic tree`, apontando a posição exata onde o nome da relação começa. Não é problema de codificação: `%` e `*` falham igual | Busca em dois passos. Os ids das organizações que casam saem numa consulta à parte e entram no `or` como `organizacao_id.in.(...)`, que é coluna própria de `negocio`. São 422 organizações na base real, com teto de 200 ids para não estourar a URL. Se a base crescer muito, a saída é uma visão achatada com `security_invoker = true` |
 
-⚠️ **C-02 é o mais grave dos três** e o mais silencioso: só aparece depois da carga, que é exatamente o momento em que menos se quer descobrir um defeito. Com D-101 a carga roda em produção, então este era o defeito com maior chance de estragar a virada.
+⚠️ **C-02 é o mais grave dos quatro** e o mais silencioso: só aparece depois da carga, que é exatamente o momento em que menos se quer descobrir um defeito. Com D-101 a carga roda em produção, então este era o defeito com maior chance de estragar a virada.
+
+> **Como C-04 foi encontrada, sem poder consultar dado nenhum.** Erro de sintaxe do PostgREST (`PGRST100`) e erro de relacionamento (`PGRST200`) acontecem **antes** da checagem de permissão; `42501` só aparece quando a consulta já foi entendida. Isso permite validar a forma de uma consulta contra a base real usando apenas a chave anônima, sem ter acesso a linha nenhuma: se volta `42501`, a sintaxe está correta. Vale para toda a construção enquanto o login não existir.
 
 ### 3.10 Índices — atendimento a R-006
 
@@ -392,8 +395,21 @@ create index on organizacao using gin (nome gin_trgm_ops);   -- busca por nome
 
 | Camada | Onde | Custo | Para quê |
 |---|---|---|---|
-| **Local** | `npx supabase start` — PostgreSQL em contêiner | zero | Construção do dia a dia e **ensaio da migração** (D-102) |
-| **Produção** | projeto único na organização Pro existente · deploy de produção na Vercel | já coberto pelo Pro | A base real, e a virada de 3/9 |
+| **Produção** | projeto único no Supabase, na organização Pro existente · deploy de produção na Vercel | já coberto pelo Pro | **Ambiente único**: a construção, a base real e a virada de 3/9 |
+
+⚠️ **Existe um ambiente só** (D-101 + D-106). O projeto do Supabase criado em 14/08 é o definitivo — é ele que guarda os dados. Não há banco de ensaio, e a **D-102 foi revogada**: a carga dos 2.453 negócios roda **uma única vez**, direto nessa base. As mitigações que restam são a ordem de carga do Doc 14, a marcação `origem_carga` e o backup verificado antes de começar (D-089).
+
+**Dados concretos do projeto** (aplicado em 14/08/2026):
+
+| Item | Valor |
+|---|---|
+| Referência | `qyitrhflinkfcylobsfp` |
+| Região | `us-east-1` — Norte da Virgínia (D-103) |
+| URL | `https://qyitrhflinkfcylobsfp.supabase.co` |
+| Migrações aplicadas | as três, com histórico registrado no remoto |
+| Semente | funil Comercial e as seis etapas |
+
+⚠️ **O host de conexão direta (`db.<ref>.supabase.co`) resolve apenas em IPv6.** De rede IPv4 ele é inalcançável, e o complemento de IPv4 dedicado é pago. O caminho gratuito é o **Session pooler** (`aws-0-us-east-1.pooler.supabase.com:5432`, usuário `postgres.<ref>`), que aceita DDL e é por onde as migrações foram aplicadas. O *Transaction pooler* (porta 6543) **não** serve para migração: não mantém sessão entre comandos, e `create type`, `do $$ … $$` e `set local` quebram nele.
 
 **Regras:**
 
@@ -495,6 +511,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.4** — 14/08/2026 — **O schema saiu do papel: as três migrações e a semente foram aplicadas na base de produção.** Seção 4 ganha os dados concretos do projeto (referência, região, URL) e passa a descrever **um ambiente só**: D-106 revoga a D-102, não haverá banco de ensaio e a carga roda uma única vez na base definitiva. Registrado também que o host de conexão direta resolve só em IPv6, tornando o *Session pooler* o único caminho gratuito para aplicar migração. **C-04 acrescentada à seção 3.11** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca da Lista — junto do método que permite validar a forma de uma consulta contra a base real usando só a chave anônima.
 - **v0.3** — 14/08/2026 — **Seção 4 reescrita por D-101**: base única, sem ambiente de desenvolvimento na nuvem, carga direto em produção; ensaio no banco local. Seção 4.1 criada para corrigir o entendimento de P-026 — o retorno do OAuth vai para o Supabase, não para a aplicação. **Seção 3.11 criada com as três correções (C-01 a C-03) descobertas ao aplicar as migrações contra um PostgreSQL real**; seções 3.7, 3.8 e 3.9 corrigidas de acordo. Seção 5.1 atualizada com a estrutura real, incluindo `proxy.ts` (o `middleware.ts` do Next 16). P-025 encerrada em favor do Tailwind v4; P-029 criada.
 - **v0.2** — 13/08/2026 — Convenções técnicas validadas: português nos nomes (D-099) e exclusão real com restrição nos vínculos (D-100). T-02 a T-05 e T-07 aprovados em bloco.
 - **v0.1** — 13/08/2026 — Criação a partir do Doc 06 v0.5 e das decisões do Bloco 10 (D-078 a D-084). Sete propostas técnicas abertas para validação. Gatilho do log com marcação de carga de migração.

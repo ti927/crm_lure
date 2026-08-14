@@ -1,10 +1,10 @@
-﻿# 03 — Log de Decisões (v0.10)
+﻿# 03 — Log de Decisões (v0.11)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.10 |
+| **Versão** | v0.11 |
 | **Data** | 14/08/2026 |
 | **Status** | vivo |
 
@@ -195,7 +195,16 @@
 | # | Data | Decisão | Justificativa | Situação |
 |---|---|---|---|---|
 | D-101 | 14/08/2026 | **Um único projeto no Supabase e um único deploy na Vercel.** A carga de migração é executada **direto na base de produção**, antes da virada. **Revoga a primeira metade de D-082** | Custo. O projeto adicional sairia por ~US$ 10/mês e o projeto inteiro existe para cortar custo. O maestro assumiu conscientemente o risco de prazo e de carga sem ambiente de nuvem intermediário | ✅ |
-| D-102 | 14/08/2026 | **O ensaio da migração passa a ser feito no banco local** do Supabase CLI, em contêiner, e não em projeto de nuvem. `supabase db reset` recria o schema do zero quantas vezes for necessário | Preserva o critério 1 de D-098 sem custo. É o mesmo PostgreSQL e as mesmas migrações; a base tem 2.453 negócios, volume em que a diferença entre contêiner e nuvem é irrelevante | 🟡 proposta do consultor — o maestro decidiu D-101, não isto |
+| D-102 | 14/08/2026 | **O ensaio da migração passa a ser feito no banco local** do Supabase CLI, em contêiner, e não em projeto de nuvem. `supabase db reset` recria o schema do zero quantas vezes for necessário | Preserva o critério 1 de D-098 sem custo. É o mesmo PostgreSQL e as mesmas migrações; a base tem 2.453 negócios, volume em que a diferença entre contêiner e nuvem é irrelevante | ⛔ **revogada por D-106** em 14/08 — nunca chegou a ser validada |
+
+### Decisões da sessão 05 — 14/08/2026
+
+| # | Data | Decisão | Justificativa | Situação |
+|---|---|---|---|---|
+| D-103 | 14/08/2026 | **O projeto do Supabase fica em `us-east-1` (Norte da Virgínia)**, e o deploy da Vercel vai para `iad1`, na mesma região | O projeto foi criado em us-east-1; o consultor apontou que São Paulo (`sa-east-1`) daria dezenas de ms em vez de ~120ms por ida e volta para 100% dos usuários, e que trocar seria gratuito enquanto a base está vazia. **O maestro optou por manter.** A mitigação que resta é colar a Vercel ao banco, para que só o salto navegador→Vercel atravesse | ✅ |
+| D-104 | 14/08/2026 | **As dez colunas da Lista são exatamente os dez campos que o Doc 14 §4.3 mapeia do Pipedrive**: Título · Organização · Valor · Etapa · Status · Origem · Produto · Responsável · Motivo de perda · Criado em. **Não são imutáveis** — servem de base e podem ser alteradas durante a construção | D-054 dizia "dez colunas fixas" sem enumerá-las, e os prints que embasaram a decisão não estão no repositório. O mapeamento do Doc 14 é o inventário sobrevivente do que a equipe usa hoje, e fecha com o Doc 02 §6.2 ("sai a data de fechamento esperada, entram etapa e origem") — a data prevista está na linha "Sem destino" do Doc 14, por D-024. **Flexibiliza D-056** quanto ao conjunto, não quanto à personalização pelo usuário final | ✅ |
+| D-105 | 14/08/2026 | **A ordem de construção passa a ser F0 → F3 → (Google OAuth, Vercel) → F1 → F2**, em vez da ordem do Doc 10 | O maestro pediu front-end funcionando antes da migração. ⚠️ **O consultor registrou o risco e o maestro o assumiu:** a API do Pipedrive fecha em 3/9 junto com o contrato, e a F1 é a única fase cujo prazo não é recuperável. O Doc 10 §3 dizia que F1 é a única fase que pode começar sem depender de nada | ✅ |
+| D-106 | 14/08/2026 | **O sistema roda na Vercel, contra o projeto único do Supabase — e esse projeto é o definitivo, o que guarda os dados.** Não haverá ambiente nem banco de ensaio. **Revoga a D-102** | Decisão do maestro, coerente com D-101 e pela mesma razão: custo. A D-102 previa carregar os 2.453 negócios num ambiente descartável, conferir contagens, apagar e repetir até sair limpa; isso não vai acontecer. ⚠️ **Consequência aceita:** a carga roda **uma única vez, direto na base que os sócios vão usar**. As mitigações que restam são a ordem de carga do Doc 14, a marcação `origem_carga` e o backup diário verificado antes de começar (D-089) | ✅ |
 
 ---
 
@@ -284,6 +293,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.11** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar.** D-103 (região us-east-1 mantida; Vercel vai para iad1 para ficar colada ao banco), D-104 (as dez colunas da Lista, derivadas do Doc 14 §4.3, com o conjunto deixando de ser imutável), D-105 (ordem de construção alterada — front-end antes da migração, com o risco da janela de 3/9 assumido pelo maestro) e D-106 (o projeto do Supabase é o definitivo; **revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base real). **P-029 e P-030 encerradas.**
 - **v0.10** — 14/08/2026 — **Fase de construção iniciada.** D-101: um único projeto no Supabase, um único deploy na Vercel, carga direto em produção — **revoga a primeira metade de D-082**, que passa a ⛔ revista. D-102 registrada como proposta do consultor: ensaiar a migração no banco local do CLI, que preserva o critério 1 de D-098 sem custo.
 - **v0.9** — 13/08/2026 — Convenções técnicas do Doc 09 validadas (D-099, D-100). **Cem decisões registradas.**
 - **v0.8** — 13/08/2026 — **Bloco 12 concluído** (D-093 a D-098) e Fase 1 encerrada. Estatísticas, mesclagem, transferência e telas de configuração saem do MVP; celular entra em modo consulta. Critério de pronto definido. Situação de todos os extras atualizada. P-013 encerrada.
