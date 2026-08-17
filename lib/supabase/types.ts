@@ -49,8 +49,8 @@ export type Database = {
           criado_em?: string
           id?: string
           negocio_id: string | null
-          organizacao_id: string | null
-          pessoa_id: string | null
+          organizacao_id?: string | null
+          pessoa_id?: string | null
           texto: string
         }
         Update: {
@@ -125,8 +125,8 @@ export type Database = {
           hora_inicio?: string | null
           id?: string
           negocio_id: string | null
-          organizacao_id: string | null
-          pessoa_id: string | null
+          organizacao_id?: string | null
+          pessoa_id?: string | null
           responsavel_id?: string | null
           tipo_id?: string | null
           titulo?: string | null

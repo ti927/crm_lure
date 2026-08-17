@@ -213,3 +213,42 @@
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
+
+/* ============================================================
+   Movimento
+   ============================================================
+   Curvas nomeadas para que animacao de lugares diferentes tenha o mesmo
+   temperamento. `saida` desacelera no fim (bom para o que entra em cena);
+   `elastico` passa um pouco do ponto e volta, que e o que da a sensacao
+   de peso ao soltar um cartao.
+*/
+@theme inline {
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-elastico: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* A coluna de destino respira enquanto o cartao paira sobre ela. */
+@keyframes respira-alvo {
+  0%, 100% { box-shadow: 0 0 0 1px var(--color-brand-ink); }
+  50%      { box-shadow: 0 0 0 2px var(--color-brand-ink); }
+}
+
+@utility alvo-de-solta {
+  animation: respira-alvo 1.4s ease-in-out infinite;
+}
+
+/* ⚠️ Acessibilidade, nao detalhe: movimento nao pedido causa enjoo e
+   desorientacao em quem tem sensibilidade vestibular, e o sistema
+   operacional ja tem essa preferencia declarada. Aqui o movimento e
+   desligado, mas nada some — o que animava continua visivel, so que
+   estatico. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

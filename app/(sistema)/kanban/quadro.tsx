@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   useDraggable,
   useDroppable,
+  defaultDropAnimationSideEffects,
+  type DropAnimation,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -38,9 +42,33 @@ export type ColunaEtapa = {
 
 const POR_VEZ = 20;
 
+/**
+ * Como o cartao pousa quando solto.
+ *
+ * A curva `elastico` passa do ponto e volta — e o detalhe que faz o
+ * movimento parecer ter peso em vez de simplesmente terminar. O original
+ * volta ao normal durante o voo, senao o cartao pousaria sobre um vazio.
+ */
+const AO_SOLTAR: DropAnimation = {
+  duration: 260,
+  easing: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: "1" } },
+  }),
+};
+
 /* ---------- cartao ---------- */
 
-function CartaoNegocio({ c, ordem }: { c: Cartao; ordem: number }) {
+function CartaoNegocio({
+  c,
+  ordem,
+  indice,
+}: {
+  c: Cartao;
+  ordem: number;
+  indice: number;
+}) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: c.id });
 
   return (
@@ -48,9 +76,21 @@ function CartaoNegocio({ c, ordem }: { c: Cartao; ordem: number }) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`border-border bg-surface faixa-etapa cursor-grab rounded-md border p-2.5 active:cursor-grabbing ${faixaDaEtapa(
+      // O sensor só considera arrasto depois de 6px, então um clique
+      // parado chega aqui inteiro e abre o negócio.
+      onClick={() => !isDragging && router.push(`/negocios/${c.id}`)}
+      // Entrada escalonada: a coluna se monta de cima para baixo em vez
+      // de aparecer de uma vez. Teto de dez para não virar espera.
+      style={{ animationDelay: `${Math.min(indice, 10) * 30}ms` }}
+      className={`border-border bg-surface faixa-etapa animate-in fade-in slide-in-from-top-1 fill-mode-backwards cursor-grab rounded-md border p-2.5 duration-300 active:cursor-grabbing ${faixaDaEtapa(
         ordem
-      )} ${isDragging ? "opacity-40" : "hover:bg-surface-hover"}`}
+      )} ${
+        isDragging
+          ? // O original vira um vazio esmaecido; quem tem corpo é a cópia
+            // que segue o cursor.
+            "scale-[0.97] opacity-30 blur-[1px]"
+          : "hover:bg-surface-hover hover:border-border-strong hover:-translate-y-0.5 hover:shadow-md motion-safe:transition-all motion-safe:duration-200"
+      }`}
     >
       <p className="text-md line-clamp-2 font-medium">{c.titulo}</p>
       <p className="text-text-secondary mt-0.5 truncate text-sm">
@@ -100,12 +140,12 @@ function Coluna({
 
       <div
         ref={setNodeRef}
-        className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto rounded-md p-1 transition-colors ${
-          isOver ? "bg-surface-hover ring-brand-ink ring-1" : ""
+        className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
+          isOver ? "bg-surface-hover alvo-de-solta" : ""
         }`}
       >
-        {coluna.cartoes.map((c) => (
-          <CartaoNegocio key={c.id} c={c} ordem={coluna.ordem} />
+        {coluna.cartoes.map((c, i) => (
+          <CartaoNegocio key={c.id} c={c} ordem={coluna.ordem} indice={i} />
         ))}
 
         {faltam > 0 && (
@@ -146,9 +186,15 @@ export function Quadro({
   );
 
   // 6px antes de considerar arrasto: sem isso, clicar num cartao vira
-  // arrasto acidental e o negocio muda de etapa sem querer.
+  // arrasto acidental e o negocio muda de etapa sem querer. E o mesmo
+  // limiar que deixa o clique passar inteiro para abrir o detalhe.
+  //
+  // O sensor de teclado nao e enfeite: sem ele, mover negocio de etapa
+  // seria impossivel para quem nao usa mouse — espaco pega o cartao,
+  // setas escolhem a coluna, espaco solta.
   const sensores = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor)
   );
 
   const acharCartao = (id: string) =>
@@ -259,13 +305,18 @@ export function Quadro({
           ))}
         </div>
 
-        {/* O cartao segue o cursor; o original fica esmaecido no lugar. */}
-        <DragOverlay>
+        {/* O cartao segue o cursor; o original fica esmaecido no lugar.
+            A inclinacao de 3 graus e a sombra alta sao o que faz parecer
+            que ele saiu do plano da tela, e nao que esta deslizando nele. */}
+        <DragOverlay dropAnimation={AO_SOLTAR}>
           {arrastando && (
-            <article className="border-brand-ink bg-surface w-72 rounded-md border p-2.5 shadow-lg">
+            <article className="border-brand-ink bg-surface w-72 rotate-3 scale-105 cursor-grabbing rounded-md border-2 p-2.5 shadow-2xl">
               <p className="text-md line-clamp-2 font-medium">{arrastando.titulo}</p>
               <p className="text-text-secondary mt-0.5 truncate text-sm">
                 {arrastando.organizacao?.nome ?? "—"}
+              </p>
+              <p className="tabular mt-2 text-sm font-medium">
+                {real(arrastando.valor)}
               </p>
             </article>
           )}

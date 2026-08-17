@@ -40,3 +40,26 @@ export function data(iso: string | null | undefined): string {
 export function texto(v: string | null | undefined): string {
   return v && v.trim() !== "" ? v : "—";
 }
+
+/**
+ * Data com hora, para a linha do tempo — onde a ordem dos acontecimentos
+ * no mesmo dia importa.
+ *
+ * ⚠️ Fuso fixo em Sao Paulo. O banco guarda timestamptz em UTC, e deixar
+ * a conversao por conta do navegador faria o mesmo evento aparecer em
+ * horas diferentes conforme a maquina de quem olha — inaceitavel num log
+ * que serve de prova do que aconteceu.
+ */
+export function dataHora(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

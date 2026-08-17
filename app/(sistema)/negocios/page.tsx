@@ -230,19 +230,27 @@ export default async function PaginaNegocios({
                 </tr>
               </thead>
               <tbody>
-                {(linhas ?? []).map((n) => (
+                {(linhas ?? []).map((n, i) => (
                   <tr
                     key={n.id}
-                    className="border-border hover:bg-surface-hover border-b"
+                    // Entrada escalonada por linha, com teto: cinquenta
+                    // linhas em cascata viraria espera, não elegância.
+                    style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
+                    className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 motion-safe:transition-colors"
                   >
                     {/* A faixa de cor da etapa acompanha o nome escrito na
                         coluna Etapa — nunca substitui (B-076). */}
                     <td
-                      className={`h-row-cozy faixa-etapa max-w-[22rem] truncate font-medium ${celula} ${faixaDaEtapa(
+                      className={`h-row-cozy faixa-etapa max-w-[22rem] truncate p-0 font-medium ${faixaDaEtapa(
                         n.etapa?.ordem
                       )}`}
                     >
-                      {n.titulo}
+                      <Link
+                        href={`/negocios/${n.id}`}
+                        className="hover:text-brand-ink block truncate px-3 py-2 underline-offset-4 hover:underline motion-safe:transition-colors"
+                      >
+                        {n.titulo}
+                      </Link>
                     </td>
                     <td className={`${celula} max-w-[16rem] truncate`}>
                       {texto(n.organizacao?.nome)}
