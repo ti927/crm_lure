@@ -10,14 +10,14 @@ Leia [CLAUDE.md](CLAUDE.md) por inteiro. Ele carrega as regras que não podem se
 
 ## Biblioteca de documentos
 
-Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v1.3.md), que diz onde o projeto está e qual é a próxima ação.
+Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v1.4.md), que diz onde o projeto está e qual é a próxima ação.
 
 | # | Documento | Para quê |
 |---|---|---|
-| 00 | [Status e Retomada](docs/00-status-e-retomada-v1.3.md) | Onde o projeto está e o que vem a seguir |
+| 00 | [Status e Retomada](docs/00-status-e-retomada-v1.4.md) | Onde o projeto está e o que vem a seguir |
 | 01 | [Plano de Execução](docs/01-plano-de-execucao-v0.3.md) | Método da consultoria — encerrada na Fase 6 |
 | 02 | [Roteiro de Entrevistas](docs/02-roteiro-de-entrevistas-v1.1.md) | As 80 perguntas e suas respostas |
-| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.11.md) | **106 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.12.md) | **114 decisões com justificativa.** Consulte antes de perguntar |
 | 04 | [Visão de Produto](docs/04-visao-de-produto-v0.1.md) | Por que o sistema existe |
 | 05 | [Requisitos Funcionais](docs/05-requisitos-funcionais-v0.1.md) | 153 requisitos |
 | 06 | [Modelo de Domínio](docs/06-modelo-de-dominio-v0.5.md) | Entidades e regras, conceitual |

@@ -1,4 +1,4 @@
-﻿# 03 — Log de Decisões (v0.11)
+﻿# 03 — Log de Decisões (v0.12)
 
 | Campo | Valor |
 |---|---|
@@ -206,6 +206,32 @@
 | D-105 | 14/08/2026 | **A ordem de construção passa a ser F0 → F3 → (Google OAuth, Vercel) → F1 → F2**, em vez da ordem do Doc 10 | O maestro pediu front-end funcionando antes da migração. ⚠️ **O consultor registrou o risco e o maestro o assumiu:** a API do Pipedrive fecha em 3/9 junto com o contrato, e a F1 é a única fase cujo prazo não é recuperável. O Doc 10 §3 dizia que F1 é a única fase que pode começar sem depender de nada | ✅ |
 | D-106 | 14/08/2026 | **O sistema roda na Vercel, contra o projeto único do Supabase — e esse projeto é o definitivo, o que guarda os dados.** Não haverá ambiente nem banco de ensaio. **Revoga a D-102** | Decisão do maestro, coerente com D-101 e pela mesma razão: custo. A D-102 previa carregar os 2.453 negócios num ambiente descartável, conferir contagens, apagar e repetir até sair limpa; isso não vai acontecer. ⚠️ **Consequência aceita:** a carga roda **uma única vez, direto na base que os sócios vão usar**. As mitigações que restam são a ordem de carga do Doc 14, a marcação `origem_carga` e o backup diário verificado antes de começar (D-089) | ✅ |
 
+### Decisões da sessão 06 — 17/08/2026
+
+Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões abaixo foram forçadas pela extração da base real, e três revogam decisões tomadas em entrevista, antes de existir extração.
+
+| # | Data | Decisão | Justificativa | Situação |
+|---|---|---|---|---|
+| D-107 | 17/08/2026 | **`responsavel_id` recebe o dono nativo do Pipedrive**, não o criador nem o campo personalizado "Responsável" | Os três divergem: criador e dono não batem em **847 dos 2.458** negócios. Ronaldo criou 1.169 e é dono de 322 — ele cadastra, não trabalha. O campo personalizado está vazio em 1.258 e lista "Lorrayne Alves", que não é usuária. Só o dono nativo está preenchido nos 2.458 | ✅ |
+| D-108 | 17/08/2026 | **Atividade e anotação podem pertencer a organização ou pessoa, sem negócio. Revoga a parte da D-030** que exigia negócio em toda atividade | **4.934 das 6.483** atividades não têm negócio — 76%. Entre elas, **125 das 206 atividades em aberto**, que são as pendências vivas dos sócios. Mantida a regra antiga, a carga descartaria 61% do que eles têm para fazer e o **critério 2 da D-098 ficaria impossível de cumprir**. O desenho adotado é o do próprio Pipedrive, onde `deal_id`, `person_id` e `org_id` são vínculos independentes e opcionais | ✅ |
+| D-109 | 17/08/2026 | **O registro de usuário deixa de depender de conta de login.** `usuario.id` vira id próprio e `auth_id` liga à conta quando ela existir | Como estava, só existia usuário se já houvesse login — e a carga roda **antes** de as pessoas entrarem. Os 2.458 negócios nasceriam sem responsável. Exigir login prévio inverteria a ordem da virada e qualquer atraso de uma pessoa pararia tudo | ✅ |
+| D-110 | 17/08/2026 | **O seletor de cliente do Bubble sai do MVP** e vai para fase final. Adia D-076 e D-077 | Decisão do maestro. A trava de desfecho (D-047) continua inteira; o diálogo apenas deixa de oferecer o seletor. P-022 sai do caminho crítico | ✅ |
+| D-111 | 17/08/2026 | **Os 107 motivos de perda entram todos**, com `ativo = true` nos 12 usados cinco vezes ou mais e `ativo = false` na cauda. Mais um "Não informado" | O Pipedrive guarda texto livre no formato `motivo \| comentário`; cortando o comentário sobram 107 valores, e os 12 primeiros cobrem 950 dos 1.068 negócios perdidos. Migrar tudo preserva o histórico; a marcação `ativo` mantém a lista de escolha limpa. **53 perdidos não tinham motivo** e a restrição do banco os recusaria — daí o "Não informado" | ✅ |
+| D-112 | 17/08/2026 | **Os 9 negócios sem organização ganham uma organização criada a partir do próprio título.** Resolve o pendente de Doc 14 §5.3 | São negócios reais, quatro deles ganhos. Descartar perderia receita registrada; a D-023 exige organização | ✅ |
+| D-113 | 17/08/2026 | **As fotos dos usuários são baixadas e servidas de `public/usuarios/`**, não referenciadas em `usericons.pipedrive.com` | As URLs de origem morrem com o contrato em 3/9. Referenciá-las deixaria os avatares vazios no dia seguinte à virada | ✅ |
+| D-114 | 17/08/2026 | **O repositório permanece público**, com as fotos dos usuários versionadas | Decisão do maestro em 17/08, com o risco apresentado: o repositório expõe o Doc 03 inteiro, o custo do Pipedrive, o ticket médio e o raciocínio comercial da consultoria, além de imagens de quatro pessoas identificáveis. **Risco assumido** | ⚠️ |
+
+**Descobertas da extração que não viraram decisão, mas corrigem a documentação:**
+
+- **A base é maior do que se registrava:** 2.458 negócios (não 2.453), **2.880 organizações (não 422)** e 206 atividades em aberto (não 33).
+- **A base não está parada.** 74% dos negócios estão em Proposta Enviada (1.168) e Aguardando Contrato (642); Cold Lead tem 360. O `CLAUDE.md` afirmava o contrário, e o Doc 10 planejava o carregamento do Kanban "sobretudo em Cold Lead".
+- **A coluna Origem não tem fonte.** O campo do Pipedrive só contém `ManuallyCreated` e `Import` — registro técnico, não origem comercial. Nasce vazia.
+- **Produtos: zero registros.** O módulo permanece no MVP por decisão do maestro; o cadastro passa a ser feito no CRM novo.
+- **A carga não gera evento nenhum**, porque o gatilho do log é `after update` e não `after insert`. O temor central do `CLAUDE.md` — "o log nasce com milhares de eventos falsos" — não se materializa neste schema.
+- **P-021 respondida parcialmente:** só **675 dos 2.458** negócios têm alguma mudança de etapa no changelog. Reconstituir trajetória é possível para 27% da base, não para ela toda.
+- **O ensaio foi recuperado sem ambiente extra:** a carga roda dentro de uma transação, e `--ensaio` desfaz no fim. A D-106 tirou o ensaio; a transação devolveu.
+
+
 ---
 
 ## Critério de Pronto do MVP (D-098)
@@ -293,6 +319,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.12** — 17/08/2026 — **Sessão 06: os dados mandaram.** D-107 a D-114. Três revogações vindas da extração: a D-030 deixa de exigir negócio em toda atividade (D-108), o usuário deixa de depender de conta de login (D-109) e o seletor do Bubble sai do MVP (D-110). Registradas as descobertas que corrigem a documentação — a base tem 2.880 organizações e não 422, não está parada, a coluna Origem não tem fonte, e a carga não contamina o log porque o gatilho é `after update`. **114 decisões.**
 - **v0.11** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar.** D-103 (região us-east-1 mantida; Vercel vai para iad1 para ficar colada ao banco), D-104 (as dez colunas da Lista, derivadas do Doc 14 §4.3, com o conjunto deixando de ser imutável), D-105 (ordem de construção alterada — front-end antes da migração, com o risco da janela de 3/9 assumido pelo maestro) e D-106 (o projeto do Supabase é o definitivo; **revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base real). **P-029 e P-030 encerradas.**
 - **v0.10** — 14/08/2026 — **Fase de construção iniciada.** D-101: um único projeto no Supabase, um único deploy na Vercel, carga direto em produção — **revoga a primeira metade de D-082**, que passa a ⛔ revista. D-102 registrada como proposta do consultor: ensaiar a migração no banco local do CLI, que preserva o critério 1 de D-098 sem custo.
 - **v0.9** — 13/08/2026 — Convenções técnicas do Doc 09 validadas (D-099, D-100). **Cem decisões registradas.**
