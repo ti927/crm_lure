@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v1.4)
+﻿# 00 — Status e Retomada (v1.5)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.4 |
+| **Versão** | v1.5 |
 | **Última atualização** | 17/08/2026 — Sessão 06 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,7 +32,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.4.md` |
+| `00-status-e-retomada-v1.5.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
 | `03-log-de-decisoes-v0.12.md` |
@@ -101,7 +101,9 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ⚠️ **Ordem alterada por D-105:** F0 → F3 → OAuth/Vercel → F1 → F2. O Doc 10 descreve a ordem original.
 
 **Repositório:** `https://github.com/ti927/crm_lure.git` — ⚠️ **público**, por decisão do maestro (D-114).
-**Aplicação:** `https://crm-lure.vercel.app` — no ar, com a base real.
+**Aplicação:** **`https://crm.lureconsultoria.com`** — no ar, com a base real. O endereço `crm-lure.vercel.app` continua respondendo.
+
+⚠️ **Ao trocar de domínio, o Supabase precisa saber.** Se o endereço de retorno não estiver na lista autorizada, o login conclui e joga o usuário para o *Site URL* — foi assim que um login feito de outra máquina caiu em `localhost:3000`. Em *Authentication → URL Configuration*, o **Site URL** tem que ser o domínio de produção, e a lista de **Redirect URLs** precisa conter os três: produção, Vercel e `localhost` para desenvolver.
 
 ### 4.1 O que está de pé
 
@@ -111,7 +113,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F1 — Extração** | ✅ **fechada.** P-020 e P-021 encerradas. Dados brutos em `dados/pipedrive/`, fora do git |
 | **F2 — Carga** | ✅ **rodou em 17/08**, conferida pelas dez verificações do Doc 14 §8 |
 | **F3 — Lista** | parcial — ver 4.2 |
-| **F5 — Kanban** | ✅ arrastar-e-soltar, carregamento por partes e **trava de desfecho (D-047)** funcionando |
+| **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
 
 **Scripts que passam a existir:**
 
@@ -185,7 +187,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.4 | vivo | — |
+| 00 | Status e Retomada | v1.5 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
 | 03 | Log de Decisões | v0.12 | vivo | — |
@@ -274,7 +276,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | ~~Carga direto em produção~~ | ✅ **resolvido em 17/08.** Rodou, conferida pelas dez verificações do Doc 14 §8. O modo `--ensaio` permitiu ensaiar na base real sem gravar — a transação devolveu o ensaio que a D-106 tirou |
 | ~~Janela de extração~~ | ✅ **resolvido em 17/08.** Base e changelogs salvos antes de 3/9 |
 | ⚠️ **Repositório público** | D-114: o Doc 03 inteiro, o custo do Pipedrive, o ticket médio, o raciocínio comercial e as fotos de quatro funcionários estão legíveis por qualquer pessoa. Nenhuma credencial vazou — verificado no histórico do git. **Risco assumido pelo maestro** |
-| ⚠️ **Prazo: 17 dias** | Falta F4, F6, F7, F8, F9 e a virada. O que já existe é substancial, mas o detalhe do negócio e as atividades ainda não foram construídos |
+| ⚠️ **Prazo de construção** | Os dados estão salvos e carregados — esse risco morreu. Falta F4 (detalhe do negócio), F6 (atividades), F7, F8, F9 e a virada. É risco de escopo, não mais de perda irreversível |
 | *(histórico)* **Carga direto em produção** | D-101 eliminou o ambiente de nuvem intermediário. A carga dos 2.453 negócios roda uma única vez, na base que os sócios vão usar. Se falhar no meio, o conserto é em produção. Mitigações que restam: ensaio no banco local (D-102), ordem de carga do Doc 14, marcação `origem_carga` e backup verificado antes de começar. **Nenhuma delas substitui um ambiente separado. Risco assumido pelo maestro** |
 | ⚠️ **Sem ensaio da carga** | **Novo em 14/08.** D-106 revoga a D-102: não haverá ambiente de ensaio. A carga dos 2.453 negócios roda **uma única vez, direto na base definitiva**. Mitigações que restam: ordem de carga do Doc 14, marcação `origem_carga` e backup verificado antes de começar. **Risco assumido pelo maestro** |
 | ⚠️ **Janela de extração** | Depois de 3/9 o acesso à API do Pipedrive se encerra junto com o contrato. Se a extração não acontecer antes, os 2.453 negócios ficam inacessíveis. **Agravado por D-105**, que adiou a F1 para depois do front-end |
@@ -302,6 +304,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v1.5** — 17/08/2026 — Domínio de produção passa a ser **`crm.lureconsultoria.com`**, com o aviso de que trocar de domínio exige atualizar o *Site URL* e os *Redirect URLs* no Supabase — foi o que fez um login cair em `localhost`. **O prazo dos dados acabou:** base e changelogs salvos e carregados, restando só prazo de construção. Kanban vira seção própria do menu lateral, em `/kanban`, com filtro por responsável.
 - **v1.4** — 17/08/2026 — **Sessão 06: F0, F1 e F2 concluídas.** O volume real substitui as estimativas — 2.458 negócios e 2.889 organizações, não 2.453 e 422. Seção 4 reescrita em torno do que está de pé, com **4.3 nova** listando o que os dados desmentiram: a base não está parada, 76% das atividades não têm negócio, a coluna Origem não tem fonte e a carga não contamina o log. **P-020, P-021, P-026, P-028 e P-031 encerradas**; P-033, P-034 e P-035 criadas. Dois riscos saíram (carga sem ensaio e janela de extração) e dois entraram (repositório público, plano Hobby). **114 decisões.**
 - **v1.3** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar e o front-end começou.** Seção 4.1 registra o projeto do Supabase criado e o schema aplicado; **4.1.1 criada** com o estado da Lista de negócios e a dívida de verificação — nada foi aberto no navegador porque o login ainda não existe, o que deixa a regra 4 do `CLAUDE.md` em aberto. Seção 4.2 reescrita: o que falta para fechar a F0 é o Google OAuth e a Vercel. **D-103 a D-106** acrescentadas ao Doc 03; **D-106 revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base definitiva, o que vira risco próprio na seção 9. **P-029 e P-030 encerradas**, P-032 criada (provedor Email ativo com cadastro aberto). Ordem das fases alterada por D-105, com o risco da janela de 3/9 assumido pelo maestro. **Doc 12 a v0.3**, com o `CLAUDE.md` da raiz sincronizado: a instrução de ensaiar a carga no banco local saiu (revogada por D-106), a identidade visual deixou de apontar para um `tailwind.config.ts` que não existe, e entrou a regra 8 — há um ambiente só, e `npm run dev` fala com a base real.
 - **v1.2** — 14/08/2026 — Seção 1 reescrita: a biblioteca deixou de ser anexo de conversa e virou repositório, então a retomada no Claude Code (1.1) e a retomada avulsa (1.2) passam a ser caminhos distintos. Instrução de versionamento troca "remova a anterior" por `git mv`, que preserva o histórico do documento, com lembrete de conferir as referências cruzadas depois de renomear.

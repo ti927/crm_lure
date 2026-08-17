@@ -9,7 +9,6 @@ import {
 } from "@/components/dominio/etiquetas";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { Filtros } from "./filtros";
-import { AlternaVisao } from "./alterna-visao";
 import {
   COLUNAS,
   POR_PAGINA,
@@ -171,10 +170,7 @@ export default async function PaginaNegocios({
             {total > POR_PAGINA && ` · página ${pagina} de ${ultimaPagina}`}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <AlternaVisao atual="lista" />
-          <Filtros etapas={etapas ?? []} usuarios={usuarios ?? []} />
-        </div>
+        <Filtros etapas={etapas ?? []} usuarios={usuarios ?? []} />
       </div>
 
       {error ? (

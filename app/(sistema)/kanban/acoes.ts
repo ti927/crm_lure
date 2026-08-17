@@ -56,7 +56,7 @@ export async function moverNegocio(
 
   if (error) return { erro: error.message };
 
-  revalidatePath("/negocios/kanban");
+  revalidatePath("/kanban");
   revalidatePath("/negocios");
   return { ok: true };
 }
@@ -69,13 +69,24 @@ export async function moverNegocio(
  * inteira derrubaria a tela. Cada coluna comeca com poucos e cresce sob
  * demanda.
  */
-export async function maisDaEtapa(etapaId: string, jaCarregados: number, quantos: number) {
+export async function maisDaEtapa(
+  etapaId: string,
+  jaCarregados: number,
+  quantos: number,
+  responsavelId?: string
+) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let consulta = supabase
     .from("negocio")
     .select("id, titulo, valor, status, organizacao(nome), usuario(nome, foto_url)")
-    .eq("etapa_id", etapaId)
+    .eq("etapa_id", etapaId);
+
+  // Sem isto, "carregar mais" traria negócios de fora do recorte e o
+  // quadro passaria a mostrar mais do que o filtro promete.
+  if (responsavelId) consulta = consulta.eq("responsavel_id", responsavelId);
+
+  const { data, error } = await consulta
     .order("criado_em", { ascending: false })
     .range(jaCarregados, jaCarregados + quantos - 1);
 

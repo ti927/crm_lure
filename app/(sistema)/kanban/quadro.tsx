@@ -130,9 +130,11 @@ function Coluna({
 export function Quadro({
   colunas: iniciais,
   motivos,
+  responsavelId,
 }: {
   colunas: ColunaEtapa[];
   motivos: { id: string; nome: string }[];
+  responsavelId?: string;
 }) {
   const [colunas, setColunas] = useState(iniciais);
   const [arrastando, setArrastando] = useState<Cartao | null>(null);
@@ -209,7 +211,12 @@ export function Quadro({
 
   async function carregarMais(coluna: ColunaEtapa) {
     setCarregando(coluna.id);
-    const r = await maisDaEtapa(coluna.id, coluna.cartoes.length, POR_VEZ);
+    const r = await maisDaEtapa(
+      coluna.id,
+      coluna.cartoes.length,
+      POR_VEZ,
+      responsavelId
+    );
     setCarregando(null);
     if (r.erro) return setErro(r.erro);
 

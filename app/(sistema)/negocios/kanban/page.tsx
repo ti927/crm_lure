@@ -1,69 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
-import { AlternaVisao } from "../alterna-visao";
-import { Quadro, type ColunaEtapa, type Cartao } from "./quadro";
+import { redirect } from "next/navigation";
 
 /**
- * F5 — Kanban.
- *
- * ⚠️ R-006: cada coluna comeca com poucos cartoes e cresce sob demanda.
- * Sao 2.458 negocios, e "Proposta Enviada" sozinha tem 1.168 — o Doc 10
- * supunha que o peso estivesse em Cold Lead, mas a extracao mostrou o
- * contrario: 74% da base esta nas duas ultimas etapas.
+ * O Kanban virou seção própria no menu lateral (17/08). Este redirecionamento
+ * existe para não quebrar link que alguém já tenha guardado ou compartilhado
+ * do endereço antigo.
  */
-const INICIAL_POR_COLUNA = 20;
-
-export default async function PaginaKanban() {
-  const supabase = await createClient();
-
-  const { data: etapas } = await supabase
-    .from("etapa")
-    .select("id, nome, ordem")
-    .order("ordem");
-
-  // Uma consulta por etapa, em paralelo: cada uma traz sua fatia e sua
-  // contagem. Buscar tudo de uma vez e cortar no cliente violaria R-006.
-  const colunas: ColunaEtapa[] = await Promise.all(
-    (etapas ?? []).map(async (e) => {
-      const { data, count } = await supabase
-        .from("negocio")
-        .select(
-          "id, titulo, valor, status, organizacao(nome), usuario(nome, foto_url)",
-          { count: "exact" }
-        )
-        .eq("etapa_id", e.id)
-        .order("criado_em", { ascending: false })
-        .range(0, INICIAL_POR_COLUNA - 1)
-        .returns<Cartao[]>();
-
-      return { ...e, total: count ?? 0, cartoes: data ?? [] };
-    })
-  );
-
-  // Só os motivos ativos entram no diálogo: a carga trouxe 107 do
-  // Pipedrive e deixou inativa a cauda de texto livre usada uma ou duas
-  // vezes, que polui a escolha sem ajudar ninguém.
-  const { data: motivos } = await supabase
-    .from("motivo_perda")
-    .select("id, nome")
-    .eq("ativo", true)
-    .order("ordem");
-
-  const total = colunas.reduce((s, c) => s + c.total, 0);
-
-  return (
-    <div className="flex h-full min-w-0 flex-col">
-      <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Negócios</h1>
-          <p className="text-text-muted text-sm">
-            {total.toLocaleString("pt-BR")} negócios · arraste para mudar de
-            etapa
-          </p>
-        </div>
-        <AlternaVisao atual="kanban" />
-      </div>
-
-      <Quadro colunas={colunas} motivos={motivos ?? []} />
-    </div>
-  );
+export default function KanbanMudouDeEndereco() {
+  redirect("/kanban");
 }

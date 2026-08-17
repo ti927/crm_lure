@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Calendar, Users, Package } from "lucide-react";
+import { Briefcase, Columns3, Calendar, Users, Package } from "lucide-react";
 
 /**
  * Menu lateral.
@@ -15,6 +15,7 @@ import { Briefcase, Calendar, Users, Package } from "lucide-react";
  */
 const DESTINOS = [
   { href: "/negocios", rotulo: "Negócios", Icone: Briefcase },
+  { href: "/kanban", rotulo: "Kanban", Icone: Columns3 },
   { href: "/atividades", rotulo: "Atividades", Icone: Calendar },
   { href: "/contatos", rotulo: "Contatos", Icone: Users },
   { href: "/produtos", rotulo: "Produtos", Icone: Package },
