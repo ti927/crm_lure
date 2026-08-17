@@ -1,4 +1,4 @@
-﻿# 03 — Log de Decisões (v0.12)
+﻿# 03 — Log de Decisões (v0.13)
 
 | Campo | Valor |
 |---|---|
@@ -232,6 +232,18 @@ Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões
 - **O ensaio foi recuperado sem ambiente extra:** a carga roda dentro de uma transação, e `--ensaio` desfaz no fim. A D-106 tirou o ensaio; a transação devolveu.
 
 
+### Decisões da sessão 06 — parte 2, 17/08/2026
+
+| # | Data | Decisão | Justificativa | Situação |
+|---|---|---|---|---|
+| D-115 | 17/08/2026 | **O Kanban é seção própria do menu lateral**, em `/kanban`, e não uma visão alternativa dentro de Negócios. O endereço antigo redireciona | Pedido do maestro. Como subitem de `/negocios`, os dois itens do menu acendiam ao mesmo tempo. A alternância *Lista \| Kanban* saiu junto: com os dois no menu, ela duplicava o caminho | ✅ |
+| D-116 | 17/08/2026 | **Movimento é parte do design, com três regras fixas:** entrada escalonada tem teto (dez a catorze itens), o que se arrasta sai do plano da tela em vez de deslizar nele, e **`prefers-reduced-motion` desliga tudo** | Pedido do maestro por uma experiência mais viva. O teto evita que cascata vire espera. A guarda de acessibilidade não é opcional: movimento não pedido causa enjoo e desorientação em quem tem sensibilidade vestibular, e o sistema operacional já declara essa preferência — nada some, só para | ✅ |
+| D-117 | 17/08/2026 | **A etapa não é editável na zona de dados do detalhe** — muda-se pela trilha do topo | Ter dois caminhos para a mesma mudança, um deles sem passar pela trava de desfecho (D-047), seria convite a erro. A trava agora vale nos três caminhos: arrastar no Kanban, clicar na trilha e apertar Ganho/Perdido, sempre verificada na *server action* | ✅ |
+| D-118 | 17/08/2026 | **O Kanban tem sensor de teclado**: espaço pega o cartão, setas escolhem a coluna, espaço solta | Sem ele, mover negócio de etapa era **impossível** para quem não usa mouse — o Kanban é a tela principal de trabalho, e deixá-la só no arrasto excluiria gente do sistema | ✅ |
+
+**Correção registrada:** **C-05** no Doc 09 §3.11 — o gatilho do log gravava `auth.uid()` em `evento_negocio.autor_id`, quebrado pela própria D-109 desta sessão. Julio Manfrini não conseguia mover cartão no Kanban. Corrigido para resolver o autor por `public.usuario_atual()`.
+
+
 ---
 
 ## Critério de Pronto do MVP (D-098)
@@ -319,6 +331,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.13** — 17/08/2026 — **Sessão 06, parte 2.** D-115 a D-118: Kanban vira seção própria, movimento entra como parte do design com guarda de `prefers-reduced-motion`, a etapa deixa de ser editável na zona de dados para não haver caminho sem trava, e o Kanban ganha sensor de teclado. Registrada a **C-05**: a D-109 desta mesma sessão quebrou o gatilho do log, e o defeito foi encontrado com um usuário real afetado. **118 decisões.**
 - **v0.12** — 17/08/2026 — **Sessão 06: os dados mandaram.** D-107 a D-114. Três revogações vindas da extração: a D-030 deixa de exigir negócio em toda atividade (D-108), o usuário deixa de depender de conta de login (D-109) e o seletor do Bubble sai do MVP (D-110). Registradas as descobertas que corrigem a documentação — a base tem 2.880 organizações e não 422, não está parada, a coluna Origem não tem fonte, e a carga não contamina o log porque o gatilho é `after update`. **114 decisões.**
 - **v0.11** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar.** D-103 (região us-east-1 mantida; Vercel vai para iad1 para ficar colada ao banco), D-104 (as dez colunas da Lista, derivadas do Doc 14 §4.3, com o conjunto deixando de ser imutável), D-105 (ordem de construção alterada — front-end antes da migração, com o risco da janela de 3/9 assumido pelo maestro) e D-106 (o projeto do Supabase é o definitivo; **revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base real). **P-029 e P-030 encerradas.**
 - **v0.10** — 14/08/2026 — **Fase de construção iniciada.** D-101: um único projeto no Supabase, um único deploy na Vercel, carga direto em produção — **revoga a primeira metade de D-082**, que passa a ⛔ revista. D-102 registrada como proposta do consultor: ensaiar a migração no banco local do CLI, que preserva o critério 1 de D-098 sem custo.

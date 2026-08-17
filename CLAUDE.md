@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.**
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 114 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 118 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
@@ -111,6 +111,8 @@ Outras regras que costumam ser esquecidas:
 
 **Autenticação:** Google OAuth via Supabase, autorizado por domínio. Usuário nunca é excluído — apenas marcado inativo.
 
+⚠️ **Depois de qualquer mexida em identidade, procure `auth.uid()` no schema inteiro.** A D-109 quebrou o gatilho do log sem que nada acusasse: ele gravava `auth.uid()` numa coluna que aponta para `usuario(id)`, e a escrita inteira passou a falhar para quem veio da carga. Um usuário real ficou sem conseguir trabalhar até isso ser achado (C-05, Doc 09 §3.11).
+
 ⚠️ **`usuario` não depende de conta de login** (D-109). A tabela tem id próprio e uma coluna `auth_id`, preenchida no primeiro login casando **por e-mail**. Quem foi migrado já existe antes de entrar; quem entra sem registro prévio é criado na hora, ativo, com papel único. Sem isso a carga não teria como atribuir responsável, porque roda antes de as pessoas entrarem.
 
 ---
@@ -123,6 +125,8 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 - **`#ffdd00` nunca é cor de texto.** Funciona como fundo com texto preto. Para texto ou borda, usar a variante `-ink`.
 - **A distinção de etapa nunca depende só de cor** — o nome da etapa sempre aparece escrito.
 - Linha de tabela: **44px**. Tema claro e escuro, ambos.
+
+**Movimento** (D-116): entrada escalonada sempre com teto — dez a catorze itens, senão cascata vira espera. O que se arrasta **sai do plano da tela** (inclina, cresce, ganha sombra) em vez de deslizar nele. ⚠️ **`prefers-reduced-motion` desliga tudo**, por guarda global no `globals.css`: movimento não pedido causa enjoo em quem tem sensibilidade vestibular. Nada some, só para.
 
 ⚠️ **Nome de classe do Tailwind nunca pode ser montado em tempo de execução.** O v4 varre o código à procura de literais; `bg-status-${x}` simplesmente não é gerado, e a cor some sem erro nenhum. Escreva as classes por extenso em mapas — é o que `components/dominio/etiquetas.tsx` faz.
 
@@ -173,7 +177,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **114 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **118 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -183,6 +187,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.5** — 17/08/2026 — **Fim da sessão 06.** Movimento entra na identidade visual como regra (D-116), com a guarda de `prefers-reduced-motion`. A trava de desfecho passa a valer nos três caminhos que movem um negócio, sempre verificada no servidor. Acrescentado o aviso que custou caro nesta sessão: mexeu em identidade, procure `auth.uid()` no schema inteiro — a D-109 quebrou o gatilho do log e só se descobriu porque um usuário real não conseguia trabalhar.
 - **v0.4** — 17/08/2026 — **Sessão 06: a extração corrigiu o documento.** A afirmação de que "a maior parte da base está parada" saiu — 74% dos negócios estão nas duas últimas etapas, e só 306 dos 2.458 seguem abertos. A carga **aconteceu** e está conferida; o medo de contaminar o log não se materializou, porque o gatilho é `after update` e não `after insert`. **D-108** revoga parte da D-030: atividade e anotação podem pertencer a organização ou pessoa, como no Pipedrive — 76% das atividades da base não têm negócio. **D-109**: `usuario` deixa de depender de conta de login. **D-110**: o seletor do Bubble sai do MVP. Volume real corrigido em todo o documento: 2.458 negócios e 2.889 organizações, não 2.453 e 422.
 - **v0.3** — 14/08/2026 — **Sessão 05.** Regra 8 acrescentada: há um ambiente só, e `npm run dev` aponta para a base real. A seção "A carga da migração" corrigida por **D-106**, que revogou a D-102 — não há ensaio, a carga é operação de uma tentativa só, e o backup verificado passa a ser a mitigação principal. Identidade visual corrigida: os tokens estão em `app/tokens.css` e a ponte em `app/globals.css`, **não** em `tailwind.config.ts`, que não existe — o texto anterior contradizia a própria tabela de stack. O aviso do bloco `spacing` saiu (resolvido em P-025) e deu lugar ao que de fato morde no Tailwind v4: nome de classe montado em tempo de execução não é gerado. Contagem de decisões atualizada para 106.
 - **v0.2** — 14/08/2026 — D-101: base única na nuvem, carga direto em produção, ensaio no banco local. Aviso de C-02 (o `nullif` na leitura de `app.carga_migracao`) acrescentado à seção do que não pode dar errado. Stack atualizada para Next.js 16 e Tailwind v4 (P-025 encerrada).

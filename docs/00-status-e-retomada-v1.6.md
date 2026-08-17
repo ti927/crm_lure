@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v1.5)
+﻿# 00 — Status e Retomada (v1.6)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.5 |
+| **Versão** | v1.6 |
 | **Última atualização** | 17/08/2026 — Sessão 06 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,10 +32,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.5.md` |
+| `00-status-e-retomada-v1.6.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.12.md` |
+| `03-log-de-decisoes-v0.13.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -96,7 +96,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ## 4. ONDE ESTAMOS
 
 **Fase:** **construção**. **F0, F1 e F2 concluídas.** F3 parcial, F5 iniciada.
-**Perguntas respondidas:** 80 · 12 blocos · **114 decisões** · 153 requisitos · 126 itens de backlog
+**Perguntas respondidas:** 80 · 12 blocos · **118 decisões** · 153 requisitos · 126 itens de backlog
 
 ⚠️ **Ordem alterada por D-105:** F0 → F3 → OAuth/Vercel → F1 → F2. O Doc 10 descreve a ordem original.
 
@@ -112,7 +112,8 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F0 — Fundação** | ✅ **fechada.** Google OAuth funcionando, Vercel publicando, schema em produção |
 | **F1 — Extração** | ✅ **fechada.** P-020 e P-021 encerradas. Dados brutos em `dados/pipedrive/`, fora do git |
 | **F2 — Carga** | ✅ **rodou em 17/08**, conferida pelas dez verificações do Doc 14 §8 |
-| **F3 — Lista** | parcial — ver 4.2 |
+| **F3 — Lista** | parcial — ver 4.2. Título abre o detalhe |
+| **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações, trava nos três caminhos** |
 | **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
 
 **Scripts que passam a existir:**
@@ -128,6 +129,8 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ### 4.2 Próxima ação
 
 **Da F3, falta:** filtro nas dez colunas (B-042), indicador de coluna filtrada (B-044), persistência por usuário (B-045), exportação CSV (B-047) e lista virtualizada.
+
+⚠️ **O log de eventos ainda não tem uma única linha.** A carga não dispara o gatilho, que é `after update`. Ele passa a gravar na primeira edição feita no detalhe do negócio — vale conferir que gravou, porque é o item que o `CLAUDE.md` marca como não recuperável.
 
 **Pedido do maestro em 17/08, ainda não construído:** **acesso rápido a clientes pelo celular** — uma lista de clientes com busca, como porta de entrada do mobile. Isso amplia a D-097, que definiu o celular em torno do negócio e deixou Contatos de fora. O banco já sustenta; o trabalho é de tela.
 
@@ -152,7 +155,7 @@ Vale ler antes de confiar em qualquer suposição antiga:
 |---|---|
 | Doc 08, Doc 10, Doc 11 — em rascunho | aguardam leitura |
 | Curadoria dos 107 motivos de perda | painel do Supabase; 12 estão ativos |
-| P-032 — desabilitar o provedor Email | ⬜ **ainda aberto** |
+| ~~P-032~~ — provedor Email | ✅ **encerrada 17/08** |
 | Repositório público (D-114) | risco assumido |
 
 ### 4.5 Recorte do MVP
@@ -187,19 +190,19 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.5 | vivo | — |
+| 00 | Status e Retomada | v1.6 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.12 | vivo | — |
+| 03 | Log de Decisões | v0.13 | vivo | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.1 | rascunho — **aguarda validação** | criado 13/08 |
-| 09 | Arquitetura Técnica | v0.4 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-04** | atualizado 14/08 |
+| 09 | Arquitetura Técnica | v0.4 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.2 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.4 | rascunho — **na raiz do repositório** | atualizado 17/08, sessão 06 |
+| 12 | CLAUDE.md | v0.5 | rascunho — **na raiz do repositório** | atualizado 17/08, sessão 06 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 14* | *Referência da API Pipedrive* | v0.1 | **anexo do Doc 14** | endpoints e limites de uso |
@@ -258,10 +261,11 @@ Registro completo no documento **03 — Log de Decisões**: **102 decisões (D-0
 | ~~P-028~~ | ~~Regra de conversão de status~~ | — | ✅ **aplicada na carga de 17/08**, conforme a proposta da seção 5.1 |
 | ~~P-026~~ | ~~URL de retorno OAuth~~ | — | ✅ **encerrada 17/08.** Login por Google funcionando em produção |
 | ~~P-031~~ | ~~Publicar na Vercel~~ | — | ✅ **encerrada 17/08.** `crm-lure.vercel.app`. ⚠️ Plano **Hobby**, cujo uso comercial contraria os termos da Vercel — decisão pendente |
-| P-032 | ⚠️ **Desabilitar o provedor Email** no Supabase | segurança | Hoje ativo com cadastro aberto. Como a chave anônima é pública, qualquer pessoa cria conta por e-mail e senha. Não vê dado nenhum — a RLS barra quem não é do domínio, verificado — mas polui `auth.users` e contraria D-050 |
+| ~~P-032~~ | ~~Desabilitar o provedor Email~~ | — | ✅ **encerrada 17/08.** `email: false` verificado na base |
+| *(era)* | *Provedor Email* | segurança | Hoje ativo com cadastro aberto. Como a chave anônima é pública, qualquer pessoa cria conta por e-mail e senha. Não vê dado nenhum — a RLS barra quem não é do domínio, verificado — mas polui `auth.users` e contraria D-050 |
 
 | P-033 | Curar os 107 motivos de perda | qualidade | 12 ativos, 95 inativos. Edição pelo painel do Supabase |
-| P-034 | Conferir todas as telas nos dois temas | **regra 4** | Aberta desde a sessão 05; agora é possível |
+| ~~P-034~~ | ~~Conferir as telas nos dois temas~~ | — | ✅ **encerrada 17/08** pelo maestro |
 | P-035 | Plano Hobby da Vercel para uso comercial | risco | Contraria os termos de uso |
 
 Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P-004, P-007, P-008, **P-009 e P-013 (escopo — Bloco 12)**, P-010, P-011, P-012, P-015, P-017, P-019, **P-025 (Tailwind — v4, bloco `spacing` removido)**, **P-029 (domínio `lureconsultoria.com.br` confirmado pelo maestro em 14/08)**, **P-030 (projeto Supabase criado e schema aplicado em 14/08)**.
@@ -298,14 +302,15 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 02 | 12/08/2026 | Doc 06 reescrito (v0.3). Separação Status × Etapa, funil de seis etapas, trava única. **Blocos 5 e 6** — 20 decisões (D-042 a D-061). | Bloco 7 a iniciar |
 | 03 | 13/08/2026 | Doc 06 **validado**. **Blocos 7, 8, 10, 9, 11 e 12 concluídos** — Fase 1 encerrada com 100 decisões. Estatísticas como catálogo; migração completa; **prazo imutável de 3/9 revelado**; integração Bubble; **stack definida**; log por gatilho; dois ambientes; desktop e celular; **manual Lure incorporado** (Doc 08); **MVP recortado**; **Docs 09 e 12 escritos** — caminho crítico concluído. | Desenvolvimento desbloqueado; Docs 10 e 11 a escrever |
 | 04 | 14/08/2026 | **Primeira sessão de construção.** Repositório criado e publicado; biblioteca movida para `docs/`. **P-025 encerrada em favor do Tailwind v4.** F0 executada até onde não depende do maestro: scaffold, tokens da Lure com as três correções do Doc 08, dois temas conferidos na tela, schema do Doc 09 em três migrações, gatilho do log, acesso por domínio, clientes Supabase e login por Google. **Três defeitos do Doc 09 encontrados e corrigidos** (C-01 a C-03) ao aplicar as migrações contra um PostgreSQL real. **D-101**: base única, carga direto em produção — biblioteca inteira revista de acordo. | F0 bloqueada em P-030 e P-031; F1 sem token |
-| 05 | 14/08/2026 | **A base de produção entrou no ar.** Projeto do Supabase criado (`qyitrhflinkfcylobsfp`, us-east-1) e as três migrações mais a semente aplicadas — **P-029 e P-030 encerradas**. Conexão verificada de ponta a ponta: 20 tabelas, tipos do código batendo com o banco, leitura e escrita anônimas negadas. **F3 iniciada fora de ordem** (D-105): moldura do sistema e Lista de negócios com as dez colunas de D-104, paginação no servidor, ordenação em todas, busca e filtros. **C-04 encontrada** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca; corrigida em dois passos. D-103 (região), D-106 (ambiente único, **revoga D-102**). P-032 criada. **`CLAUDE.md` corrigido** (Doc 12 v0.3): saiu a instrução de ensaiar a carga no banco local, revogada por D-106, e a referência a um `tailwind.config.ts` inexistente. Tudo publicado no GitHub. | **F0 bloqueada no Google OAuth (P-026) e na Vercel (P-031).** Nada da F3 foi conferido em tela — é a primeira coisa a fazer quando o login funcionar || 06 | 17/08/2026 | **A base real entrou no sistema.** F0 fechada (Google OAuth e Vercel, depois de uma longa caçada a variáveis de ambiente cadastradas na área compartilhada da conta em vez do projeto). **F1 e F2 concluídas:** 2.458 negócios, 2.889 organizações, 4.589 pessoas, 6.483 atividades e 922 anotações carregados numa transação única, com ensaio por rollback. **Oito decisões (D-107 a D-114)**, três delas revogando regras tomadas antes de existir extração. Kanban com arrastar-e-soltar e **trava de desfecho** funcionando; filtro por responsável com foto. | F3 incompleta; nenhuma tela conferida nos dois temas; acesso a clientes pelo celular pedido e não construído |
+| 05 | 14/08/2026 | **A base de produção entrou no ar.** Projeto do Supabase criado (`qyitrhflinkfcylobsfp`, us-east-1) e as três migrações mais a semente aplicadas — **P-029 e P-030 encerradas**. Conexão verificada de ponta a ponta: 20 tabelas, tipos do código batendo com o banco, leitura e escrita anônimas negadas. **F3 iniciada fora de ordem** (D-105): moldura do sistema e Lista de negócios com as dez colunas de D-104, paginação no servidor, ordenação em todas, busca e filtros. **C-04 encontrada** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca; corrigida em dois passos. D-103 (região), D-106 (ambiente único, **revoga D-102**). P-032 criada. **`CLAUDE.md` corrigido** (Doc 12 v0.3): saiu a instrução de ensaiar a carga no banco local, revogada por D-106, e a referência a um `tailwind.config.ts` inexistente. Tudo publicado no GitHub. | **F0 bloqueada no Google OAuth (P-026) e na Vercel (P-031).** Nada da F3 foi conferido em tela — é a primeira coisa a fazer quando o login funcionar || 06 | 17/08/2026 | **A base real entrou no sistema, e o CRM virou sistema de trabalho.** F0 fechada (Google OAuth e Vercel, depois de uma longa caçada a variáveis de ambiente cadastradas na área compartilhada da conta em vez do projeto). **F1 e F2 concluídas:** 2.458 negócios, 2.889 organizações, 4.589 pessoas, 6.483 atividades e 922 anotações carregados numa transação única, com ensaio por rollback. **Oito decisões (D-107 a D-114)**, três delas revogando regras tomadas antes de existir extração. Kanban com arrastar-e-soltar e **trava de desfecho** funcionando; filtro por responsável com foto. **F4 concluída** no fim da sessão: detalhe em três zonas, linha do tempo e trava valendo nos três caminhos. Passada de animação com guarda de acessibilidade. **P-032 e P-034 encerradas.** Encontrado e corrigido um defeito que a própria D-109 desta sessão criou (C-05). | F3 incompleta; **log de eventos ainda com zero linhas**; acesso a clientes pelo celular pedido e não construído |
 
 ---
 
 ## Changelog
 
+- **v1.6** — 17/08/2026 — **Fim da sessão 06.** **F4 concluída**: detalhe do negócio em três zonas, linha do tempo com o seletor da D-058, anotações, e a trava de desfecho valendo nos três caminhos. **P-032 e P-034 encerradas** — o provedor Email foi desligado e as telas foram conferidas nos dois temas, dívida aberta desde a sessão 05. D-115 a D-118 e a correção **C-05**, um defeito que a própria D-109 desta sessão criou e que impedia um usuário real de trabalhar. ⚠️ O log de eventos continua com zero linhas: ele passa a gravar na primeira edição feita no detalhe.
 - **v1.5** — 17/08/2026 — Domínio de produção passa a ser **`crm.lureconsultoria.com`**, com o aviso de que trocar de domínio exige atualizar o *Site URL* e os *Redirect URLs* no Supabase — foi o que fez um login cair em `localhost`. **O prazo dos dados acabou:** base e changelogs salvos e carregados, restando só prazo de construção. Kanban vira seção própria do menu lateral, em `/kanban`, com filtro por responsável.
-- **v1.4** — 17/08/2026 — **Sessão 06: F0, F1 e F2 concluídas.** O volume real substitui as estimativas — 2.458 negócios e 2.889 organizações, não 2.453 e 422. Seção 4 reescrita em torno do que está de pé, com **4.3 nova** listando o que os dados desmentiram: a base não está parada, 76% das atividades não têm negócio, a coluna Origem não tem fonte e a carga não contamina o log. **P-020, P-021, P-026, P-028 e P-031 encerradas**; P-033, P-034 e P-035 criadas. Dois riscos saíram (carga sem ensaio e janela de extração) e dois entraram (repositório público, plano Hobby). **114 decisões.**
+- **v1.4** — 17/08/2026 — **Sessão 06: F0, F1 e F2 concluídas.** O volume real substitui as estimativas — 2.458 negócios e 2.889 organizações, não 2.453 e 422. Seção 4 reescrita em torno do que está de pé, com **4.3 nova** listando o que os dados desmentiram: a base não está parada, 76% das atividades não têm negócio, a coluna Origem não tem fonte e a carga não contamina o log. **P-020, P-021, P-026, P-028 e P-031 encerradas**; P-033, P-034 e P-035 criadas. Dois riscos saíram (carga sem ensaio e janela de extração) e dois entraram (repositório público, plano Hobby). **118 decisões.**
 - **v1.3** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar e o front-end começou.** Seção 4.1 registra o projeto do Supabase criado e o schema aplicado; **4.1.1 criada** com o estado da Lista de negócios e a dívida de verificação — nada foi aberto no navegador porque o login ainda não existe, o que deixa a regra 4 do `CLAUDE.md` em aberto. Seção 4.2 reescrita: o que falta para fechar a F0 é o Google OAuth e a Vercel. **D-103 a D-106** acrescentadas ao Doc 03; **D-106 revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base definitiva, o que vira risco próprio na seção 9. **P-029 e P-030 encerradas**, P-032 criada (provedor Email ativo com cadastro aberto). Ordem das fases alterada por D-105, com o risco da janela de 3/9 assumido pelo maestro. **Doc 12 a v0.3**, com o `CLAUDE.md` da raiz sincronizado: a instrução de ensaiar a carga no banco local saiu (revogada por D-106), a identidade visual deixou de apontar para um `tailwind.config.ts` que não existe, e entrou a regra 8 — há um ambiente só, e `npm run dev` fala com a base real.
 - **v1.2** — 14/08/2026 — Seção 1 reescrita: a biblioteca deixou de ser anexo de conversa e virou repositório, então a retomada no Claude Code (1.1) e a retomada avulsa (1.2) passam a ser caminhos distintos. Instrução de versionamento troca "remova a anterior" por `git mv`, que preserva o histórico do documento, com lembrete de conferir as referências cruzadas depois de renomear.
 - **v1.1** — 14/08/2026 — **Construção iniciada; D-101 propagada por toda a biblioteca.** Base única no Supabase, carga direto em produção, ensaio no banco local — Docs 02, 03, 09, 10, 11, 12 e 14 revistos. Seção 4 reescrita: o projeto deixa de estar "sem nenhuma linha de código" e passa a ter F0 quase fechada. P-025 encerrada (Tailwind v4); P-029, P-030 e P-031 criadas. Risco de carga direto em produção acrescentado à seção 9. Registro das correções C-01 a C-03 do Doc 09.
