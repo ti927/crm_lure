@@ -7,7 +7,9 @@ import {
   EtiquetaEtapa,
   faixaDaEtapa,
 } from "@/components/dominio/etiquetas";
+import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { Filtros } from "./filtros";
+import { AlternaVisao } from "./alterna-visao";
 import {
   COLUNAS,
   POR_PAGINA,
@@ -32,7 +34,7 @@ type LinhaNegocio = {
   etapa: { nome: string; ordem: number } | null;
   origem: Nomeado;
   produto: Nomeado;
-  usuario: Nomeado;
+  usuario: { nome: string; foto_url: string | null } | null;
   motivo_perda: Nomeado;
 };
 
@@ -42,7 +44,7 @@ const SELECAO = `
   etapa(nome, ordem),
   origem(nome),
   produto(nome),
-  usuario(nome),
+  usuario(nome, foto_url),
   motivo_perda(nome)
 `;
 
@@ -59,6 +61,7 @@ export default async function PaginaNegocios({
   const busca = um(p.busca)?.trim() ?? "";
   const status = um(p.status) ?? "";
   const etapaId = um(p.etapa) ?? "";
+  const responsavelId = um(p.responsavel) ?? "";
   const ordenarPor = um(p.ordenar) ?? "criado_em";
   const crescente = um(p.dir) === "asc";
   const pagina = Math.max(1, Number(um(p.pagina) ?? 1) || 1);
@@ -112,6 +115,7 @@ export default async function PaginaNegocios({
   }
   if (status) consulta = consulta.eq("status", status as Status);
   if (etapaId) consulta = consulta.eq("etapa_id", etapaId);
+  if (responsavelId) consulta = consulta.eq("responsavel_id", responsavelId);
 
   const inicio = (pagina - 1) * POR_PAGINA;
   const { data: linhas, count, error } = await consulta
@@ -123,6 +127,15 @@ export default async function PaginaNegocios({
     .select("id, nome, ordem")
     .order("ordem");
 
+  // Só quem está ativo entra no filtro: ex-integrante continua existindo
+  // como responsável de negócio antigo (D-084), mas não faz sentido
+  // oferecê-lo como opção de recorte novo.
+  const { data: usuarios } = await supabase
+    .from("usuario")
+    .select("id, nome, foto_url")
+    .eq("ativo", true)
+    .order("nome");
+
   const total = count ?? 0;
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA));
 
@@ -132,6 +145,7 @@ export default async function PaginaNegocios({
     if (busca) q.set("busca", busca);
     if (status) q.set("status", status);
     if (etapaId) q.set("etapa", etapaId);
+    if (responsavelId) q.set("responsavel", responsavelId);
     if (ordenarPor !== "criado_em") q.set("ordenar", ordenarPor);
     if (crescente) q.set("dir", "asc");
     if (pagina > 1) q.set("pagina", String(pagina));
@@ -157,7 +171,10 @@ export default async function PaginaNegocios({
             {total > POR_PAGINA && ` · página ${pagina} de ${ultimaPagina}`}
           </p>
         </div>
-        <Filtros etapas={etapas ?? []} />
+        <div className="flex flex-wrap items-center gap-2">
+          <AlternaVisao atual="lista" />
+          <Filtros etapas={etapas ?? []} usuarios={usuarios ?? []} />
+        </div>
       </div>
 
       {error ? (
@@ -253,7 +270,15 @@ export default async function PaginaNegocios({
                       {texto(n.produto?.nome)}
                     </td>
                     <td className={`${celula} ${ESCONDE_CLASSE.md} truncate`}>
-                      {texto(n.usuario?.nome)}
+                      {n.usuario ? (
+                        <UsuarioComFoto
+                          nome={n.usuario.nome}
+                          foto={n.usuario.foto_url}
+                          tamanho="sm"
+                        />
+                      ) : (
+                        texto(null)
+                      )}
                     </td>
                     <td className={`${celula} ${ESCONDE_CLASSE.xl} truncate`}>
                       {texto(n.motivo_perda?.nome)}
@@ -271,14 +296,14 @@ export default async function PaginaNegocios({
             {total === 0 && (
               <div className="px-4 py-16 text-center">
                 <p className="text-text-secondary text-md font-medium">
-                  {busca || status || etapaId
+                  {busca || status || etapaId || responsavelId
                     ? "Nenhum negócio corresponde aos filtros."
                     : "A base ainda não tem negócios."}
                 </p>
                 <p className="text-text-muted mt-1 text-sm">
-                  {busca || status || etapaId
+                  {busca || status || etapaId || responsavelId
                     ? "Ajuste ou limpe os filtros acima."
-                    : "Os 2.453 negócios entram na carga de migração do Pipedrive."}
+                    : "Nenhum negócio cadastrado."}
                 </p>
               </div>
             )}

@@ -39,21 +39,27 @@ export type Database = {
           autor_id: string | null
           criado_em: string
           id: string
-          negocio_id: string
+          negocio_id: string | null
+          organizacao_id: string | null
+          pessoa_id: string | null
           texto: string
         }
         Insert: {
           autor_id?: string | null
           criado_em?: string
           id?: string
-          negocio_id: string
+          negocio_id: string | null
+          organizacao_id: string | null
+          pessoa_id: string | null
           texto: string
         }
         Update: {
           autor_id?: string | null
           criado_em?: string
           id?: string
-          negocio_id?: string
+          negocio_id?: string | null
+          organizacao_id?: string | null
+          pessoa_id?: string | null
           texto?: string
         }
         Relationships: [
@@ -103,7 +109,9 @@ export type Database = {
           hora_fim: string | null
           hora_inicio: string | null
           id: string
-          negocio_id: string
+          negocio_id: string | null
+          organizacao_id: string | null
+          pessoa_id: string | null
           responsavel_id: string | null
           tipo_id: string | null
           titulo: string | null
@@ -116,7 +124,9 @@ export type Database = {
           hora_fim?: string | null
           hora_inicio?: string | null
           id?: string
-          negocio_id: string
+          negocio_id: string | null
+          organizacao_id: string | null
+          pessoa_id: string | null
           responsavel_id?: string | null
           tipo_id?: string | null
           titulo?: string | null
@@ -129,7 +139,9 @@ export type Database = {
           hora_fim?: string | null
           hora_inicio?: string | null
           id?: string
-          negocio_id?: string
+          negocio_id?: string | null
+          organizacao_id?: string | null
+          pessoa_id?: string | null
           responsavel_id?: string | null
           tipo_id?: string | null
           titulo?: string | null
@@ -630,24 +642,30 @@ export type Database = {
       usuario: {
         Row: {
           ativo: boolean
+          auth_id: string | null
           criado_em: string
           email: string
+          foto_url: string | null
           id: string
           nome: string
           papel_id: string
         }
         Insert: {
           ativo?: boolean
+          auth_id?: string | null
           criado_em?: string
           email: string
-          id: string
+          foto_url?: string | null
+          id?: string
           nome: string
           papel_id: string
         }
         Update: {
           ativo?: boolean
+          auth_id?: string | null
           criado_em?: string
           email?: string
+          foto_url?: string | null
           id?: string
           nome?: string
           papel_id?: string

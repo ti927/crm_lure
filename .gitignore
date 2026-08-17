@@ -55,3 +55,7 @@ desktop.ini
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Dados brutos extraidos do Pipedrive (F1). Base real de clientes —
+# nunca vai para o GitHub.
+/dados/
