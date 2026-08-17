@@ -79,7 +79,7 @@
 
 | # | Requisito | Origem | MVP |
 |---|---|---|---|
-| RF-050 | **Toda atividade pertence a um negócio.** Não existe atividade órfã | D-030 | ✅ |
+| RF-050 | Atividade pertence a **negócio, organização ou pessoa** — vínculos opcionais e independentes, como no Pipedrive | ~~D-030~~ → **D-108** | ✅ |
 | RF-051 | Campos da atividade: tipo, título, data, hora início/fim, responsável, descrição, concluída | Doc 06 | ✅ |
 | RF-052 | Tipos de atividade configuráveis: chamada, reunião, tarefa, e-mail | D-031 | ✅ |
 | RF-053 | Tela de Atividades própria, com modo **lista** e modo **calendário** | D-060 | ✅ |

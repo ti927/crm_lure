@@ -199,7 +199,7 @@ Origem · Motivo de perda · Área de produto · Tipo de atividade · Etapas do 
 
 ## 3. Regras de domínio já definidas
 
-1. Toda atividade pertence obrigatoriamente a um negócio — **não existe atividade órfã**.
+1. Atividade pertence a **negócio, organização ou pessoa** — os três vínculos são opcionais e independentes, como no Pipedrive (**D-108**, revoga esta parte da D-030). ⚠️ A regra antiga caiu diante dos dados: 76% das atividades da base real não têm negócio, e entre elas 125 das 206 pendências vivas dos sócios.
 2. Organizações e pessoas podem existir sem negócio vinculado.
 3. Contatos anteriores à criação do negócio são registrados **retroativamente**.
 4. Um negócio pode ser criado em qualquer etapa, e nasce com o status inicial daquela etapa.

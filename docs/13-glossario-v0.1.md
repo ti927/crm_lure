@@ -27,7 +27,7 @@ O contato humano dentro de uma ou mais organizações. ⚠️ **O cargo não per
 Telefone ou e-mail de uma pessoa. Lista simples, sem rótulo e sem marcação de principal (D-034).
 
 **Atividade**
-Ação vinculada a um negócio: chamada, reunião, tarefa, e-mail. Serve como **histórico** quando passada e concluída, e como **agenda** quando futura e pendente. ⚠️ **Toda atividade pertence a um negócio** — não existe atividade órfã (D-030).
+Ação vinculada a um negócio: chamada, reunião, tarefa, e-mail. Serve como **histórico** quando passada e concluída, e como **agenda** quando futura e pendente. ⚠️ Pertence a **negócio, organização ou pessoa** — vínculos opcionais e independentes (D-108, revoga parte da D-030).
 
 **Anotação**
 Texto livre vinculado ao negócio. Entidade **distinta** de atividade: não tem data de agenda nem conclusão (D-029).

@@ -221,7 +221,7 @@ create table anotacao (
 );
 ```
 
-`negocio_id not null` é a regra "não existe atividade órfã" (D-030) escrita no banco, não na tela.
+⚠️ `negocio_id` **deixou de ser obrigatório** em 17/08 (D-108, migração `20260817160000`). Atividade e anotação ganharam `organizacao_id` e `pessoa_id`, e um gatilho replica o encadeamento do Pipedrive: vínculo com negócio herda a organização dele; vínculo com pessoa herda a dela. O caminho inverso não existe — organização pode ter vários negócios, e escolher um seria inventar.
 
 ### 3.7 Evento de negócio — o log (D-033, D-081)
 
