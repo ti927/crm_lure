@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v1.9)
+﻿# 00 — Status e Retomada (v2.0)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.9 |
+| **Versão** | v2.0 |
 | **Última atualização** | 18/08/2026 — Sessão 08 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,7 +32,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.9.md` |
+| `00-status-e-retomada-v2.0.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
 | `03-log-de-decisoes-v0.13.md` |
@@ -115,6 +115,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F3 — Lista** | ✅ **fechada 18/08.** Filtro nas dez colunas, indicador de coluna filtrada, persistência por usuário, exportação CSV e lista virtualizada — ver 4.2 sobre a verificação visual que falta |
 | **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações, trava nos três caminhos** |
 | **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
+| **F7 — Contatos e Produtos** | ✅ **construída 18/08.** Contatos com abas Organizações/Pessoas, CRUD completo, fichas com histórico derivado (B-090 a B-095) e **agrupamento de cadastros duplicados**; Produtos com nome e área (B-096) |
 | **F6 — Atividades** | ✅ **construída 18/08.** Três abas: **Lista** (um dia por vez, abrindo em Hoje, padrão do Pipedrive, com navegação ‹ › entre dias), **Vencidas** (a pilha de atrasadas, cada uma com a data em que venceu e há quantos dias, número na aba) e **Calendário** mensal; criação com vínculo opcional a negócio/organização/pessoa (D-108); conclusão; registro retroativo; filtros por situação/tipo/responsável; exportação CSV. **Sem migração** — o schema já sustentava os três vínculos |
 
 **Scripts que passam a existir:**
@@ -137,7 +138,11 @@ Também corrigidos nesta sessão: o link "voltar" do detalhe do negócio agora l
 
 **Pedido do maestro em 17/08, ainda não construído:** **acesso rápido a clientes pelo celular** — uma lista de clientes com busca, como porta de entrada do mobile. Isso amplia a D-097, que definiu o celular em torno do negócio e deixou Contatos de fora. O banco já sustenta; o trabalho é de tela.
 
-**Depois:** F7 (contatos e produtos), F8 (automações), F9 (mobile), F10 (virada).
+**Depois:** F8 (automações), F9 (mobile), F10 (virada).
+
+⚠️ **Duplicatas de organização, medidas em 18/08:** **1.195 dos 2.889 cadastros são repetição** — 668 grupos de nome idêntico, 41% da lista; "Sicoob Credseguro" aparece 6 vezes, "Amaral Group" 18. Vieram assim do Pipedrive. A Lista **agrupa na apresentação** (1.687 linhas em vez de 2.889) e mostra os **títulos dos negócios** de cada cadastro como referência — é o que distingue um "Sicoob Credseguro" do outro, já que cidade e site estão vazios. **Não é mesclagem**, que segue fora do MVP: nada foi fundido nem apagado. Se o maestro quiser de fato unificar os cadastros, isso é decisão e trabalho à parte.
+
+⚠️ **Exceção assumida na F7, a validar:** a base nasceu com **zero áreas de produto** e zero produtos. Como as listas configuráveis não têm tela no MVP, o campo "área" do produto nunca poderia ser preenchido — o B-096 ficaria pela metade. O seletor de área ganhou um "+" que cria a área na hora. Não é tela de configuração: renomear, reordenar e desativar seguem no painel do Supabase.
 
 **Organização das Atividades (ajustada em duas rodadas com o maestro, 18/08):** três abas. A **Lista** abre **no dia atual**, um dia por vez, com navegação ‹ › e botão "Hoje" — mostra só as atividades daquele dia, sem as vencidas junto. As **Vencidas** ganharam **aba própria** (o maestro pediu que não empurrassem as de hoje para baixo), cada uma com a data em que venceu e há quantos dias, e o total aparece como número vermelho na aba. O **Calendário** ficou em visão **mensal** — não a grade semanal com faixas de hora do Pipedrive, que seria esforço além da paridade. O filtro de responsável mostra todos por padrão (dois sócios que querem ver o que há na mesa).
 
@@ -195,7 +200,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.9 | vivo | — |
+| 00 | Status e Retomada | v2.0 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
 | 03 | Log de Decisões | v0.13 | vivo | — |
@@ -315,6 +320,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v2.0** — 18/08/2026 — **F7 concluída (Contatos e Produtos), mais uma rodada de UI/UX.** Contatos com as duas abas, CRUD completo, fichas com histórico derivado, e o **agrupamento de duplicatas** (1.195 dos 2.889 cadastros são repetição) com os títulos dos negócios como referência para distinguir cadastros de mesmo nome. Produtos com nome e área, com criação de área embutida no seletor por a base ter nascido vazia. **Corrigido um crash na aba Pessoas** — handler de evento em Server Component passado a Client Component; o app inteiro foi auditado. Fluidez: **avisos de ação** (nenhuma ação confirmava nada até aqui), **busca instantânea** com atalho `/`, **foco preso e devolvido nos diálogos**, esqueletos legíveis no tema escuro, **barra de progresso de navegação** e filtros que esmaecem enquanto respondem. **Navegação no celular voltou** — a sidebar sumia e não havia como trocar de seção.
 - **v1.9** — 18/08/2026 — **Identidade visual da marca implementada (P-024 encerrada).** O maestro subiu o handoff BR/BAUEN. O símbolo "+" em cinco blocos (miolo amarelo) virou componente React (`components/dominio/marca.tsx`), com os braços em `currentColor` para servir os dois temas sem variantes. O placeholder "L" da sidebar deu lugar à assinatura **LURE + chip CRM**; a tela de login ganhou o split-screen da marca (painel escuro com tagline "Organize potencial em resultados." + acesso Google); favicon e apple-icon vieram dos vetores do handoff. A pasta de referência foi movida de `components/ui/` para **`docs/marca/`**. Navegação segue na sidebar (decisão do maestro — nada foi para a top bar). **Dois ajustes após revisão do maestro:** no login em tema escuro os dois painéis ficavam ambos pretos e se fundiam — o painel de acesso passou a `bg-surface` (mais claro que o painel de marca) com borda divisória; e o **rodapé da marca** (footer.html do handoff) entrou no sistema, faixa escura fixa no pé com o símbolo, "Ferramenta interna · Lure Consultoria" e copyright, sem os links do protótipo que ainda não têm página.
 - **v1.8** — 18/08/2026 — **Sessão 08: F6 construída.** Tela de Atividades em dois modos — lista **um dia por vez, abrindo em Hoje** (padrão do Pipedrive, ajustado a pedido do maestro), com vencidas fixas no topo, e calendário mensal. Criação com campos completos e vínculo opcional a negócio, organização ou pessoa (D-108), conclusão otimista, registro retroativo, filtros por situação/tipo/responsável e exportação CSV (B-085). **Sem migração** — o schema já sustentava os três vínculos desde a carga. ⚠️ Sem verificação visual (Google OAuth barra o agente); o calendário ficou em visão mensal, anotado em 4.2.
 - **v1.7** — 18/08/2026 — **Fim da sessão 07. F3 fechada**: filtro nas dez colunas (B-042), indicador de filtro ativo (B-044), persistência por usuário via `usuario.preferencia_lista_negocios` (B-045, nova migração), exportação CSV (B-047) e lista virtualizada. Corrigidos o link "voltar" do detalhe (respeita a origem, Lista ou Kanban) e o seletor de responsável, reescrito sobre `Popover` do Radix para tirar de vez o bug de sobreposição. ⚠️ **Sem verificação visual** — o agente não consegue logar via Google OAuth sozinho; falta abrir as telas novas (e as antigas) nos dois temas.
