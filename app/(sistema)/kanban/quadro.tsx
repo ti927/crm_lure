@@ -77,8 +77,10 @@ function CartaoNegocio({
       {...listeners}
       {...attributes}
       // O sensor só considera arrasto depois de 6px, então um clique
-      // parado chega aqui inteiro e abre o negócio.
-      onClick={() => !isDragging && router.push(`/negocios/${c.id}`)}
+      // parado chega aqui inteiro e abre o negócio. `de=kanban` marca a
+      // origem para o link "voltar" do detalhe apontar para o Kanban, e
+      // não para a Lista (padrão de quem entrou por lá).
+      onClick={() => !isDragging && router.push(`/negocios/${c.id}?de=kanban`)}
       // Entrada escalonada: a coluna se monta de cima para baixo em vez
       // de aparecer de uma vez. Teto de dez para não virar espera.
       style={{ animationDelay: `${Math.min(indice, 10) * 30}ms` }}

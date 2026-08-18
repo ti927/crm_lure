@@ -19,19 +19,21 @@ export type Coluna = {
   numerica?: boolean;
   /** Colunas que somem primeiro quando a tela estreita. */
   esconde?: "md" | "lg" | "xl";
+  /** Tipo de controle no cabecalho (B-042). Sem isto, a coluna nao filtra. */
+  filtro?: "texto" | "numero" | "data" | "selecao";
 };
 
 export const COLUNAS: Coluna[] = [
-  { chave: "titulo", rotulo: "Título", ordenacao: "titulo" },
-  { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)" },
-  { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true },
-  { chave: "etapa", rotulo: "Etapa", ordenacao: "etapa(ordem)" },
-  { chave: "status", rotulo: "Status", ordenacao: "status" },
-  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg" },
-  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg" },
-  { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md" },
-  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "xl" },
-  { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md" },
+  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto" },
+  { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)", filtro: "texto" },
+  { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true, filtro: "numero" },
+  { chave: "etapa", rotulo: "Etapa", ordenacao: "etapa(ordem)", filtro: "selecao" },
+  { chave: "status", rotulo: "Status", ordenacao: "status", filtro: "selecao" },
+  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao" },
+  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao" },
+  { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md", filtro: "selecao" },
+  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "xl", filtro: "selecao" },
+  { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md", filtro: "data" },
 ];
 
 /** R-006: a base inteira nunca vai para o navegador. */

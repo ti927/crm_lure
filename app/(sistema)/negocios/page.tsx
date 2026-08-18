@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { real, data, texto } from "@/lib/formato";
@@ -9,145 +10,164 @@ import {
 } from "@/components/dominio/etiquetas";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { Filtros } from "./filtros";
+import { LinkOrdenacao } from "./link-ordenacao";
+import { TabelaNegocios } from "./tabela-negocios";
+import {
+  IndicadorFiltro,
+  FiltroTexto,
+  FiltroNumero,
+  FiltroData,
+  FiltroSelecao,
+  FiltroResponsavel,
+} from "./filtro-coluna";
 import {
   COLUNAS,
   POR_PAGINA,
   ESCONDE_CLASSE,
   LIMITE_ORGANIZACOES,
+  type Coluna,
 } from "./colunas";
-import type { Database } from "@/lib/supabase/types";
-
-type Status = Database["public"]["Enums"]["status_negocio"];
-type Nomeado = { nome: string } | null;
-
-/* Forma da linha depois dos vinculos. Declarada a mao e aplicada com
-   .returns<>() porque a inferencia do supabase-js sobre embutidos varia
-   conforme o join seja inner ou nao, e aqui ele e inner. */
-type LinhaNegocio = {
-  id: string;
-  titulo: string;
-  valor: number | null;
-  status: Status;
-  criado_em: string;
-  organizacao: Nomeado;
-  etapa: { nome: string; ordem: number } | null;
-  origem: Nomeado;
-  produto: Nomeado;
-  usuario: { nome: string; foto_url: string | null } | null;
-  motivo_perda: Nomeado;
-};
-
-const SELECAO = `
-  id, titulo, valor, status, criado_em,
-  organizacao!inner(nome),
-  etapa(nome, ordem),
-  origem(nome),
-  produto(nome),
-  usuario(nome, foto_url),
-  motivo_perda(nome)
-`;
-
-type Busca = Promise<Record<string, string | string[] | undefined>>;
-
-const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+import {
+  SELECAO,
+  STATUS_OPCOES,
+  parseFiltros,
+  temFiltro,
+  buscaCrua,
+  limparIlike,
+  limiteDataInicio,
+  limiteDataFim,
+  type LinhaNegocio,
+  type Busca,
+  type Status,
+} from "./consulta";
 
 export default async function PaginaNegocios({
   searchParams,
 }: {
-  searchParams: Busca;
+  searchParams: Promise<Busca>;
 }) {
   const p = await searchParams;
-  const busca = um(p.busca)?.trim() ?? "";
-  const status = um(p.status) ?? "";
-  const etapaId = um(p.etapa) ?? "";
-  const responsavelId = um(p.responsavel) ?? "";
-  const ordenarPor = um(p.ordenar) ?? "criado_em";
-  const crescente = um(p.dir) === "asc";
-  const pagina = Math.max(1, Number(um(p.pagina) ?? 1) || 1);
+  const supabase = await createClient();
+
+  // B-045: visita "crua" (sem nenhum parametro reconhecido) tenta
+  // restaurar a ultima combinacao salva do usuario — e assim que ela
+  // volta igual depois de um login novo. "Limpar filtros" tambem cai
+  // aqui, mas ele grava preferencia vazia antes de navegar (ver
+  // usar-filtros-lista.ts), entao nao ha redirecionamento em loop.
+  if (buscaCrua(p)) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: eu } = await supabase
+        .from("usuario")
+        .select("preferencia_lista_negocios")
+        .eq("auth_id", user.id)
+        .maybeSingle();
+      if (eu?.preferencia_lista_negocios) {
+        redirect(`/negocios?${eu.preferencia_lista_negocios}`);
+      }
+    }
+  }
+
+  const filtros = parseFiltros(p);
 
   // Coluna de ordenacao vem da URL: so vale se estiver na lista fixa.
   // Sem esta checagem, `?ordenar=` arbitrario vira expressao no PostgREST.
   const coluna =
-    COLUNAS.find((c) => c.chave === ordenarPor) ??
+    COLUNAS.find((c) => c.chave === filtros.ordenarPor) ??
     COLUNAS.find((c) => c.chave === "criado_em")!;
 
-  const supabase = await createClient();
+  let consulta = supabase
+    .from("negocio")
+    .select(SELECAO, { count: "exact" })
+    .order(coluna.ordenacao, { ascending: filtros.crescente, nullsFirst: false });
+
+  if (filtros.titulo) {
+    consulta = consulta.ilike("titulo", `%${limparIlike(filtros.titulo)}%`);
+  }
 
   /*
-   * Busca por titulo OU organizacao (Doc 10, F3), em dois passos.
-   *
-   * ⚠️ Nao da para escrever
-   *      or=(titulo.ilike.*x*,organizacao.nome.ilike.*x*)
-   * O PostgREST aceita coluna de tabela vinculada como filtro isolado, e
-   * aceita `or` entre colunas proprias, mas NAO aceita coluna vinculada
-   * dentro de um `or`: devolve PGRST100 "failed to parse logic tree".
-   * Verificado contra o PostgREST deste projeto, nao suposto.
-   *
-   * Entao os ids das organizacoes que casam saem antes, numa consulta a
-   * parte, e entram no `or` como `organizacao_id.in.(...)` — que e coluna
-   * propria de negocio. Sao 422 organizacoes na base real: a consulta e
-   * barata e a lista de ids cabe na URL.
+   * Organizacao e coluna vinculada: o PostgREST nao aceita filtro sobre
+   * coluna de tabela vinculada como `ilike` direto no negocio. Os ids das
+   * organizacoes que casam saem antes, numa consulta a parte, e entram
+   * como `organizacao_id.in.(...)` — coluna propria de negocio. Sem
+   * nenhum id, forca resultado vazio com um id que nunca existe, em vez
+   * de deixar o filtro passar batido.
    */
-  const termo = busca.replace(/[%,()]/g, " ");
-  let idsOrganizacao: string[] = [];
-
-  if (termo) {
+  if (filtros.organizacao) {
+    const termo = limparIlike(filtros.organizacao);
     const { data: orgs } = await supabase
       .from("organizacao")
       .select("id")
       .ilike("nome", `%${termo}%`)
       .limit(LIMITE_ORGANIZACOES);
-    idsOrganizacao = (orgs ?? []).map((o) => o.id);
+    const ids = (orgs ?? []).map((o) => o.id);
+    consulta =
+      ids.length > 0
+        ? consulta.in("organizacao_id", ids)
+        : consulta.eq("organizacao_id", "00000000-0000-0000-0000-000000000000");
   }
 
-  let consulta = supabase
-    .from("negocio")
-    .select(SELECAO, { count: "exact" })
-    .order(coluna.ordenacao, { ascending: crescente, nullsFirst: false });
-
-  if (termo) {
-    const alvos = [`titulo.ilike.%${termo}%`];
-    if (idsOrganizacao.length > 0) {
-      alvos.push(`organizacao_id.in.(${idsOrganizacao.join(",")})`);
-    }
-    consulta = consulta.or(alvos.join(","));
+  if (filtros.valorMin) consulta = consulta.gte("valor", Number(filtros.valorMin));
+  if (filtros.valorMax) consulta = consulta.lte("valor", Number(filtros.valorMax));
+  if (filtros.etapa) consulta = consulta.eq("etapa_id", filtros.etapa);
+  if (filtros.status) consulta = consulta.eq("status", filtros.status as Status);
+  if (filtros.origem) consulta = consulta.eq("origem_id", filtros.origem);
+  if (filtros.produto) consulta = consulta.eq("produto_id", filtros.produto);
+  if (filtros.responsavel) consulta = consulta.eq("responsavel_id", filtros.responsavel);
+  if (filtros.motivoPerda) consulta = consulta.eq("motivo_perda_id", filtros.motivoPerda);
+  if (filtros.criadoDe) {
+    consulta = consulta.gte("criado_em", limiteDataInicio(filtros.criadoDe));
   }
-  if (status) consulta = consulta.eq("status", status as Status);
-  if (etapaId) consulta = consulta.eq("etapa_id", etapaId);
-  if (responsavelId) consulta = consulta.eq("responsavel_id", responsavelId);
+  if (filtros.criadoAte) {
+    consulta = consulta.lte("criado_em", limiteDataFim(filtros.criadoAte));
+  }
 
-  const inicio = (pagina - 1) * POR_PAGINA;
+  const inicio = (filtros.pagina - 1) * POR_PAGINA;
   const { data: linhas, count, error } = await consulta
     .range(inicio, inicio + POR_PAGINA - 1)
     .returns<LinhaNegocio[]>();
 
-  const { data: etapas } = await supabase
-    .from("etapa")
-    .select("id, nome, ordem")
-    .order("ordem");
-
-  // Só quem está ativo entra no filtro: ex-integrante continua existindo
-  // como responsável de negócio antigo (D-084), mas não faz sentido
-  // oferecê-lo como opção de recorte novo.
-  const { data: usuarios } = await supabase
-    .from("usuario")
-    .select("id, nome, foto_url")
-    .eq("ativo", true)
-    .order("nome");
+  const [
+    { data: etapas },
+    { data: usuarios },
+    { data: origens },
+    { data: produtos },
+    { data: motivos },
+  ] = await Promise.all([
+    supabase.from("etapa").select("id, nome, ordem").order("ordem"),
+    // Só quem está ativo entra no filtro: ex-integrante continua existindo
+    // como responsável de negócio antigo (D-084), mas não faz sentido
+    // oferecê-lo como opção de recorte novo.
+    supabase.from("usuario").select("id, nome, foto_url").eq("ativo", true).order("nome"),
+    supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase.from("produto").select("id, nome").order("nome"),
+    supabase.from("motivo_perda").select("id, nome").eq("ativo", true).order("ordem"),
+  ]);
 
   const total = count ?? 0;
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA));
+  const algumFiltro = temFiltro(filtros);
 
-  /** Preserva os demais parametros ao trocar um deles. */
+  /** Preserva os demais parametros ao trocar um deles (paginacao). */
   function comParametros(troca: Record<string, string | null>) {
     const q = new URLSearchParams();
-    if (busca) q.set("busca", busca);
-    if (status) q.set("status", status);
-    if (etapaId) q.set("etapa", etapaId);
-    if (responsavelId) q.set("responsavel", responsavelId);
-    if (ordenarPor !== "criado_em") q.set("ordenar", ordenarPor);
-    if (crescente) q.set("dir", "asc");
-    if (pagina > 1) q.set("pagina", String(pagina));
+    if (filtros.titulo) q.set("titulo", filtros.titulo);
+    if (filtros.organizacao) q.set("organizacao", filtros.organizacao);
+    if (filtros.valorMin) q.set("valorMin", filtros.valorMin);
+    if (filtros.valorMax) q.set("valorMax", filtros.valorMax);
+    if (filtros.etapa) q.set("etapa", filtros.etapa);
+    if (filtros.status) q.set("status", filtros.status);
+    if (filtros.origem) q.set("origem", filtros.origem);
+    if (filtros.produto) q.set("produto", filtros.produto);
+    if (filtros.responsavel) q.set("responsavel", filtros.responsavel);
+    if (filtros.motivoPerda) q.set("motivoPerda", filtros.motivoPerda);
+    if (filtros.criadoDe) q.set("criadoDe", filtros.criadoDe);
+    if (filtros.criadoAte) q.set("criadoAte", filtros.criadoAte);
+    if (filtros.ordenarPor !== "criado_em") q.set("ordenar", filtros.ordenarPor);
+    if (filtros.crescente) q.set("dir", "asc");
+    if (filtros.pagina > 1) q.set("pagina", String(filtros.pagina));
     for (const [k, v] of Object.entries(troca)) {
       if (v === null) q.delete(k);
       else q.set(k, v);
@@ -156,7 +176,191 @@ export default async function PaginaNegocios({
     return s ? `/negocios?${s}` : "/negocios";
   }
 
+  /** Se o filtro daquela coluna esta ativo — alimenta o funil do B-044. */
+  function filtroAtivo(chave: string): boolean {
+    switch (chave) {
+      case "titulo":
+        return Boolean(filtros.titulo);
+      case "organizacao":
+        return Boolean(filtros.organizacao);
+      case "valor":
+        return Boolean(filtros.valorMin || filtros.valorMax);
+      case "etapa":
+        return Boolean(filtros.etapa);
+      case "status":
+        return Boolean(filtros.status);
+      case "origem":
+        return Boolean(filtros.origem);
+      case "produto":
+        return Boolean(filtros.produto);
+      case "responsavel":
+        return Boolean(filtros.responsavel);
+      case "motivo_perda":
+        return Boolean(filtros.motivoPerda);
+      case "criado_em":
+        return Boolean(filtros.criadoDe || filtros.criadoAte);
+      default:
+        return false;
+    }
+  }
+
+  /** O controle de filtro que cada coluna hospeda no cabecalho (B-042). */
+  function celulaFiltro(c: Coluna) {
+    switch (c.chave) {
+      case "titulo":
+        return <FiltroTexto nomeParam="titulo" valor={filtros.titulo} rotulo="Título" />;
+      case "organizacao":
+        return (
+          <FiltroTexto nomeParam="organizacao" valor={filtros.organizacao} rotulo="Organização" />
+        );
+      case "valor":
+        return <FiltroNumero min={filtros.valorMin} max={filtros.valorMax} />;
+      case "etapa":
+        return (
+          <FiltroSelecao
+            nomeParam="etapa"
+            valor={filtros.etapa}
+            rotuloTodos="Todas as etapas"
+            opcoes={(etapas ?? []).map((e) => ({ valor: e.id, rotulo: e.nome }))}
+          />
+        );
+      case "status":
+        return (
+          <FiltroSelecao
+            nomeParam="status"
+            valor={filtros.status}
+            rotuloTodos="Todos os status"
+            opcoes={STATUS_OPCOES}
+          />
+        );
+      case "origem":
+        return (
+          <FiltroSelecao
+            nomeParam="origem"
+            valor={filtros.origem}
+            rotuloTodos="Todas as origens"
+            opcoes={(origens ?? []).map((o) => ({ valor: o.id, rotulo: o.nome }))}
+          />
+        );
+      case "produto":
+        return (
+          <FiltroSelecao
+            nomeParam="produto"
+            valor={filtros.produto}
+            rotuloTodos="Todos os produtos"
+            opcoes={(produtos ?? []).map((o) => ({ valor: o.id, rotulo: o.nome }))}
+          />
+        );
+      case "responsavel":
+        return <FiltroResponsavel valor={filtros.responsavel} usuarios={usuarios ?? []} />;
+      case "motivo_perda":
+        return (
+          <FiltroSelecao
+            nomeParam="motivoPerda"
+            valor={filtros.motivoPerda}
+            rotuloTodos="Todos os motivos"
+            opcoes={(motivos ?? []).map((o) => ({ valor: o.id, rotulo: o.nome }))}
+          />
+        );
+      case "criado_em":
+        return <FiltroData de={filtros.criadoDe} ate={filtros.criadoAte} />;
+      default:
+        return null;
+    }
+  }
+
   const celula = "px-3 align-middle";
+
+  const cabecalho = (
+    <thead className="bg-surface-sunken sticky top-0 z-20">
+      <tr>
+        {COLUNAS.map((c) => {
+          const ativa = c.chave === filtros.ordenarPor;
+          const proximaDir = ativa && filtros.crescente ? null : "asc";
+          const Icone = !ativa ? ChevronsUpDown : filtros.crescente ? ArrowUp : ArrowDown;
+          return (
+            <th
+              key={c.chave}
+              scope="col"
+              aria-sort={ativa ? (filtros.crescente ? "ascending" : "descending") : "none"}
+              className={`border-border h-9 border-b text-left font-semibold ${
+                c.esconde ? ESCONDE_CLASSE[c.esconde] : ""
+              }`}
+            >
+              <LinkOrdenacao
+                href={comParametros({ ordenar: c.chave, dir: proximaDir, pagina: null })}
+                className={`hover:text-text flex h-9 items-center gap-1 px-3 text-xs uppercase tracking-caps ${
+                  c.numerica ? "justify-end" : ""
+                } ${ativa ? "text-text" : "text-text-muted"}`}
+              >
+                {c.rotulo}
+                <Icone className="size-3 shrink-0" aria-hidden />
+                <IndicadorFiltro ativo={filtroAtivo(c.chave)} />
+              </LinkOrdenacao>
+            </th>
+          );
+        })}
+      </tr>
+      <tr>
+        {COLUNAS.map((c) => (
+          <th
+            key={c.chave}
+            className={`border-border bg-surface-sunken border-b p-1 font-normal ${
+              c.esconde ? ESCONDE_CLASSE[c.esconde] : ""
+            }`}
+          >
+            {c.filtro && celulaFiltro(c)}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+
+  const corpo = (linhas ?? []).map((n, i) => (
+    <tr
+      key={n.id}
+      // Entrada escalonada por linha, com teto: cinquenta linhas em
+      // cascata viraria espera, não elegância.
+      style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
+      className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 motion-safe:transition-colors"
+    >
+      {/* A faixa de cor da etapa acompanha o nome escrito na
+          coluna Etapa — nunca substitui (B-076). */}
+      <td
+        className={`h-row-cozy faixa-etapa max-w-[22rem] truncate p-0 font-medium ${faixaDaEtapa(
+          n.etapa?.ordem
+        )}`}
+      >
+        <Link
+          href={`/negocios/${n.id}`}
+          className="hover:text-brand-ink block truncate px-3 py-2 underline-offset-4 hover:underline motion-safe:transition-colors"
+        >
+          {n.titulo}
+        </Link>
+      </td>
+      <td className={`${celula} max-w-[16rem] truncate`}>{texto(n.organizacao?.nome)}</td>
+      <td className={`${celula} tabular whitespace-nowrap text-right`}>{real(n.valor)}</td>
+      <td className={`${celula} whitespace-nowrap`}>
+        <EtiquetaEtapa nome={n.etapa?.nome} ordem={n.etapa?.ordem} />
+      </td>
+      <td className={celula}>
+        <EtiquetaStatus status={n.status} />
+      </td>
+      <td className={`${celula} ${ESCONDE_CLASSE.lg} truncate`}>{texto(n.origem?.nome)}</td>
+      <td className={`${celula} ${ESCONDE_CLASSE.lg} truncate`}>{texto(n.produto?.nome)}</td>
+      <td className={`${celula} ${ESCONDE_CLASSE.md} truncate`}>
+        {n.usuario ? (
+          <UsuarioComFoto nome={n.usuario.nome} foto={n.usuario.foto_url} tamanho="sm" />
+        ) : (
+          texto(null)
+        )}
+      </td>
+      <td className={`${celula} ${ESCONDE_CLASSE.xl} truncate`}>{texto(n.motivo_perda?.nome)}</td>
+      <td className={`${celula} ${ESCONDE_CLASSE.md} tabular whitespace-nowrap`}>
+        {data(n.criado_em)}
+      </td>
+    </tr>
+  ));
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -167,10 +371,10 @@ export default async function PaginaNegocios({
             {total === 0
               ? "Nenhum negócio"
               : `${total.toLocaleString("pt-BR")} ${total === 1 ? "negócio" : "negócios"}`}
-            {total > POR_PAGINA && ` · página ${pagina} de ${ultimaPagina}`}
+            {total > POR_PAGINA && ` · página ${filtros.pagina} de ${ultimaPagina}`}
           </p>
         </div>
-        <Filtros etapas={etapas ?? []} usuarios={usuarios ?? []} />
+        <Filtros />
       </div>
 
       {error ? (
@@ -184,134 +388,22 @@ export default async function PaginaNegocios({
         </div>
       ) : (
         <>
-          <div className="min-h-0 flex-1 overflow-auto">
-            <table className="w-full border-collapse text-base">
-              <thead className="bg-surface-sunken sticky top-0 z-20">
-                <tr>
-                  {COLUNAS.map((c) => {
-                    const ativa = c.chave === ordenarPor;
-                    const proximaDir = ativa && crescente ? null : "asc";
-                    const Icone = !ativa
-                      ? ChevronsUpDown
-                      : crescente
-                        ? ArrowUp
-                        : ArrowDown;
-                    return (
-                      <th
-                        key={c.chave}
-                        scope="col"
-                        aria-sort={
-                          ativa
-                            ? crescente
-                              ? "ascending"
-                              : "descending"
-                            : "none"
-                        }
-                        className={`border-border h-9 border-b text-left font-semibold ${
-                          c.esconde ? ESCONDE_CLASSE[c.esconde] : ""
-                        }`}
-                      >
-                        <Link
-                          href={comParametros({
-                            ordenar: c.chave,
-                            dir: proximaDir,
-                            pagina: null,
-                          })}
-                          className={`hover:text-text flex h-9 items-center gap-1 px-3 text-xs uppercase tracking-caps ${
-                            c.numerica ? "justify-end" : ""
-                          } ${ativa ? "text-text" : "text-text-muted"}`}
-                        >
-                          {c.rotulo}
-                          <Icone className="size-3 shrink-0" aria-hidden />
-                        </Link>
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {(linhas ?? []).map((n, i) => (
-                  <tr
-                    key={n.id}
-                    // Entrada escalonada por linha, com teto: cinquenta
-                    // linhas em cascata viraria espera, não elegância.
-                    style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
-                    className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 motion-safe:transition-colors"
-                  >
-                    {/* A faixa de cor da etapa acompanha o nome escrito na
-                        coluna Etapa — nunca substitui (B-076). */}
-                    <td
-                      className={`h-row-cozy faixa-etapa max-w-[22rem] truncate p-0 font-medium ${faixaDaEtapa(
-                        n.etapa?.ordem
-                      )}`}
-                    >
-                      <Link
-                        href={`/negocios/${n.id}`}
-                        className="hover:text-brand-ink block truncate px-3 py-2 underline-offset-4 hover:underline motion-safe:transition-colors"
-                      >
-                        {n.titulo}
-                      </Link>
-                    </td>
-                    <td className={`${celula} max-w-[16rem] truncate`}>
-                      {texto(n.organizacao?.nome)}
-                    </td>
-                    <td className={`${celula} tabular whitespace-nowrap text-right`}>
-                      {real(n.valor)}
-                    </td>
-                    <td className={`${celula} whitespace-nowrap`}>
-                      <EtiquetaEtapa
-                        nome={n.etapa?.nome}
-                        ordem={n.etapa?.ordem}
-                      />
-                    </td>
-                    <td className={celula}>
-                      <EtiquetaStatus status={n.status} />
-                    </td>
-                    <td className={`${celula} ${ESCONDE_CLASSE.lg} truncate`}>
-                      {texto(n.origem?.nome)}
-                    </td>
-                    <td className={`${celula} ${ESCONDE_CLASSE.lg} truncate`}>
-                      {texto(n.produto?.nome)}
-                    </td>
-                    <td className={`${celula} ${ESCONDE_CLASSE.md} truncate`}>
-                      {n.usuario ? (
-                        <UsuarioComFoto
-                          nome={n.usuario.nome}
-                          foto={n.usuario.foto_url}
-                          tamanho="sm"
-                        />
-                      ) : (
-                        texto(null)
-                      )}
-                    </td>
-                    <td className={`${celula} ${ESCONDE_CLASSE.xl} truncate`}>
-                      {texto(n.motivo_perda?.nome)}
-                    </td>
-                    <td
-                      className={`${celula} ${ESCONDE_CLASSE.md} tabular whitespace-nowrap`}
-                    >
-                      {data(n.criado_em)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {total === 0 && (
-              <div className="px-4 py-16 text-center">
-                <p className="text-text-secondary text-md font-medium">
-                  {busca || status || etapaId || responsavelId
-                    ? "Nenhum negócio corresponde aos filtros."
-                    : "A base ainda não tem negócios."}
-                </p>
-                <p className="text-text-muted mt-1 text-sm">
-                  {busca || status || etapaId || responsavelId
-                    ? "Ajuste ou limpe os filtros acima."
-                    : "Nenhum negócio cadastrado."}
-                </p>
-              </div>
-            )}
-          </div>
+          {total === 0 ? (
+            <div className="px-4 py-16 text-center">
+              <p className="text-text-secondary text-md font-medium">
+                {algumFiltro
+                  ? "Nenhum negócio corresponde aos filtros."
+                  : "A base ainda não tem negócios."}
+              </p>
+              <p className="text-text-muted mt-1 text-sm">
+                {algumFiltro
+                  ? "Ajuste ou limpe os filtros acima."
+                  : "Nenhum negócio cadastrado."}
+              </p>
+            </div>
+          ) : (
+            <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
+          )}
 
           {ultimaPagina > 1 && (
             <div className="border-border bg-surface flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2">
@@ -321,14 +413,14 @@ export default async function PaginaNegocios({
               </span>
               <div className="flex gap-1">
                 <Paginacao
-                  href={comParametros({ pagina: String(pagina - 1) })}
-                  desabilitado={pagina <= 1}
+                  href={comParametros({ pagina: String(filtros.pagina - 1) })}
+                  desabilitado={filtros.pagina <= 1}
                 >
                   Anterior
                 </Paginacao>
                 <Paginacao
-                  href={comParametros({ pagina: String(pagina + 1) })}
-                  desabilitado={pagina >= ultimaPagina}
+                  href={comParametros({ pagina: String(filtros.pagina + 1) })}
+                  desabilitado={filtros.pagina >= ultimaPagina}
                 >
                   Próxima
                 </Paginacao>

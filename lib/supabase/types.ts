@@ -649,6 +649,7 @@ export type Database = {
           id: string
           nome: string
           papel_id: string
+          preferencia_lista_negocios: string | null
         }
         Insert: {
           ativo?: boolean
@@ -659,6 +660,7 @@ export type Database = {
           id?: string
           nome: string
           papel_id: string
+          preferencia_lista_negocios?: string | null
         }
         Update: {
           ativo?: boolean
@@ -669,6 +671,7 @@ export type Database = {
           id?: string
           nome?: string
           papel_id?: string
+          preferencia_lista_negocios?: string | null
         }
         Relationships: [
           {

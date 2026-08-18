@@ -16,10 +16,17 @@ import { ZonaLateral } from "./zona-lateral";
  */
 export default async function PaginaNegocio({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id } = await params;
+  const { de } = await searchParams;
+  // Quem abriu pelo Kanban volta para o Kanban; o padrao continua sendo
+  // a Lista, de onde a maioria dos cliques parte.
+  const voltarPara = de === "kanban" ? "/kanban" : "/negocios";
+  const voltarRotulo = de === "kanban" ? "Kanban" : "Negócios";
   const supabase = await createClient();
 
   const { data: negocio } = await supabase
@@ -125,11 +132,11 @@ export default async function PaginaNegocio({
     <div className="flex h-full min-w-0 flex-col">
       <div className="border-border shrink-0 border-b px-4 py-3">
         <Link
-          href="/negocios"
+          href={voltarPara}
           className="text-text-muted hover:text-text mb-2 inline-flex items-center gap-1 text-sm"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Negócios
+          {voltarRotulo}
         </Link>
 
         <Cabecalho
