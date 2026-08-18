@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v1.8)
+﻿# 00 — Status e Retomada (v1.9)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v1.8 |
+| **Versão** | v1.9 |
 | **Última atualização** | 18/08/2026 — Sessão 08 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,7 +32,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v1.8.md` |
+| `00-status-e-retomada-v1.9.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
 | `03-log-de-decisoes-v0.13.md` |
@@ -195,7 +195,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v1.8 | vivo | — |
+| 00 | Status e Retomada | v1.9 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
 | 03 | Log de Decisões | v0.13 | vivo | — |
@@ -261,7 +261,7 @@ Registro completo no documento **03 — Log de Decisões**: **102 decisões (D-0
 | ~~P-021~~ | ~~Reconstituir trajetória pelos changelogs~~ | — | ✅ **encerrada 17/08 — resposta parcial:** só 675 dos 2.458 têm mudança de etapa. 10.923 mudanças salvas |
 | P-022 | Habilitar a Data API do Bubble e obter token | fase final | **Saiu do caminho crítico** por D-110 |
 | P-023 | Mapear os eixos admissíveis de cada um dos treze indicadores | Doc 05/07 | A-09 — trabalho de Fase 2 |
-| P-024 | Obter os vetores do logotipo, símbolo "+" e monograma | Doc 08 | Estão no pacote que acompanha o manual — depende do maestro |
+| ~~P-024~~ | ~~Obter os vetores do logotipo, símbolo "+" e monograma~~ | — | ✅ **encerrada 18/08.** O maestro subiu o handoff de marca (BR/BAUEN). Símbolo, favicon e assinatura implementados; referência em `docs/marca/` |
 | P-027 | Modelar a entidade Notificação no schema | Doc 09 | A-07 — pendente desde o Bloco 4 |
 | ~~P-028~~ | ~~Regra de conversão de status~~ | — | ✅ **aplicada na carga de 17/08**, conforme a proposta da seção 5.1 |
 | ~~P-026~~ | ~~URL de retorno OAuth~~ | — | ✅ **encerrada 17/08.** Login por Google funcionando em produção |
@@ -315,6 +315,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v1.9** — 18/08/2026 — **Identidade visual da marca implementada (P-024 encerrada).** O maestro subiu o handoff BR/BAUEN. O símbolo "+" em cinco blocos (miolo amarelo) virou componente React (`components/dominio/marca.tsx`), com os braços em `currentColor` para servir os dois temas sem variantes. O placeholder "L" da sidebar deu lugar à assinatura **LURE + chip CRM**; a tela de login ganhou o split-screen da marca (painel escuro com tagline "Organize potencial em resultados." + acesso Google); favicon e apple-icon vieram dos vetores do handoff. A pasta de referência foi movida de `components/ui/` para **`docs/marca/`**. Navegação segue na sidebar (decisão do maestro — nada foi para a top bar).
 - **v1.8** — 18/08/2026 — **Sessão 08: F6 construída.** Tela de Atividades em dois modos — lista **um dia por vez, abrindo em Hoje** (padrão do Pipedrive, ajustado a pedido do maestro), com vencidas fixas no topo, e calendário mensal. Criação com campos completos e vínculo opcional a negócio, organização ou pessoa (D-108), conclusão otimista, registro retroativo, filtros por situação/tipo/responsável e exportação CSV (B-085). **Sem migração** — o schema já sustentava os três vínculos desde a carga. ⚠️ Sem verificação visual (Google OAuth barra o agente); o calendário ficou em visão mensal, anotado em 4.2.
 - **v1.7** — 18/08/2026 — **Fim da sessão 07. F3 fechada**: filtro nas dez colunas (B-042), indicador de filtro ativo (B-044), persistência por usuário via `usuario.preferencia_lista_negocios` (B-045, nova migração), exportação CSV (B-047) e lista virtualizada. Corrigidos o link "voltar" do detalhe (respeita a origem, Lista ou Kanban) e o seletor de responsável, reescrito sobre `Popover` do Radix para tirar de vez o bug de sobreposição. ⚠️ **Sem verificação visual** — o agente não consegue logar via Google OAuth sozinho; falta abrir as telas novas (e as antigas) nos dois temas.
 - **v1.6** — 17/08/2026 — **Fim da sessão 06.** **F4 concluída**: detalhe do negócio em três zonas, linha do tempo com o seletor da D-058, anotações, e a trava de desfecho valendo nos três caminhos. **P-032 e P-034 encerradas** — o provedor Email foi desligado e as telas foram conferidas nos dois temas, dívida aberta desde a sessão 05. D-115 a D-118 e a correção **C-05**, um defeito que a própria D-109 desta sessão criou e que impedia um usuário real de trabalhar. ⚠️ O log de eventos continua com zero linhas: ele passa a gravar na primeira edição feita no detalhe.

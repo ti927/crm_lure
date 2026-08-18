@@ -20,7 +20,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CRM Lure",
+  title: "Lure CRM",
   description: "CRM da Lure Consultoria",
 };
 

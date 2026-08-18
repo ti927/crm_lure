@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Navegacao } from "@/components/dominio/navegacao";
 import { BotaoSair } from "@/components/dominio/botao-sair";
+import { LogoLure } from "@/components/dominio/marca";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,14 +31,9 @@ export default async function LayoutSistema({
     <div className="bg-background flex min-h-svh">
       <aside className="bg-surface border-border hidden w-56 shrink-0 flex-col border-r md:flex">
         <div className="border-border flex h-14 items-center border-b px-4">
-          <Link href="/negocios" className="flex items-center gap-2">
-            {/* Marca em texto ate os vetores do logotipo chegarem (P-024). */}
-            <span className="bg-brand text-brand-on grid size-6 place-items-center rounded-sm text-sm font-bold">
-              L
-            </span>
-            <span className="text-md font-semibold tracking-tight">
-              CRM Lure
-            </span>
+          {/* P-024 encerrada: os vetores da marca chegaram (handoff BR/BAUEN). */}
+          <Link href="/negocios" aria-label="Lure CRM — início">
+            <LogoLure />
           </Link>
         </div>
         <Navegacao />
