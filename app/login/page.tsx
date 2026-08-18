@@ -33,7 +33,7 @@ export default async function Login({
         no container faz os braços do símbolo (currentColor) ficarem
         brancos; o miolo continua amarelo.
       */}
-      <aside className="text-neutral-0 hidden flex-col justify-between bg-neutral-950 p-12 md:flex">
+      <aside className="text-neutral-0 border-border hidden flex-col justify-between border-r bg-neutral-950 p-12 md:flex">
         <div className="flex items-center gap-2.5">
           <SimboloLure className="size-8 shrink-0" />
           <span className="flex items-center gap-1.5">
@@ -69,8 +69,10 @@ export default async function Login({
         </span>
       </aside>
 
-      {/* Painel do acesso. Segue o tema do sistema. */}
-      <div className="relative flex items-center justify-center px-6 py-12">
+      {/* Painel do acesso. Segue o tema do sistema. Usa `surface` (não o
+          fundo da página) para destacar do painel de marca no tema escuro,
+          onde ambos seriam quase pretos e se fundiriam. */}
+      <div className="bg-surface relative flex items-center justify-center px-6 py-12">
         <div className="absolute right-6 top-6">
           <ThemeToggle />
         </div>

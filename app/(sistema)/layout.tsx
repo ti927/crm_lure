@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Navegacao } from "@/components/dominio/navegacao";
 import { BotaoSair } from "@/components/dominio/botao-sair";
 import { LogoLure } from "@/components/dominio/marca";
+import { RodapeSistema } from "@/components/dominio/rodape-sistema";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,30 +29,37 @@ export default async function LayoutSistema({
   } = await supabase.auth.getUser();
 
   return (
-    <div className="bg-background flex min-h-svh">
-      <aside className="bg-surface border-border hidden w-56 shrink-0 flex-col border-r md:flex">
-        <div className="border-border flex h-14 items-center border-b px-4">
-          {/* P-024 encerrada: os vetores da marca chegaram (handoff BR/BAUEN). */}
-          <Link href="/negocios" aria-label="Lure CRM — início">
-            <LogoLure />
-          </Link>
+    // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura, e o
+    // rodapé fica fixo no pé. O `min-h-0` na linha é o que deixa as telas
+    // com rolagem interna encolherem em vez de empurrar o rodapé para fora.
+    <div className="bg-background flex min-h-svh flex-col">
+      <div className="flex min-h-0 flex-1">
+        <aside className="bg-surface border-border hidden w-56 shrink-0 flex-col border-r md:flex">
+          <div className="border-border flex h-14 items-center border-b px-4">
+            {/* P-024 encerrada: os vetores da marca chegaram (handoff BR/BAUEN). */}
+            <Link href="/negocios" aria-label="Lure CRM — início">
+              <LogoLure />
+            </Link>
+          </div>
+          <Navegacao />
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="bg-surface border-border sticky top-0 z-30 flex h-14 shrink-0 items-center justify-end gap-2 border-b px-4">
+            {user?.email && (
+              <span className="text-text-muted mr-1 hidden truncate text-sm sm:block">
+                {user.email}
+              </span>
+            )}
+            <ThemeToggle />
+            <BotaoSair />
+          </header>
+
+          <main className="min-w-0 flex-1">{children}</main>
         </div>
-        <Navegacao />
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="bg-surface border-border sticky top-0 z-30 flex h-14 shrink-0 items-center justify-end gap-2 border-b px-4">
-          {user?.email && (
-            <span className="text-text-muted mr-1 hidden truncate text-sm sm:block">
-              {user.email}
-            </span>
-          )}
-          <ThemeToggle />
-          <BotaoSair />
-        </header>
-
-        <main className="min-w-0 flex-1">{children}</main>
       </div>
+
+      <RodapeSistema />
     </div>
   );
 }
