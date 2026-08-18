@@ -125,6 +125,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `scripts/extrai-pipedrive.mjs` | Extrai as 13 entidades, JSON bruto por entidade |
 | `scripts/extrai-changelog.mjs` | Histórico campo a campo dos 2.458 negócios. Retoma de onde parou |
 | `scripts/carga-migracao.mjs` | A carga. **`--ensaio` roda tudo e desfaz** — use sempre antes |
+| `scripts/recupera-acentos.mjs` | Repara acentos perdidos na extração. Ensaia por padrão; `--aplicar` grava |
 
 ⚠️ **A carga é reversível enquanto ninguém estiver usando o sistema**: `evento_negocio` tem `on delete cascade` no negócio. Deixa de ser no instante em que os sócios começarem a trabalhar, porque aí evento real e evento de carga se misturam.
 
@@ -134,11 +135,15 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 Também corrigidos nesta sessão: o link "voltar" do detalhe do negócio agora leva à Lista ou ao Kanban conforme a origem do clique (antes sempre voltava para `/negocios`), e o seletor de responsável — que aparecia atrás do cabeçalho fixo da tabela — foi reescrito sobre `Popover` do Radix (portal, já era dependência do projeto), o que tira o bug de vez em vez de só ajustar um número de `z-index`.
 
-⚠️ **O log de eventos ainda não tem uma única linha,** até onde a sessão 06 apurou. A carga não dispara o gatilho, que é `after update`. Ele passa a gravar na primeira edição feita no detalhe do negócio — vale conferir que gravou, porque é o item que o `CLAUDE.md` marca como não recuperável. Não verificado nesta sessão.
+✅ **O log de eventos começou a gravar** — 9 eventos em 18/08, verificados na base. Era o item que o `CLAUDE.md` marca como não recuperável, e ele nasceu limpo (a carga não gerou evento).
+
+⚠️ *(histórico)* **O log de eventos ainda não tinha uma única linha,** até onde a sessão 06 apurou. A carga não dispara o gatilho, que é `after update`. Ele passa a gravar na primeira edição feita no detalhe do negócio — vale conferir que gravou, porque é o item que o `CLAUDE.md` marca como não recuperável. Não verificado nesta sessão.
 
 **Pedido do maestro em 17/08, ainda não construído:** **acesso rápido a clientes pelo celular** — uma lista de clientes com busca, como porta de entrada do mobile. Isso amplia a D-097, que definiu o celular em torno do negócio e deixou Contatos de fora. O banco já sustenta; o trabalho é de tela.
 
 **Depois:** F8 (automações), F9 (mobile), F10 (virada).
+
+⚠️ **Acentos corrompidos, corrigidos em 18/08:** 388 registros (386 pessoas, 2 organizações) chegaram com `U+FFFD` no lugar de letras acentuadas — "Marco Aurélio" virou "Marco Aur�lio". **A carga não teve culpa**: os arquivos brutos da extração já traziam o defeito, só nos campos `name`/`first_name` de `persons.json`, e o mesmo nome aparece íntegro em `deals.json` e `organizations.json` — a corrupção está no dado do próprio Pipedrive. **343 foram recuperados (88%)** por `scripts/recupera-acentos.mjs`, que cruza o nome quebrado com as strings íntegras da própria extração, primeiro inteiro e depois palavra a palavra, aceitando só o que casa com um único candidato. Organizações ficaram 100% limpas. **Restam 45 pessoas** listadas em `acentos-pendentes.tsv` (fora do git — o repositório é público e são nomes reais), para conserto à mão pela ficha, que agora é editável.
 
 ⚠️ **Duplicatas de organização, medidas em 18/08:** **1.195 dos 2.889 cadastros são repetição** — 668 grupos de nome idêntico, 41% da lista; "Sicoob Credseguro" aparece 6 vezes, "Amaral Group" 18. Vieram assim do Pipedrive. A Lista **agrupa na apresentação** (1.687 linhas em vez de 2.889) e mostra os **títulos dos negócios** de cada cadastro como referência — é o que distingue um "Sicoob Credseguro" do outro, já que cidade e site estão vazios. **Não é mesclagem**, que segue fora do MVP: nada foi fundido nem apagado. Se o maestro quiser de fato unificar os cadastros, isso é decisão e trabalho à parte.
 

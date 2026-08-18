@@ -59,3 +59,8 @@ desktop.ini
 # Dados brutos extraidos do Pipedrive (F1). Base real de clientes —
 # nunca vai para o GitHub.
 /dados/
+
+# ⚠️ Relatorios com dado real de cliente. O repositorio e PUBLICO (D-114):
+# nome de pessoa e de organizacao nunca podem entrar aqui.
+/acentos-pendentes.tsv
+/*.tsv
