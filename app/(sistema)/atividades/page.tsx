@@ -12,15 +12,16 @@ import {
 } from "./consulta";
 
 /**
- * F6 — Atividades, em modo lista e modo calendário (B-080).
+ * F6 — Atividades, em três vistas (B-080): Lista (um dia por vez, abrindo
+ * em Hoje, no modelo do Pipedrive), Vencidas (as pendências atrasadas,
+ * cada uma com a data em que venceu) e Calendário (mês).
  *
  * ⚠️ Atividade não exige mais negócio (D-108): pode pertencer a negócio,
  * organização, pessoa ou nada. 76% da base não tem negócio.
  *
- * ⚠️ R-006: são 6.483 atividades. A tela nunca as carrega todas. A lista
- * mostra um dia por vez (padrão: hoje), no modelo do Pipedrive — mais as
- * pendências vencidas no topo, que não somem enquanto não forem tratadas.
- * O calendário carrega só o mês visível.
+ * ⚠️ R-006: são 6.483 atividades. A tela nunca as carrega todas — a Lista
+ * é um dia por vez, o Calendário é só o mês visível, e as Vencidas são as
+ * poucas pendências em atraso.
  */
 
 /** Filtros comuns de situação/tipo/responsável, sem o recorte de data. */
@@ -63,38 +64,49 @@ export default async function PaginaAtividades({
       .order("hora_inicio", { nullsFirst: true })
       .returns<LinhaAtividade[]>();
     atividadesMes = data ?? [];
+  } else if (filtros.vista === "vencidas") {
+    // Todas as pendências em atraso, da mais antiga para a mais recente —
+    // as que estão paradas há mais tempo aparecem primeiro. Situação não
+    // se aplica: uma vencida é, por definição, uma pendente.
+    let cv = supabase
+      .from("atividade")
+      .select(SELECAO)
+      .eq("concluida", false)
+      .lt("data", hoje);
+    if (filtros.responsavel) cv = cv.eq("responsavel_id", filtros.responsavel);
+    if (filtros.tipo) cv = cv.eq("tipo_id", filtros.tipo);
+    const { data } = await cv
+      .order("data")
+      .order("hora_inicio", { nullsFirst: true })
+      .returns<LinhaAtividade[]>();
+    vencidas = data ?? [];
   } else {
-    // Atividades do dia em foco.
+    // Lista: só as atividades do dia em foco. Nada de vencidas aqui — elas
+    // moram na própria aba (pedido do maestro em 18/08).
     let cDia = supabase.from("atividade").select(SELECAO).eq("data", dia);
     cDia = aplicaFiltros(cDia, filtros);
     const { data } = await cDia
       .order("hora_inicio", { nullsFirst: true })
       .returns<LinhaAtividade[]>();
     doDia = data ?? [];
-
-    // Vencidas: pendências atrasadas, sempre no topo quando o foco é hoje.
-    // Não aparecem se o recorte é "só concluídas" (uma vencida é, por
-    // definição, uma pendente).
-    if (dia === hoje && filtros.situacao !== "concluidas") {
-      let cv = supabase
-        .from("atividade")
-        .select(SELECAO)
-        .eq("concluida", false)
-        .lt("data", hoje);
-      if (filtros.responsavel) cv = cv.eq("responsavel_id", filtros.responsavel);
-      if (filtros.tipo) cv = cv.eq("tipo_id", filtros.tipo);
-      const { data: venc } = await cv
-        .order("data")
-        .order("hora_inicio", { nullsFirst: true })
-        .returns<LinhaAtividade[]>();
-      vencidas = venc ?? [];
-    }
   }
 
-  const [{ data: tipos }, { data: usuarios }] = await Promise.all([
-    supabase.from("tipo_atividade").select("id, nome").eq("ativo", true).order("ordem"),
-    supabase.from("usuario").select("id, nome, foto_url").eq("ativo", true).order("nome"),
-  ]);
+  // Contagem de vencidas para o número na aba — sempre, respeitando os
+  // filtros de tipo/responsável que também valem naquela vista.
+  let contaVencidas = supabase
+    .from("atividade")
+    .select("id", { count: "exact", head: true })
+    .eq("concluida", false)
+    .lt("data", hoje);
+  if (filtros.responsavel) contaVencidas = contaVencidas.eq("responsavel_id", filtros.responsavel);
+  if (filtros.tipo) contaVencidas = contaVencidas.eq("tipo_id", filtros.tipo);
+
+  const [{ count: totalVencidas }, { data: tipos }, { data: usuarios }] =
+    await Promise.all([
+      contaVencidas,
+      supabase.from("tipo_atividade").select("id, nome").eq("ativo", true).order("ordem"),
+      supabase.from("usuario").select("id, nome, foto_url").eq("ativo", true).order("nome"),
+    ]);
 
   const exportHref = montaExportHref(p);
 
@@ -103,6 +115,7 @@ export default async function PaginaAtividades({
       doDia={doDia}
       vencidas={vencidas}
       atividadesMes={atividadesMes}
+      totalVencidas={totalVencidas ?? 0}
       dia={dia}
       hoje={hoje}
       tipos={tipos ?? []}

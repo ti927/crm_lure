@@ -115,7 +115,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F3 — Lista** | ✅ **fechada 18/08.** Filtro nas dez colunas, indicador de coluna filtrada, persistência por usuário, exportação CSV e lista virtualizada — ver 4.2 sobre a verificação visual que falta |
 | **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações, trava nos três caminhos** |
 | **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
-| **F6 — Atividades** | ✅ **construída 18/08.** Modo lista **um dia por vez, abrindo em Hoje** (padrão do Pipedrive), com navegação ‹ › entre dias e as **vencidas destacadas no topo**; modo calendário mensal; criação com vínculo opcional a negócio/organização/pessoa (D-108); conclusão; registro retroativo; filtros por situação/tipo/responsável; exportação CSV. **Sem migração** — o schema já sustentava os três vínculos |
+| **F6 — Atividades** | ✅ **construída 18/08.** Três abas: **Lista** (um dia por vez, abrindo em Hoje, padrão do Pipedrive, com navegação ‹ › entre dias), **Vencidas** (a pilha de atrasadas, cada uma com a data em que venceu e há quantos dias, número na aba) e **Calendário** mensal; criação com vínculo opcional a negócio/organização/pessoa (D-108); conclusão; registro retroativo; filtros por situação/tipo/responsável; exportação CSV. **Sem migração** — o schema já sustentava os três vínculos |
 
 **Scripts que passam a existir:**
 
@@ -139,7 +139,7 @@ Também corrigidos nesta sessão: o link "voltar" do detalhe do negócio agora l
 
 **Depois:** F7 (contatos e produtos), F8 (automações), F9 (mobile), F10 (virada).
 
-**Padrão da lista (ajustado a pedido do maestro em 18/08):** a lista abre **no dia atual** — um dia por vez, no modelo do Pipedrive — com navegação ‹ › entre dias, botão "Hoje" para voltar, e as **pendências vencidas fixas no topo** enquanto o foco é hoje. O filtro de responsável segue mostrando todos por padrão (dois sócios que querem ver o que há na mesa). O **calendário** ficou em visão **mensal** — não a grade semanal com faixas de hora do Pipedrive, que seria esforço além da paridade e ninguém pediu.
+**Organização das Atividades (ajustada em duas rodadas com o maestro, 18/08):** três abas. A **Lista** abre **no dia atual**, um dia por vez, com navegação ‹ › e botão "Hoje" — mostra só as atividades daquele dia, sem as vencidas junto. As **Vencidas** ganharam **aba própria** (o maestro pediu que não empurrassem as de hoje para baixo), cada uma com a data em que venceu e há quantos dias, e o total aparece como número vermelho na aba. O **Calendário** ficou em visão **mensal** — não a grade semanal com faixas de hora do Pipedrive, que seria esforço além da paridade. O filtro de responsável mostra todos por padrão (dois sócios que querem ver o que há na mesa).
 
 ⚠️ **Dívida aberta desde a sessão 05, agravada nesta:** nenhuma tela foi conferida nos dois temas — nem as novas (filtro por coluna, exportação CSV) nem as antigas. É a regra 4 do `CLAUDE.md` e continua descumprida.
 

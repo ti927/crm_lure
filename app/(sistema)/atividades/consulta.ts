@@ -44,7 +44,7 @@ export const SELECAO = `
   pessoa(id, nome)
 `;
 
-export type Vista = "lista" | "calendario";
+export type Vista = "lista" | "vencidas" | "calendario";
 export type Situacao = "pendentes" | "concluidas" | "todas";
 
 export type FiltrosAtividade = {
@@ -63,7 +63,9 @@ export type Busca = Record<string, string | string[] | undefined>;
 const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 export function parseFiltros(p: Busca): FiltrosAtividade {
-  const vista = um(p.vista) === "calendario" ? "calendario" : "lista";
+  const v = um(p.vista);
+  const vista: Vista =
+    v === "calendario" ? "calendario" : v === "vencidas" ? "vencidas" : "lista";
   const situacaoBruta = um(p.situacao);
   const situacao: Situacao =
     situacaoBruta === "concluidas" || situacaoBruta === "todas"

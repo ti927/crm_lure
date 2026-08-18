@@ -10,10 +10,11 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { concluirAtividade } from "./acoes";
-import { somaDias, rotuloDia, type LinhaAtividade } from "./consulta";
+import { somaDias, rotuloDia, formataData, type LinhaAtividade } from "./consulta";
 
 const ICONE_VINCULO = {
   negocio: Briefcase,
@@ -22,23 +23,20 @@ const ICONE_VINCULO = {
 } as const;
 
 /**
- * Lista de atividades no modelo do Pipedrive: um dia em foco por vez,
- * começando em hoje, com as pendências vencidas destacadas no topo — elas
- * não somem enquanto não forem tratadas. A navegação ‹ › anda dia a dia;
- * "Hoje" volta ao presente.
+ * Vista "Lista": um dia em foco por vez, começando em Hoje, no modelo do
+ * Pipedrive. As vencidas NÃO aparecem aqui — moram na aba própria, para
+ * não empurrar as atividades de hoje para baixo (pedido do maestro).
  */
 export function ListaAtividades({
   dia,
   hoje,
   doDia,
-  vencidas,
   aoEditar,
   aoMudar,
 }: {
   dia: string;
   hoje: string;
   doDia: LinhaAtividade[];
-  vencidas: LinhaAtividade[];
   aoEditar: (a: LinhaAtividade) => void;
   aoMudar: () => void;
 }) {
@@ -76,6 +74,9 @@ export function ListaAtividades({
           <ChevronRight className="size-4" aria-hidden />
         </button>
         <h2 className="text-md font-semibold">{rotuloDia(dia, hoje)}</h2>
+        {doDia.length > 0 && (
+          <span className="text-text-muted text-sm">{doDia.length}</span>
+        )}
         {dia !== hoje && (
           <button
             type="button"
@@ -87,9 +88,13 @@ export function ListaAtividades({
         )}
       </div>
 
-      {vencidas.length > 0 && (
-        <Grupo rotulo="Vencidas" total={vencidas.length} vencido>
-          {vencidas.map((a, i) => (
+      {doDia.length === 0 ? (
+        <p className="text-text-muted px-4 py-16 text-center text-sm">
+          Nenhuma atividade neste dia.
+        </p>
+      ) : (
+        <ul>
+          {doDia.map((a, i) => (
             <ItemLista
               key={a.id}
               atividade={a}
@@ -98,64 +103,85 @@ export function ListaAtividades({
               aoMudar={aoMudar}
             />
           ))}
-        </Grupo>
+        </ul>
       )}
-
-      <Grupo rotulo={rotuloDia(dia, hoje)} total={doDia.length}>
-        {doDia.length === 0 ? (
-          <li className="text-text-muted px-4 py-8 text-center text-sm">
-            Nenhuma atividade neste dia.
-          </li>
-        ) : (
-          doDia.map((a, i) => (
-            <ItemLista
-              key={a.id}
-              atividade={a}
-              indice={i}
-              aoEditar={aoEditar}
-              aoMudar={aoMudar}
-            />
-          ))
-        )}
-      </Grupo>
     </div>
   );
 }
 
-function Grupo({
-  rotulo,
-  total,
-  vencido,
-  children,
+/**
+ * Vista "Vencidas": todas as pendências em atraso, cada uma com a data em
+ * que venceu à frente. Sem navegação de dia — é a pilha inteira de
+ * atrasados de uma vez, da mais antiga para a mais recente.
+ */
+export function ListaVencidas({
+  vencidas,
+  hoje,
+  aoEditar,
+  aoMudar,
 }: {
-  rotulo: string;
-  total: number;
-  vencido?: boolean;
-  children: React.ReactNode;
+  vencidas: LinhaAtividade[];
+  hoje: string;
+  aoEditar: (a: LinhaAtividade) => void;
+  aoMudar: () => void;
 }) {
+  if (vencidas.length === 0) {
+    return (
+      <div className="px-4 py-16 text-center">
+        <p className="text-text-secondary text-md font-medium">
+          Nenhuma atividade vencida.
+        </p>
+        <p className="text-text-muted mt-1 text-sm">
+          Tudo em dia neste recorte.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <section>
-      <h3
-        className={`bg-surface-sunken border-border border-b px-4 py-1.5 text-xs font-semibold uppercase tracking-caps ${
-          vencido ? "text-danger-ink" : "text-text-muted"
-        }`}
-      >
-        {rotulo}
-        <span className="ml-2 opacity-60">{total}</span>
-      </h3>
-      <ul>{children}</ul>
-    </section>
+    <div className="flex flex-col">
+      <h2 className="bg-surface-sunken border-border text-danger-ink sticky top-0 z-10 flex items-center gap-2 border-b px-4 py-2 text-xs font-semibold uppercase tracking-caps">
+        <AlertTriangle className="size-3.5" aria-hidden />
+        Vencidas
+        <span className="opacity-60">{vencidas.length}</span>
+      </h2>
+      <ul>
+        {vencidas.map((a, i) => (
+          <ItemLista
+            key={a.id}
+            atividade={a}
+            indice={i}
+            venceuEm={a.data}
+            hoje={hoje}
+            aoEditar={aoEditar}
+            aoMudar={aoMudar}
+          />
+        ))}
+      </ul>
+    </div>
   );
+}
+
+/** Quantos dias uma data está atrás de hoje. */
+function diasDeAtraso(data: string, hoje: string): number {
+  const um = Date.parse(`${data}T00:00:00Z`);
+  const outro = Date.parse(`${hoje}T00:00:00Z`);
+  return Math.round((outro - um) / 86_400_000);
 }
 
 function ItemLista({
   atividade,
   indice,
+  venceuEm,
+  hoje,
   aoEditar,
   aoMudar,
 }: {
   atividade: LinhaAtividade;
   indice: number;
+  /** Quando presente, mostra a data de vencimento à frente (aba Vencidas). */
+  venceuEm?: string;
+  hoje?: string;
   aoEditar: (a: LinhaAtividade) => void;
   aoMudar: () => void;
 }) {
@@ -169,7 +195,7 @@ function ItemLista({
     const r = await concluirAtividade(atividade.id, alvo);
     setSalvando(false);
     if (r?.erro) setConcluida(!alvo);
-    else aoMudar(); // reconcilia: sai da lista se o filtro for "pendentes"
+    else aoMudar(); // reconcilia com o servidor
   }
 
   const tipoVinculo = atividade.negocio
@@ -185,6 +211,8 @@ function ItemLista({
     atividade.organizacao?.nome ??
     atividade.pessoa?.nome ??
     null;
+
+  const atraso = venceuEm && hoje ? diasDeAtraso(venceuEm, hoje) : 0;
 
   return (
     <li
@@ -210,6 +238,20 @@ function ItemLista({
             {concluida && <Check className="size-3.5" strokeWidth={3} />}
           </span>
         </button>
+
+        {/* Data de vencimento à frente, na aba Vencidas. */}
+        {venceuEm && (
+          <span className="mt-0.5 shrink-0 text-right">
+            <span className="text-danger-ink block text-sm font-semibold tabular">
+              {formataData(venceuEm)}
+            </span>
+            {atraso > 0 && (
+              <span className="text-text-muted block text-xs">
+                {atraso === 1 ? "1 dia" : `${atraso} dias`}
+              </span>
+            )}
+          </span>
+        )}
 
         <button
           type="button"

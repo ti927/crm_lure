@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { List, CalendarDays, Plus, Download } from "lucide-react";
+import { List, CalendarDays, AlertTriangle, Plus, Download } from "lucide-react";
 import {
   SeletorResponsavel,
   type Usuario as UsuarioFoto,
 } from "@/components/dominio/seletor-responsavel";
-import { ListaAtividades } from "./lista-atividades";
+import { ListaAtividades, ListaVencidas } from "./lista-atividades";
 import { Calendario } from "./calendario";
 import {
   DialogoAtividade,
@@ -54,6 +54,7 @@ export function PainelAtividades({
   doDia,
   vencidas,
   atividadesMes,
+  totalVencidas,
   dia,
   tipos,
   usuarios,
@@ -65,6 +66,7 @@ export function PainelAtividades({
   doDia: LinhaAtividade[];
   vencidas: LinhaAtividade[];
   atividadesMes: LinhaAtividade[];
+  totalVencidas: number;
   dia: string;
   tipos: Tipo[];
   usuarios: Usuario[];
@@ -93,7 +95,6 @@ export function PainelAtividades({
 
   const campo =
     "h-control-md bg-surface border-border text-md rounded-md border px-2.5";
-  const naVista = (v: "lista" | "calendario") => filtros.vista === v;
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -104,46 +105,47 @@ export function PainelAtividades({
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-semibold tracking-tight">Atividades</h1>
 
-          {/* Alternador de vista (B-080). */}
+          {/* Três vistas (B-080): o dia em foco, a pilha de vencidas e o mês. */}
           <div className="border-border ml-2 flex rounded-md border p-0.5">
-            <button
-              type="button"
+            <Aba
+              atual={filtros.vista === "lista"}
               onClick={() => aplicar("vista", "")}
-              aria-pressed={naVista("lista")}
-              className={`inline-flex h-7 items-center gap-1.5 rounded px-2.5 text-sm font-medium ${
-                naVista("lista") ? "bg-surface-hover text-text" : "text-text-muted"
-              }`}
-            >
-              <List className="size-3.5" aria-hidden />
-              Lista
-            </button>
-            <button
-              type="button"
+              Icone={List}
+              rotulo="Lista"
+            />
+            <Aba
+              atual={filtros.vista === "vencidas"}
+              onClick={() => aplicar("vista", "vencidas")}
+              Icone={AlertTriangle}
+              rotulo="Vencidas"
+              badge={totalVencidas}
+              alerta
+            />
+            <Aba
+              atual={filtros.vista === "calendario"}
               onClick={() => aplicar("vista", "calendario")}
-              aria-pressed={naVista("calendario")}
-              className={`inline-flex h-7 items-center gap-1.5 rounded px-2.5 text-sm font-medium ${
-                naVista("calendario") ? "bg-surface-hover text-text" : "text-text-muted"
-              }`}
-            >
-              <CalendarDays className="size-3.5" aria-hidden />
-              Calendário
-            </button>
+              Icone={CalendarDays}
+              rotulo="Calendário"
+            />
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            aria-label="Filtrar por situação"
-            value={filtros.situacao}
-            onChange={(e) => aplicar("situacao", e.target.value)}
-            className={`${campo} ${filtros.situacao !== "pendentes" ? "border-brand-ink font-medium" : ""}`}
-          >
-            {SITUACOES.map((s) => (
-              <option key={s.valor} value={s.valor}>
-                {s.rotulo}
-              </option>
-            ))}
-          </select>
+          {/* Situação não se aplica às vencidas — lá é sempre pendente. */}
+          {filtros.vista !== "vencidas" && (
+            <select
+              aria-label="Filtrar por situação"
+              value={filtros.situacao}
+              onChange={(e) => aplicar("situacao", e.target.value)}
+              className={`${campo} ${filtros.situacao !== "pendentes" ? "border-brand-ink font-medium" : ""}`}
+            >
+              {SITUACOES.map((s) => (
+                <option key={s.valor} value={s.valor}>
+                  {s.rotulo}
+                </option>
+              ))}
+            </select>
+          )}
 
           <select
             aria-label="Filtrar por tipo"
@@ -176,8 +178,7 @@ export function PainelAtividades({
 
           <button
             type="button"
-            // Na lista, já nasce no dia em foco; no calendário, sem data —
-            // ali o dia se escolhe clicando na célula.
+            // Na lista, já nasce no dia em foco; nas outras vistas, sem data.
             onClick={() =>
               setDialogo({
                 modo: "novo",
@@ -201,12 +202,18 @@ export function PainelAtividades({
             aoEditar={(a) => setDialogo({ modo: "editar", atividade: a })}
             aoNovoNoDia={(data) => setDialogo({ modo: "novo", data })}
           />
+        ) : filtros.vista === "vencidas" ? (
+          <ListaVencidas
+            vencidas={vencidas}
+            hoje={hoje}
+            aoEditar={(a) => setDialogo({ modo: "editar", atividade: a })}
+            aoMudar={() => router.refresh()}
+          />
         ) : (
           <ListaAtividades
             dia={dia}
             hoje={hoje}
             doDia={doDia}
-            vencidas={vencidas}
             aoEditar={(a) => setDialogo({ modo: "editar", atividade: a })}
             aoMudar={() => router.refresh()}
           />
@@ -224,5 +231,44 @@ export function PainelAtividades({
         />
       )}
     </div>
+  );
+}
+
+function Aba({
+  atual,
+  onClick,
+  Icone,
+  rotulo,
+  badge,
+  alerta,
+}: {
+  atual: boolean;
+  onClick: () => void;
+  Icone: typeof List;
+  rotulo: string;
+  badge?: number;
+  alerta?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={atual}
+      className={`inline-flex h-7 items-center gap-1.5 rounded px-2.5 text-sm font-medium ${
+        atual ? "bg-surface-hover text-text" : "text-text-muted"
+      }`}
+    >
+      <Icone className="size-3.5" aria-hidden />
+      {rotulo}
+      {badge !== undefined && badge > 0 && (
+        <span
+          className={`rounded-full px-1.5 text-xs font-semibold tabular ${
+            alerta ? "bg-danger-bg text-danger-ink" : "bg-surface-sunken text-text-muted"
+          }`}
+        >
+          {badge}
+        </span>
+      )}
+    </button>
   );
 }
