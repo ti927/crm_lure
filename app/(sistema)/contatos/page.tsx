@@ -1,26 +1,20 @@
 import Link from "next/link";
-import { Building2, Phone, Mail, ExternalLink } from "lucide-react";
+import { Phone, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { texto } from "@/lib/formato";
 import { TabelaVirtual } from "@/components/dominio/tabela-virtual";
 import { BarraContatos } from "./barra-contatos";
+import { CartoesPessoa } from "./cartoes-contato";
+import { LinhaGrupo, type Grupo } from "./grupo-organizacao";
 import {
-  SELECAO_ORGANIZACAO,
   SELECAO_PESSOA,
   POR_PAGINA,
-  CONTAGEM,
   parseFiltros,
   limparIlike,
   paraWhatsApp,
   type Busca,
-  type LinhaOrganizacao,
   type LinhaPessoa,
 } from "./consulta";
-
-/** Garante um href navegável a partir de um website solto. */
-function comEsquema(url: string): string {
-  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
-}
 
 export default async function PaginaContatos({
   searchParams,
@@ -38,69 +32,40 @@ export default async function PaginaContatos({
   let total = 0;
   let cabecalho: React.ReactNode = null;
   let linhas: React.ReactNode[] = [];
+  // Os mesmos dados alimentam os cartões do celular, que não são a
+  // tabela redimensionada e sim outra forma (D-097).
+  let cartoes: React.ReactNode = null;
+  /** Organizações: lista de grupos expansíveis, que serve celular e desktop. */
+  let listaAgrupada: React.ReactNode = null;
 
   if (filtros.aba === "organizacoes") {
-    let consulta = supabase
-      .from("organizacao")
-      .select(SELECAO_ORGANIZACAO, { count: "exact" })
-      .order("nome");
-    if (filtros.busca) consulta = consulta.ilike("nome", `%${limparIlike(filtros.busca)}%`);
-
-    const { data, count } = await consulta
-      .range(inicio, inicio + POR_PAGINA - 1)
-      .returns<LinhaOrganizacao[]>();
-    total = count ?? 0;
-
-    cabecalho = (
-      <thead className="bg-surface-sunken sticky top-0 z-20">
-        <tr>
-          <th className={th}>Nome</th>
-          <th className={th}>Cidade</th>
-          <th className={`${th} hidden lg:table-cell`}>Website</th>
-          <th className={`${th} text-right`}>Negócios</th>
-          <th className={`${th} hidden text-right md:table-cell`}>Pessoas</th>
-        </tr>
-      </thead>
+    /*
+     * Organizações vêm AGRUPADAS por nome normalizado. 1.195 dos 2.889
+     * registros são repetição vinda do Pipedrive ("Sicoob Credseguro"
+     * aparece seis vezes), e listar linha a linha enchia a tela de
+     * duplicata. A agregação roda no banco — paginar por grupo no
+     * cliente exigiria carregar tudo, o que a R-006 proíbe.
+     *
+     * A mesma lista serve celular e desktop: é uma lista de linhas
+     * expansíveis, não uma tabela de dez colunas.
+     */
+    const termo = filtros.busca ? limparIlike(filtros.busca) : null;
+    const [{ data: grupos }, { data: qtd }] = await Promise.all([
+      supabase.rpc("organizacoes_agrupadas", {
+        termo,
+        limite: POR_PAGINA,
+        deslocamento: inicio,
+      }),
+      supabase.rpc("conta_organizacoes_agrupadas", { termo }),
+    ]);
+    total = qtd ?? 0;
+    listaAgrupada = (
+      <ul>
+        {(grupos ?? []).map((g) => (
+          <LinhaGrupo key={g.chave} grupo={g as Grupo} />
+        ))}
+      </ul>
     );
-
-    linhas = (data ?? []).map((o, i) => (
-      <tr
-        key={o.id}
-        style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
-        className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 motion-safe:transition-colors"
-      >
-        <td className="h-row-cozy max-w-[24rem] truncate p-0 font-medium">
-          <Link
-            href={`/contatos/organizacoes/${o.id}`}
-            className="hover:text-brand-ink flex items-center gap-2 px-3 py-2 underline-offset-4 hover:underline"
-          >
-            <Building2 className="text-text-muted size-4 shrink-0" aria-hidden />
-            <span className="truncate">{o.nome}</span>
-          </Link>
-        </td>
-        <td className={`${celula} max-w-[14rem] truncate`}>{texto(o.cidade)}</td>
-        <td className={`${celula} hidden max-w-[16rem] truncate lg:table-cell`}>
-          {o.website ? (
-            <a
-              href={comEsquema(o.website)}
-              target="_blank"
-              rel="noreferrer"
-              className="text-info-ink inline-flex items-center gap-1 hover:underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span className="truncate">{o.website}</span>
-              <ExternalLink className="size-3 shrink-0" aria-hidden />
-            </a>
-          ) : (
-            texto(null)
-          )}
-        </td>
-        <td className={`${celula} tabular text-right`}>{CONTAGEM(o.negocio).toLocaleString("pt-BR")}</td>
-        <td className={`${celula} tabular hidden text-right md:table-cell`}>
-          {CONTAGEM(o.pessoa_organizacao).toLocaleString("pt-BR")}
-        </td>
-      </tr>
-    ));
   } else {
     let consulta = supabase
       .from("pessoa")
@@ -112,6 +77,7 @@ export default async function PaginaContatos({
       .range(inicio, inicio + POR_PAGINA - 1)
       .returns<LinhaPessoa[]>();
     total = count ?? 0;
+    cartoes = <CartoesPessoa pessoas={data ?? []} />;
 
     cabecalho = (
       <thead className="bg-surface-sunken sticky top-0 z-20">
@@ -216,7 +182,18 @@ export default async function PaginaContatos({
           </p>
         </div>
       ) : (
-        <TabelaVirtual cabecalho={cabecalho} linhas={linhas} />
+        listaAgrupada ? (
+          // Organizações: a mesma lista agrupada nos dois tamanhos.
+          <div className="min-h-0 flex-1 overflow-auto">{listaAgrupada}</div>
+        ) : (
+          <>
+            {/* Pessoas — celular: cartões; desktop: tabela virtualizada. */}
+            <div className="min-h-0 flex-1 overflow-auto md:hidden">{cartoes}</div>
+            <div className="hidden min-h-0 flex-1 flex-col md:flex">
+              <TabelaVirtual cabecalho={cabecalho} linhas={linhas} />
+            </div>
+          </>
+        )
       )}
 
       {ultimaPagina > 1 && (

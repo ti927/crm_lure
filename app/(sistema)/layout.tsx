@@ -4,6 +4,8 @@ import { Navegacao } from "@/components/dominio/navegacao";
 import { BotaoSair } from "@/components/dominio/botao-sair";
 import { LogoLure } from "@/components/dominio/marca";
 import { RodapeSistema } from "@/components/dominio/rodape-sistema";
+import { MenuMobile } from "@/components/dominio/menu-mobile";
+import { ProgressoNavegacao } from "@/components/dominio/progresso-navegacao";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +35,7 @@ export default async function LayoutSistema({
     // rodapé fica fixo no pé. O `min-h-0` na linha é o que deixa as telas
     // com rolagem interna encolherem em vez de empurrar o rodapé para fora.
     <div className="bg-background flex min-h-svh flex-col">
+      <ProgressoNavegacao />
       <div className="flex min-h-0 flex-1">
         <aside className="bg-surface border-border hidden w-56 shrink-0 flex-col border-r md:flex">
           <div className="border-border flex h-14 items-center border-b px-4">
@@ -46,6 +49,9 @@ export default async function LayoutSistema({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="bg-surface border-border sticky top-0 z-30 flex h-14 shrink-0 items-center justify-end gap-2 border-b px-4">
+            {/* No celular a sidebar some; a mesma navegação volta como
+                gaveta por este botão. */}
+            <MenuMobile />
             {user?.email && (
               <span className="text-text-muted mr-1 hidden truncate text-sm sm:block">
                 {user.email}

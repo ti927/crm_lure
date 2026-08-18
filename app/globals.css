@@ -40,6 +40,7 @@
   --color-surface: var(--surface);
   --color-surface-sunken: var(--surface-sunken);
   --color-surface-hover: var(--surface-hover);
+  --color-skeleton: var(--skeleton);
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);
   --color-text-secondary: var(--text-secondary);
@@ -235,6 +236,23 @@
 
 @utility alvo-de-solta {
   animation: respira-alvo 1.4s ease-in-out infinite;
+}
+
+/* Barra de progresso da navegacao: a faixa corre de ponta a ponta
+   enquanto a proxima tela nao chega. Nao mede progresso real — sinaliza
+   que o clique pegou, que e o que falta perceber. */
+@keyframes desliza {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Barra de filtros enquanto o servidor responde. O atributo ja era
+   marcado pelos componentes de filtro (useTransition), mas nao tinha
+   efeito visual nenhum — o clique num filtro parecia nao pegar. */
+[data-pendente] {
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
 }
 
 /* ⚠️ Acessibilidade, nao detalhe: movimento nao pedido causa enjoo e

@@ -12,7 +12,7 @@
  */
 
 function Barra({ className = "" }: { className?: string }) {
-  return <div className={`bg-surface-sunken animate-pulse rounded ${className}`} />;
+  return <div className={`bg-skeleton animate-pulse rounded ${className}`} />;
 }
 
 /** Cabeçalho + linhas — serve Lista de negócios, Atividades e Contatos. */

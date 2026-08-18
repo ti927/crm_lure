@@ -690,6 +690,30 @@ export type Database = {
     Functions: {
       dominio_empresa: { Args: never; Returns: string }
       pertence_ao_dominio: { Args: never; Returns: boolean }
+      chave_nome: { Args: { texto: string }; Returns: string }
+      conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
+      organizacoes_agrupadas: {
+        Args: { termo?: string | null; limite?: number; deslocamento?: number }
+        Returns: {
+          chave: string
+          nome: string
+          quantidade: number
+          representante_id: string
+          cidade: string | null
+          website: string | null
+          negocios: number
+        }[]
+      }
+      organizacoes_do_grupo: {
+        Args: { chave_grupo: string }
+        Returns: {
+          id: string
+          nome: string
+          cidade: string | null
+          website: string | null
+          negocios: number
+        }[]
+      }
     }
     Enums: {
       status_negocio: "parado" | "negociacao" | "ganho" | "perdido"

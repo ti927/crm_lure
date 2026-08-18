@@ -83,9 +83,12 @@ export function BarraContatos({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* No celular a busca ocupa a linha inteira: é a ação principal
+            da tela, e um campo de 14rem espremido ao lado do botão seria
+            pequeno demais para o polegar. */}
+        <div className="flex w-full items-center gap-2 md:w-auto">
           <form
-            className="relative"
+            className="relative min-w-0 flex-1 md:flex-none"
             onSubmit={(e) => {
               e.preventDefault();
               const dado = new FormData(e.currentTarget);
@@ -103,7 +106,7 @@ export function BarraContatos({
               key={busca}
               placeholder={aba === "organizacoes" ? "Buscar organização" : "Buscar pessoa"}
               aria-label="Buscar por nome"
-              className="h-control-md bg-surface border-border text-md w-56 rounded-md border pl-8 pr-2.5"
+              className="h-control-md bg-surface border-border text-md w-full rounded-md border pl-8 pr-2.5 md:w-56"
             />
           </form>
 
@@ -121,10 +124,15 @@ export function BarraContatos({
           <button
             type="button"
             onClick={() => setDialogo(aba === "organizacoes" ? "organizacao" : "pessoa")}
-            className="h-control-md bg-brand text-brand-on inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold"
+            aria-label={aba === "organizacoes" ? "Nova organização" : "Nova pessoa"}
+            className="h-control-md bg-brand text-brand-on inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold md:px-3"
           >
             <Plus className="size-4" aria-hidden />
-            {aba === "organizacoes" ? "Nova organização" : "Nova pessoa"}
+            {/* No celular o rótulo sai e fica só o "+": a linha já está
+                ocupada pela busca. */}
+            <span className="hidden md:inline">
+              {aba === "organizacoes" ? "Nova organização" : "Nova pessoa"}
+            </span>
           </button>
         </div>
       </div>

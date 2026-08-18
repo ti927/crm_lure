@@ -21,7 +21,7 @@ const DESTINOS = [
   { href: "/produtos", rotulo: "Produtos", Icone: Package },
 ];
 
-export function Navegacao() {
+export function Navegacao({ aoNavegar }: { aoNavegar?: () => void } = {}) {
   const caminho = usePathname();
 
   return (
@@ -32,6 +32,7 @@ export function Navegacao() {
           <Link
             key={href}
             href={href}
+            onClick={aoNavegar}
             aria-current={ativo ? "page" : undefined}
             className={`h-control-lg flex items-center gap-2.5 rounded-md px-2.5 text-md transition-colors ${
               ativo
