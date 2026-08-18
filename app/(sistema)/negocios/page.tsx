@@ -10,6 +10,8 @@ import {
 } from "@/components/dominio/etiquetas";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { Filtros } from "./filtros";
+import { CartoesNegocio } from "./cartoes-negocio";
+import { PainelFiltrosMobile } from "./painel-filtros-mobile";
 import { LinkOrdenacao } from "./link-ordenacao";
 import { TabelaNegocios } from "./tabela-negocios";
 import {
@@ -374,7 +376,16 @@ export default async function PaginaNegocios({
             {total > POR_PAGINA && ` · página ${filtros.pagina} de ${ultimaPagina}`}
           </p>
         </div>
-        <Filtros />
+        <div className="flex items-center gap-2">
+          <PainelFiltrosMobile
+            etapas={etapas ?? []}
+            origens={origens ?? []}
+            produtos={produtos ?? []}
+            motivos={motivos ?? []}
+            usuarios={usuarios ?? []}
+          />
+          <Filtros />
+        </div>
       </div>
 
       {error ? (
@@ -402,7 +413,16 @@ export default async function PaginaNegocios({
               </p>
             </div>
           ) : (
-            <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
+            <>
+              {/* B-110: no celular a Lista vira cartões — a tabela de dez
+                  colunas exigiria rolagem horizontal, que o critério proíbe. */}
+              <div className="min-h-0 flex-1 overflow-auto md:hidden">
+                <CartoesNegocio negocios={linhas ?? []} />
+              </div>
+              <div className="hidden min-h-0 flex-1 flex-col md:flex">
+                <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
+              </div>
+            </>
           )}
 
           {ultimaPagina > 1 && (

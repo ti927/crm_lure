@@ -115,6 +115,8 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F3 — Lista** | ✅ **fechada 18/08.** Filtro nas dez colunas, indicador de coluna filtrada, persistência por usuário, exportação CSV e lista virtualizada — ver 4.2 sobre a verificação visual que falta |
 | **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações, trava nos três caminhos** |
 | **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
+| **F9 — Mobile** | ✅ **construída 18/08.** Lista de negócios em cartões (B-110), filtros em gaveta própria (B-111), Kanban uma etapa por vez com seletor e **sem arrastar** (B-112), ficha empilhada (B-113), marcar concluída (B-114). Navegação lateral vira gaveta no celular |
+| **F8 — Automações** | ⏸️ **adiada por decisão do maestro (18/08)**, para vir depois com **painel de configuração de notificações**. Motor já decidido: alertas **derivados na leitura**, sem agendador |
 | **F7 — Contatos e Produtos** | ✅ **construída 18/08.** Contatos com abas Organizações/Pessoas, CRUD completo, fichas com histórico derivado (B-090 a B-095) e **agrupamento de cadastros duplicados**; Produtos com nome e área (B-096) |
 | **F6 — Atividades** | ✅ **construída 18/08.** Três abas: **Lista** (um dia por vez, abrindo em Hoje, padrão do Pipedrive, com navegação ‹ › entre dias), **Vencidas** (a pilha de atrasadas, cada uma com a data em que venceu e há quantos dias, número na aba) e **Calendário** mensal; criação com vínculo opcional a negócio/organização/pessoa (D-108); conclusão; registro retroativo; filtros por situação/tipo/responsável; exportação CSV. **Sem migração** — o schema já sustentava os três vínculos |
 
@@ -141,7 +143,11 @@ Também corrigidos nesta sessão: o link "voltar" do detalhe do negócio agora l
 
 **Pedido do maestro em 17/08, ainda não construído:** **acesso rápido a clientes pelo celular** — uma lista de clientes com busca, como porta de entrada do mobile. Isso amplia a D-097, que definiu o celular em torno do negócio e deixou Contatos de fora. O banco já sustenta; o trabalho é de tela.
 
-**Depois:** F8 (automações), F9 (mobile), F10 (virada).
+**Depois:** **F10 (virada)** e, quando o maestro definir, a **F8 com painel de configuração de notificações**.
+
+⚠️ **A F8 foi adiada em 18/08, e com ela três definições que continuam em aberto:** (a) quantos dias sem movimento tornam um negócio "parado" — nunca foi definido em documento nenhum; (b) com quanta antecedência chega o lembrete de próxima atividade; (c) o desenho do painel de configuração que o maestro pediu. A decisão técnica já está tomada: os alertas serão **derivados na leitura**, calculados por consulta ao abrir o app, sem agendador nem tabela de fila — não há `pg_cron` nem Vercel Cron na stack, e acrescentar peça a duas semanas da virada seria risco desnecessário. **P-014 e P-027** (modelar a entidade Notificação, abertas desde o Bloco 4) seguem pendentes e são pré-requisito da F8.
+
+⚠️ **Desvio consciente do B-115:** o critério dizia que não haveria formulário de criação nem edição no celular. Os diálogos construídos nas F6 e F7 são responsivos e funcionam no celular — foram mantidos. É a favor do usuário, não contra; mas registro que o sistema hoje **excede** o recorte da D-097 nesse ponto.
 
 ⚠️ **Acentos corrompidos, corrigidos em 18/08:** 388 registros (386 pessoas, 2 organizações) chegaram com `U+FFFD` no lugar de letras acentuadas — "Marco Aurélio" virou "Marco Aur�lio". **A carga não teve culpa**: os arquivos brutos da extração já traziam o defeito, só nos campos `name`/`first_name` de `persons.json`, e o mesmo nome aparece íntegro em `deals.json` e `organizations.json` — a corrupção está no dado do próprio Pipedrive. **343 foram recuperados (88%)** por `scripts/recupera-acentos.mjs`, que cruza o nome quebrado com as strings íntegras da própria extração, primeiro inteiro e depois palavra a palavra, aceitando só o que casa com um único candidato. Organizações ficaram 100% limpas. **Restam 45 pessoas** listadas em `acentos-pendentes.tsv` (fora do git — o repositório é público e são nomes reais), para conserto à mão pela ficha, que agora é editável.
 

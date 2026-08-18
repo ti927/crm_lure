@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { FiltroKanban } from "./filtro-kanban";
 import { Quadro, type ColunaEtapa, type Cartao } from "./quadro";
+import { KanbanMobile } from "./kanban-mobile";
 
 /**
  * F5 — Kanban.
@@ -85,12 +86,21 @@ export default async function PaginaKanban({
       {/* A chave amarra o estado do quadro ao filtro: trocar de responsável
           monta um quadro novo em vez de reaproveitar cartões que já não
           pertencem ao recorte. */}
-      <Quadro
-        key={responsavelId || "todos"}
+      {/* B-112: no celular, uma etapa por vez, sem arrastar (D-097). */}
+      <KanbanMobile
+        key={`m-${responsavelId || "todos"}`}
         colunas={colunas}
-        motivos={motivos ?? []}
         responsavelId={responsavelId}
       />
+
+      <div className="hidden min-h-0 flex-1 flex-col md:flex">
+        <Quadro
+          key={responsavelId || "todos"}
+          colunas={colunas}
+          motivos={motivos ?? []}
+          responsavelId={responsavelId}
+        />
+      </div>
     </div>
   );
 }
