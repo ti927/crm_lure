@@ -51,7 +51,10 @@ function paraEdicao(a: LinhaAtividade): AtividadeEdicao {
 }
 
 export function PainelAtividades({
-  atividades,
+  doDia,
+  vencidas,
+  atividadesMes,
+  dia,
   tipos,
   usuarios,
   usuariosFoto,
@@ -59,7 +62,10 @@ export function PainelAtividades({
   hoje,
   exportHref,
 }: {
-  atividades: LinhaAtividade[];
+  doDia: LinhaAtividade[];
+  vencidas: LinhaAtividade[];
+  atividadesMes: LinhaAtividade[];
+  dia: string;
   tipos: Tipo[];
   usuarios: Usuario[];
   usuariosFoto: UsuarioFoto[];
@@ -170,7 +176,14 @@ export function PainelAtividades({
 
           <button
             type="button"
-            onClick={() => setDialogo({ modo: "novo" })}
+            // Na lista, já nasce no dia em foco; no calendário, sem data —
+            // ali o dia se escolhe clicando na célula.
+            onClick={() =>
+              setDialogo({
+                modo: "novo",
+                data: filtros.vista === "lista" ? dia : undefined,
+              })
+            }
             className="h-control-md bg-brand text-brand-on inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold"
           >
             <Plus className="size-4" aria-hidden />
@@ -183,15 +196,17 @@ export function PainelAtividades({
         {filtros.vista === "calendario" ? (
           <Calendario
             mes={filtros.mes}
-            atividades={atividades}
+            atividades={atividadesMes}
             hoje={hoje}
             aoEditar={(a) => setDialogo({ modo: "editar", atividade: a })}
             aoNovoNoDia={(data) => setDialogo({ modo: "novo", data })}
           />
         ) : (
           <ListaAtividades
-            atividades={atividades}
+            dia={dia}
             hoje={hoje}
+            doDia={doDia}
+            vencidas={vencidas}
             aoEditar={(a) => setDialogo({ modo: "editar", atividade: a })}
             aoMudar={() => router.refresh()}
           />

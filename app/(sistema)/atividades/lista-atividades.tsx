@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Briefcase, Building2, User, Clock } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  Check,
+  Briefcase,
+  Building2,
+  User,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { concluirAtividade } from "./acoes";
-import {
-  formataData,
-  diaDaSemana,
-  somaDias,
-  type LinhaAtividade,
-} from "./consulta";
+import { somaDias, rotuloDia, type LinhaAtividade } from "./consulta";
 
 const ICONE_VINCULO = {
   negocio: Briefcase,
@@ -17,93 +21,130 @@ const ICONE_VINCULO = {
   pessoa: User,
 } as const;
 
-const VENCIDAS = "vencidas";
-
-/** Chave de grupo: pendente e no passado cai em "vencidas"; o resto, no
- *  próprio dia. É o agrupamento do Pipedrive. */
-function grupoDe(a: LinhaAtividade, hoje: string): string {
-  if (!a.concluida && a.data < hoje) return VENCIDAS;
-  return a.data;
-}
-
-function rotuloGrupo(chave: string, hoje: string): string {
-  if (chave === VENCIDAS) return "Vencidas";
-  if (chave === hoje) return "Hoje";
-  if (chave === somaDias(hoje, 1)) return "Amanhã";
-  return `${diaDaSemana(chave)}, ${formataData(chave)}`;
-}
-
+/**
+ * Lista de atividades no modelo do Pipedrive: um dia em foco por vez,
+ * começando em hoje, com as pendências vencidas destacadas no topo — elas
+ * não somem enquanto não forem tratadas. A navegação ‹ › anda dia a dia;
+ * "Hoje" volta ao presente.
+ */
 export function ListaAtividades({
-  atividades,
+  dia,
   hoje,
+  doDia,
+  vencidas,
   aoEditar,
   aoMudar,
 }: {
-  atividades: LinhaAtividade[];
+  dia: string;
   hoje: string;
+  doDia: LinhaAtividade[];
+  vencidas: LinhaAtividade[];
   aoEditar: (a: LinhaAtividade) => void;
   aoMudar: () => void;
 }) {
-  // Agrupa preservando a ordem já vinda do servidor: crescente para
-  // pendentes (vencidas antigas → futuro), decrescente para o histórico
-  // (mais recente primeiro). Só o grupo "Vencidas" é forçado ao topo,
-  // porque é a pilha de atrasados que precisa saltar aos olhos.
-  const grupos: { chave: string; itens: LinhaAtividade[] }[] = [];
-  const indice = new Map<string, number>();
-  for (const a of atividades) {
-    const chave = grupoDe(a, hoje);
-    if (!indice.has(chave)) {
-      indice.set(chave, grupos.length);
-      grupos.push({ chave, itens: [] });
-    }
-    grupos[indice.get(chave)!].itens.push(a);
-  }
-  const vencidas = grupos.filter((g) => g.chave === VENCIDAS);
-  const resto = grupos.filter((g) => g.chave !== VENCIDAS);
-  const ordenados = [...vencidas, ...resto];
+  const router = useRouter();
+  const caminho = usePathname();
+  const params = useSearchParams();
+  const [pendente, iniciar] = useTransition();
 
-  if (atividades.length === 0) {
-    return (
-      <div className="px-4 py-16 text-center">
-        <p className="text-text-secondary text-md font-medium">
-          Nenhuma atividade neste recorte.
-        </p>
-        <p className="text-text-muted mt-1 text-sm">
-          Ajuste os filtros acima ou crie uma nova atividade.
-        </p>
-      </div>
-    );
+  function irParaDia(alvo: string) {
+    const p = new URLSearchParams(params);
+    // Hoje é o padrão: não suja a URL com ?dia= quando volta ao presente.
+    if (alvo === hoje) p.delete("dia");
+    else p.set("dia", alvo);
+    const s = p.toString();
+    iniciar(() => router.push(s ? `${caminho}?${s}` : caminho));
   }
 
   return (
-    <div className="flex flex-col">
-      {ordenados.map((g) => {
-        const vencido = g.chave === VENCIDAS;
-        return (
-          <section key={g.chave}>
-            <h2
-              className={`bg-surface-sunken border-border sticky top-0 z-10 border-b px-4 py-1.5 text-xs font-semibold uppercase tracking-caps ${
-                vencido ? "text-danger-ink" : "text-text-muted"
-              }`}
-            >
-              {rotuloGrupo(g.chave, hoje)}
-              <span className="ml-2 opacity-60">{g.itens.length}</span>
-            </h2>
-            <ul>
-              {g.itens.map((a, i) => (
-                <ItemLista
-                  key={a.id}
-                  atividade={a}
-                  indice={i}
-                  aoEditar={aoEditar}
-                  aoMudar={aoMudar}
-                />
-              ))}
-            </ul>
-          </section>
-        );
-      })}
+    <div className="flex flex-col" data-pendente={pendente || undefined}>
+      <div className="border-border bg-surface sticky top-0 z-20 flex items-center gap-2 border-b px-4 py-2">
+        <button
+          type="button"
+          onClick={() => irParaDia(somaDias(dia, -1))}
+          aria-label="Dia anterior"
+          className="border-border hover:bg-surface-hover inline-flex size-7 items-center justify-center rounded-md border"
+        >
+          <ChevronLeft className="size-4" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={() => irParaDia(somaDias(dia, 1))}
+          aria-label="Próximo dia"
+          className="border-border hover:bg-surface-hover inline-flex size-7 items-center justify-center rounded-md border"
+        >
+          <ChevronRight className="size-4" aria-hidden />
+        </button>
+        <h2 className="text-md font-semibold">{rotuloDia(dia, hoje)}</h2>
+        {dia !== hoje && (
+          <button
+            type="button"
+            onClick={() => irParaDia(hoje)}
+            className="border-border hover:bg-surface-hover ml-1 h-7 rounded-md border px-2.5 text-sm font-medium"
+          >
+            Hoje
+          </button>
+        )}
+      </div>
+
+      {vencidas.length > 0 && (
+        <Grupo rotulo="Vencidas" total={vencidas.length} vencido>
+          {vencidas.map((a, i) => (
+            <ItemLista
+              key={a.id}
+              atividade={a}
+              indice={i}
+              aoEditar={aoEditar}
+              aoMudar={aoMudar}
+            />
+          ))}
+        </Grupo>
+      )}
+
+      <Grupo rotulo={rotuloDia(dia, hoje)} total={doDia.length}>
+        {doDia.length === 0 ? (
+          <li className="text-text-muted px-4 py-8 text-center text-sm">
+            Nenhuma atividade neste dia.
+          </li>
+        ) : (
+          doDia.map((a, i) => (
+            <ItemLista
+              key={a.id}
+              atividade={a}
+              indice={i}
+              aoEditar={aoEditar}
+              aoMudar={aoMudar}
+            />
+          ))
+        )}
+      </Grupo>
     </div>
+  );
+}
+
+function Grupo({
+  rotulo,
+  total,
+  vencido,
+  children,
+}: {
+  rotulo: string;
+  total: number;
+  vencido?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h3
+        className={`bg-surface-sunken border-border border-b px-4 py-1.5 text-xs font-semibold uppercase tracking-caps ${
+          vencido ? "text-danger-ink" : "text-text-muted"
+        }`}
+      >
+        {rotulo}
+        <span className="ml-2 opacity-60">{total}</span>
+      </h3>
+      <ul>{children}</ul>
+    </section>
   );
 }
 

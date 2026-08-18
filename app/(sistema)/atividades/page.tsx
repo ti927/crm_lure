@@ -17,14 +17,13 @@ import {
  * ⚠️ Atividade não exige mais negócio (D-108): pode pertencer a negócio,
  * organização, pessoa ou nada. 76% da base não tem negócio.
  *
- * ⚠️ R-006: são 6.483 atividades. A tela nunca as carrega todas. O padrão
- * mostra só as pendentes (206 na base), agrupadas por dia. Concluídas e
- * "todas" vêm limitadas às mais recentes, com aviso quando há mais.
+ * ⚠️ R-006: são 6.483 atividades. A tela nunca as carrega todas. A lista
+ * mostra um dia por vez (padrão: hoje), no modelo do Pipedrive — mais as
+ * pendências vencidas no topo, que não somem enquanto não forem tratadas.
+ * O calendário carrega só o mês visível.
  */
-const LIMITE_PENDENTES = 500;
-const LIMITE_HISTORICO = 200;
 
-/** Monta a consulta com os filtros comuns às duas vistas. */
+/** Filtros comuns de situação/tipo/responsável, sem o recorte de data. */
 function aplicaFiltros<T>(consulta: T, f: FiltrosAtividade): T {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let c = consulta as any;
@@ -42,41 +41,54 @@ export default async function PaginaAtividades({
 }) {
   const p = await searchParams;
   const filtros = parseFiltros(p);
+  const hoje = hojeBrasilia();
+  const dia = filtros.dia || hoje;
+  filtros.dia = dia;
   if (filtros.vista === "calendario" && !filtros.mes) filtros.mes = mesBrasilia();
 
-  const hoje = hojeBrasilia();
   const supabase = await createClient();
 
-  let consulta = supabase.from("atividade").select(SELECAO, { count: "exact" });
-  consulta = aplicaFiltros(consulta, filtros);
-
-  let truncou = false;
-  let total = 0;
-  let atividades: LinhaAtividade[] = [];
+  let doDia: LinhaAtividade[] = [];
+  let vencidas: LinhaAtividade[] = [];
+  let atividadesMes: LinhaAtividade[] = [];
 
   if (filtros.vista === "calendario") {
     const { de, ate } = limitesDoMes(filtros.mes);
-    const { data, count } = await consulta
+    let c = supabase.from("atividade").select(SELECAO);
+    c = aplicaFiltros(c, filtros);
+    const { data } = await c
       .gte("data", de)
       .lte("data", ate)
       .order("data")
       .order("hora_inicio", { nullsFirst: true })
       .returns<LinhaAtividade[]>();
-    atividades = data ?? [];
-    total = count ?? 0;
+    atividadesMes = data ?? [];
   } else {
-    // Pendentes sobem do passado (vencidas) para o futuro; histórico
-    // (concluídas/todas) mostra o mais recente primeiro.
-    const pendente = filtros.situacao === "pendentes";
-    const limite = pendente ? LIMITE_PENDENTES : LIMITE_HISTORICO;
-    const { data, count } = await consulta
-      .order("data", { ascending: pendente })
+    // Atividades do dia em foco.
+    let cDia = supabase.from("atividade").select(SELECAO).eq("data", dia);
+    cDia = aplicaFiltros(cDia, filtros);
+    const { data } = await cDia
       .order("hora_inicio", { nullsFirst: true })
-      .range(0, limite - 1)
       .returns<LinhaAtividade[]>();
-    atividades = data ?? [];
-    total = count ?? 0;
-    truncou = total > atividades.length;
+    doDia = data ?? [];
+
+    // Vencidas: pendências atrasadas, sempre no topo quando o foco é hoje.
+    // Não aparecem se o recorte é "só concluídas" (uma vencida é, por
+    // definição, uma pendente).
+    if (dia === hoje && filtros.situacao !== "concluidas") {
+      let cv = supabase
+        .from("atividade")
+        .select(SELECAO)
+        .eq("concluida", false)
+        .lt("data", hoje);
+      if (filtros.responsavel) cv = cv.eq("responsavel_id", filtros.responsavel);
+      if (filtros.tipo) cv = cv.eq("tipo_id", filtros.tipo);
+      const { data: venc } = await cv
+        .order("data")
+        .order("hora_inicio", { nullsFirst: true })
+        .returns<LinhaAtividade[]>();
+      vencidas = venc ?? [];
+    }
   }
 
   const [{ data: tipos }, { data: usuarios }] = await Promise.all([
@@ -87,24 +99,18 @@ export default async function PaginaAtividades({
   const exportHref = montaExportHref(p);
 
   return (
-    <div className="flex h-full min-w-0 flex-col">
-      <PainelAtividades
-        atividades={atividades}
-        tipos={tipos ?? []}
-        usuarios={usuarios ?? []}
-        usuariosFoto={usuarios ?? []}
-        filtros={filtros}
-        hoje={hoje}
-        exportHref={exportHref}
-      />
-      {truncou && (
-        <p className="border-border text-text-muted shrink-0 border-t px-4 py-2 text-sm">
-          Mostrando {atividades.length.toLocaleString("pt-BR")} de{" "}
-          {total.toLocaleString("pt-BR")}. Refine por tipo, responsável ou
-          situação para ver o resto — ou exporte o CSV, que traz tudo.
-        </p>
-      )}
-    </div>
+    <PainelAtividades
+      doDia={doDia}
+      vencidas={vencidas}
+      atividadesMes={atividadesMes}
+      dia={dia}
+      hoje={hoje}
+      tipos={tipos ?? []}
+      usuarios={usuarios ?? []}
+      usuariosFoto={usuarios ?? []}
+      filtros={filtros}
+      exportHref={exportHref}
+    />
   );
 }
 

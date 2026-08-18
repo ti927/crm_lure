@@ -52,6 +52,8 @@ export type FiltrosAtividade = {
   situacao: Situacao;
   responsavel: string;
   tipo: string;
+  /** Dia em foco na lista, "YYYY-MM-DD". Vazio = hoje (resolvido na página). */
+  dia: string;
   /** Mês visível no calendário, "YYYY-MM". Só usado quando vista=calendario. */
   mes: string;
 };
@@ -72,6 +74,7 @@ export function parseFiltros(p: Busca): FiltrosAtividade {
     situacao,
     responsavel: um(p.responsavel) ?? "",
     tipo: um(p.tipo) ?? "",
+    dia: um(p.dia) ?? "",
     mes: um(p.mes) ?? "",
   };
 }
@@ -130,6 +133,14 @@ export function formataData(iso: string): string {
 export function diaDaSemana(iso: string): string {
   const [a, m, d] = iso.split("-").map(Number);
   return DIAS_SEMANA[new Date(Date.UTC(a, m - 1, d)).getUTCDay()];
+}
+
+/** Rótulo do dia em foco: Hoje, Amanhã, Ontem, ou "Ter, 19/08/2026". */
+export function rotuloDia(dia: string, hoje: string): string {
+  if (dia === hoje) return "Hoje";
+  if (dia === somaDias(hoje, 1)) return "Amanhã";
+  if (dia === somaDias(hoje, -1)) return "Ontem";
+  return `${diaDaSemana(dia)}, ${formataData(dia)}`;
 }
 
 /** "agosto de 2026" para o cabeçalho do calendário. */
