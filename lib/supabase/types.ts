@@ -702,6 +702,7 @@ export type Database = {
           cidade: string | null
           website: string | null
           negocios: number
+          titulos: string[] | null
         }[]
       }
       organizacoes_do_grupo: {
@@ -712,6 +713,7 @@ export type Database = {
           cidade: string | null
           website: string | null
           negocios: number
+          titulos: string[] | null
         }[]
       }
     }

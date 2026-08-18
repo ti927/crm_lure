@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Building2, Phone, Mail, ChevronRight, Briefcase } from "lucide-react";
-import { paraWhatsApp, CONTAGEM } from "./consulta";
-import type { LinhaOrganizacao, LinhaPessoa } from "./consulta";
+import { Phone, Mail } from "lucide-react";
+import { paraWhatsApp } from "./consulta";
+import type { LinhaPessoa } from "./consulta";
 
 /**
  * Contatos em cartões, para o celular (D-097 + pedido do maestro: é a
@@ -11,34 +11,6 @@ import type { LinhaOrganizacao, LinhaPessoa } from "./consulta";
  * alvo de toque grande, e as ações que valem no celular em destaque
  * (ligar/WhatsApp e e-mail direto do cartão, sem precisar abrir a ficha).
  */
-
-const cartao =
-  "border-border hover:bg-surface-hover flex items-center gap-3 border-b px-4 py-3 active:bg-surface-hover";
-
-export function CartoesOrganizacao({ organizacoes }: { organizacoes: LinhaOrganizacao[] }) {
-  return (
-    <ul className="md:hidden">
-      {organizacoes.map((o) => (
-        <li key={o.id}>
-          <Link href={`/contatos/organizacoes/${o.id}`} className={cartao}>
-            <Building2 className="text-text-muted size-5 shrink-0" aria-hidden />
-            <span className="min-w-0 flex-1">
-              <span className="text-md block truncate font-medium">{o.nome}</span>
-              <span className="text-text-muted mt-0.5 flex flex-wrap items-center gap-x-3 text-sm">
-                {o.cidade && <span className="truncate">{o.cidade}</span>}
-                <span className="inline-flex items-center gap-1">
-                  <Briefcase className="size-3" aria-hidden />
-                  {CONTAGEM(o.negocio)}
-                </span>
-              </span>
-            </span>
-            <ChevronRight className="text-text-muted size-4 shrink-0" aria-hidden />
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 export function CartoesPessoa({ pessoas }: { pessoas: LinhaPessoa[] }) {
   return (

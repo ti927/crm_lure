@@ -13,6 +13,9 @@ export type Grupo = {
   cidade: string | null;
   website: string | null;
   negocios: number;
+  /** Títulos dos negócios mais recentes — a referência que identifica o
+   *  cadastro quando o nome se repete e cidade/site estão vazios. */
+  titulos: string[] | null;
 };
 
 type Irmao = {
@@ -21,6 +24,7 @@ type Irmao = {
   cidade: string | null;
   website: string | null;
   negocios: number;
+  titulos: string[] | null;
 };
 
 /**
@@ -69,9 +73,7 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
           <Building2 className="text-text-muted size-4 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1">
             <span className="text-md block truncate font-medium">{grupo.nome}</span>
-            {grupo.cidade && (
-              <span className="text-text-muted block truncate text-sm">{grupo.cidade}</span>
-            )}
+            <Referencia cidade={grupo.cidade} titulos={grupo.titulos} />
           </span>
           <Contagem n={grupo.negocios} />
         </Link>
@@ -101,9 +103,7 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
               {grupo.quantidade}
             </span>
           </span>
-          {grupo.cidade && (
-            <span className="text-text-muted block truncate text-sm">{grupo.cidade}</span>
-          )}
+          <Referencia cidade={grupo.cidade} titulos={grupo.titulos} />
         </span>
         <Contagem n={grupo.negocios} />
       </button>
@@ -121,9 +121,7 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
               >
                 <span className="min-w-0 flex-1">
                   <span className="text-md block truncate">{o.nome}</span>
-                  {o.cidade && (
-                    <span className="text-text-muted block truncate text-sm">{o.cidade}</span>
-                  )}
+                  <Referencia cidade={o.cidade} titulos={o.titulos} />
                 </span>
                 <Contagem n={o.negocios} />
               </Link>
@@ -132,6 +130,35 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
         </ul>
       )}
     </li>
+  );
+}
+
+/**
+ * A linha de referência sob o nome: cidade, quando existe, e os títulos
+ * dos negócios. Com "Sicoob Credseguro" repetido seis vezes e cidade
+ * vazia, é o negócio que diz qual cadastro é qual.
+ */
+function Referencia({
+  cidade,
+  titulos,
+}: {
+  cidade: string | null;
+  titulos: string[] | null;
+}) {
+  const lista = titulos?.filter(Boolean) ?? [];
+  if (!cidade && lista.length === 0) return null;
+
+  return (
+    <span className="text-text-muted mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 text-sm">
+      {cidade && <span className="truncate">{cidade}</span>}
+      {cidade && lista.length > 0 && <span aria-hidden className="opacity-40">·</span>}
+      {lista.map((t, i) => (
+        <span key={i} className="inline-flex min-w-0 items-center gap-1">
+          <Briefcase className="size-3 shrink-0 opacity-60" aria-hidden />
+          <span className="max-w-[16rem] truncate">{t}</span>
+        </span>
+      ))}
+    </span>
   );
 }
 
