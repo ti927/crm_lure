@@ -1,11 +1,11 @@
-﻿# 03 — Log de Decisões (v0.13)
+﻿# 03 — Log de Decisões (v0.14)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.11 |
-| **Data** | 14/08/2026 |
+| **Versão** | v0.14 |
+| **Data** | 18/08/2026 |
 | **Status** | vivo |
 
 > Registro de toda decisão validada pelo maestro. Nada entra aqui sem confirmação explícita.
@@ -241,6 +241,21 @@ Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões
 | D-117 | 17/08/2026 | **A etapa não é editável na zona de dados do detalhe** — muda-se pela trilha do topo | Ter dois caminhos para a mesma mudança, um deles sem passar pela trava de desfecho (D-047), seria convite a erro. A trava agora vale nos três caminhos: arrastar no Kanban, clicar na trilha e apertar Ganho/Perdido, sempre verificada na *server action* | ✅ |
 | D-118 | 17/08/2026 | **O Kanban tem sensor de teclado**: espaço pega o cartão, setas escolhem a coluna, espaço solta | Sem ele, mover negócio de etapa era **impossível** para quem não usa mouse — o Kanban é a tela principal de trabalho, e deixá-la só no arrasto excluiria gente do sistema | ✅ |
 
+### Sessão 09 — 18/08/2026
+
+| # | Data | Decisão | Justificativa | Status |
+|---|---|---|---|---|
+| D-119 | 18/08/2026 | **A Lista de atividades abre no dia atual**, um dia por vez, com navegação entre dias; as **vencidas ficam em aba própria**, cada uma com a data em que venceu | Pedido do maestro, em duas rodadas. A primeira versão mostrava todas as pendentes de uma vez e as vencidas empilhavam em cima das de hoje, escondendo o dia. É o padrão do Pipedrive: o foco é o dia, e a pilha de atrasados não pode empurrar o presente para baixo | ✅ |
+| D-120 | 18/08/2026 | **A navegação permanece na barra lateral.** Nada vai para a barra superior; no celular a mesma lateral vira gaveta | Decisão explícita do maestro ao entregar o handoff de marca, cujo protótipo de cabeçalho trazia navegação no topo. A lateral se mantém como único caminho de navegação | ✅ |
+| D-121 | 18/08/2026 | **Organizações com nome quase idêntico são agrupadas na Lista**, numa linha que expande. **Não é mesclagem**: nada é fundido nem apagado, e cada cadastro conserva os seus negócios | Pedido do maestro, que escolheu "só variações quase idênticas" em vez de agrupar por raiz do nome. O tamanho justifica: **1.195 dos 2.889 cadastros são repetição** — 668 grupos, 41% da lista; "Sicoob Credseguro" aparece 6 vezes e "Amaral Group" 18, tudo vindo assim do Pipedrive. Mesclar duplicados continua **fora do MVP** e destruiria dado | ✅ |
+| D-122 | 18/08/2026 | **A lista de contatos mostra os títulos dos negócios de cada organização**, como referência | Pedido do maestro. Com o nome repetido seis vezes e cidade/site vazios, o negócio é a única coisa que identifica qual cadastro é qual — "Gestão da Estratégia" distingue um "Sicoob Credseguro" do outro | ✅ |
+| D-123 | 18/08/2026 | **Contatos tem CRUD completo** — criar, editar e excluir organização, pessoa, vínculos e formas de contato | Escolha do maestro entre CRUD completo e só edição do que veio migrado. Sem criar contato do zero, não se cadastra cliente novo — e o sistema precisa disso para operar sem o Pipedrive | ✅ |
+| D-124 | 18/08/2026 | **A F8 (automações e notificações) é adiada**, para voltar acompanhada de um **painel de configuração de notificações**. Quando vier, os alertas serão **derivados na leitura** — calculados por consulta ao abrir o app, sem agendador nem tabela de fila | Decisão do maestro. O motor foi escolhido entre job agendado e derivação na leitura: não há `pg_cron` nem Vercel Cron na stack, e acrescentar peça a duas semanas da virada é risco sem contrapartida. ⚠️ Continuam em aberto três definições que a F8 exige: quantos dias sem movimento tornam um negócio "parado" (**nunca definido em documento nenhum**), a antecedência do lembrete de próxima atividade, e o desenho do painel. **P-014 e P-027** seguem pendentes e são pré-requisito | ⏸️ |
+
+**Correções registradas:** **C-06** e **C-07** no Doc 09 §3.11 — o crash da aba Pessoas (manipulador de evento em Server Component atravessando para Client Component) e os 388 registros com acento corrompido vindos da própria extração do Pipedrive, dos quais 343 foram recuperados.
+
+**Extra registrado:** **E-014** — o agrupamento de duplicatas (D-121) e a referência por negócio (D-122) ultrapassam a paridade com o Pipedrive, que lista as duplicatas uma a uma sem qualquer sinal.
+
 **Correção registrada:** **C-05** no Doc 09 §3.11 — o gatilho do log gravava `auth.uid()` em `evento_negocio.autor_id`, quebrado pela própria D-109 desta sessão. Julio Manfrini não conseguia mover cartão no Kanban. Corrigido para resolver o autor por `public.usuario_atual()`.
 
 
@@ -332,6 +347,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 ## Changelog
 
 - **v0.13** — 17/08/2026 — **Sessão 06, parte 2.** D-115 a D-118: Kanban vira seção própria, movimento entra como parte do design com guarda de `prefers-reduced-motion`, a etapa deixa de ser editável na zona de dados para não haver caminho sem trava, e o Kanban ganha sensor de teclado. Registrada a **C-05**: a D-109 desta mesma sessão quebrou o gatilho do log, e o defeito foi encontrado com um usuário real afetado. **118 decisões.**
+- **v0.14** — 18/08/2026 — **Sessão 09.** D-119 a D-124, todas vindas de pedido ou escolha explícita do maestro: a lista de atividades abre no dia e as vencidas ganham aba própria; a navegação fica na lateral e não vai para o topo; organizações duplicadas são agrupadas na apresentação, **sem mesclar**; os títulos dos negócios viram referência para distinguir cadastros de mesmo nome; Contatos ganha CRUD completo; e a **F8 é adiada** para voltar com painel de configuração, com o motor já escolhido (alertas derivados na leitura). Correções **C-06** e **C-07** e o extra **E-014** registrados. **124 decisões.**
 - **v0.12** — 17/08/2026 — **Sessão 06: os dados mandaram.** D-107 a D-114. Três revogações vindas da extração: a D-030 deixa de exigir negócio em toda atividade (D-108), o usuário deixa de depender de conta de login (D-109) e o seletor do Bubble sai do MVP (D-110). Registradas as descobertas que corrigem a documentação — a base tem 2.880 organizações e não 422, não está parada, a coluna Origem não tem fonte, e a carga não contamina o log porque o gatilho é `after update`. **114 decisões.**
 - **v0.11** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar.** D-103 (região us-east-1 mantida; Vercel vai para iad1 para ficar colada ao banco), D-104 (as dez colunas da Lista, derivadas do Doc 14 §4.3, com o conjunto deixando de ser imutável), D-105 (ordem de construção alterada — front-end antes da migração, com o risco da janela de 3/9 assumido pelo maestro) e D-106 (o projeto do Supabase é o definitivo; **revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base real). **P-029 e P-030 encerradas.**
 - **v0.10** — 14/08/2026 — **Fase de construção iniciada.** D-101: um único projeto no Supabase, um único deploy na Vercel, carga direto em produção — **revoga a primeira metade de D-082**, que passa a ⛔ revista. D-102 registrada como proposta do consultor: ensaiar a migração no banco local do CLI, que preserva o critério 1 de D-098 sem custo.

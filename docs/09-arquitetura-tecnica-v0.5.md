@@ -1,10 +1,10 @@
-﻿# 09 — Arquitetura Técnica (v0.4)
+﻿# 09 — Arquitetura Técnica (v0.5)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.4 |
+| **Versão** | v0.5 |
 | **Data** | 14/08/2026 |
 | **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-05 |
 
@@ -368,6 +368,18 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 | **C-03** | Apenas as políticas de RLS | Política de RLS **sozinha não dá acesso a nada**. O PostgreSQL exige dois sinais verdes: o privilégio de tabela e a política. Sem o `grant`, a conta do domínio esbarra em `permission denied for table negocio` antes de a política ser sequer avaliada | `grant` explícito por tabela, junto da política |
 | **C-04** | A busca da Lista por título **ou** organização (Doc 10, F3) sairia como um `or` do PostgREST cobrindo as duas colunas | O PostgREST aceita filtrar por coluna de tabela vinculada isoladamente (`organizacao.nome=ilike.*x*`) e aceita `or` entre colunas próprias, mas **não aceita coluna vinculada dentro de um `or`**: devolve `PGRST100 — failed to parse logic tree`, apontando a posição exata onde o nome da relação começa. Não é problema de codificação: `%` e `*` falham igual | Busca em dois passos. Os ids das organizações que casam saem numa consulta à parte e entram no `or` como `organizacao_id.in.(...)`, que é coluna própria de `negocio`. São **2.889** organizações na base real (a estimativa de 422 estava errada), com teto de 200 ids para não estourar a URL. Se a base crescer muito, a saída é uma visão achatada com `security_invoker = true` |
 
+#### C-06 — manipulador de evento em Server Component (18/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-06** | A aba **Pessoas** de `/contatos` quebrava ao ser aberta; a aba Organizações funcionava | As linhas da tabela são montadas no Server Component e passadas como `ReactNode[]` para `TabelaVirtual`, que é Client Component. Os links de telefone e e-mail levavam `onClick={(e) => e.stopPropagation()}` — e **função não atravessa a fronteira servidor→cliente**: a serialização do RSC falha e a rota inteira cai. A aba Organizações escapava por ter passado a usar `LinhaGrupo`, que é client | Os `stopPropagation` eram inúteis (a linha não é clicável, só o nome é link) e saíram. ⚠️ **Lição:** montar JSX no servidor e entregá-lo a um componente cliente é um padrão útil, mas tudo que for função morre na fronteira. Depois de qualquer edição em página que faça isso, vale varrer os Server Components à procura de `onClick=`, `onChange=`, `onSubmit=` e `onBlur=` |
+
+#### C-07 — acentos destruídos na origem, não na carga (18/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-07** | 388 registros (386 pessoas, 2 organizações) exibiam `U+FFFD` no lugar de letra acentuada: "Marco Aurélio" aparecia como "Marco Aur�lio" | **Não foi a carga.** Os arquivos brutos da extração já traziam o defeito, e só nos campos `name`/`first_name` de `persons.json`; o mesmo nome aparece íntegro em `deals.json` e `organizations.json`, obtidos na mesma sessão de requisições. A corrupção está no dado do próprio Pipedrive, o que também significa que **reextrair não resolveria** | `scripts/recupera-acentos.mjs` cruza cada nome quebrado com as strings íntegras da própria extração: cada `U+FFFD` vira curinga de um caractere e só vale o que casa com **um único** candidato. Duas passadas — o nome inteiro e, depois, palavra a palavra. Havendo mais de um candidato, vale o acentuado: o `U+FFFD` só existe onde havia byte **não-ASCII**, então a versão sem acento nunca poderia ter se corrompido. **343 de 388 recuperados (88%)**, organizações 100% limpas; os 45 restantes ficam como estão, porque nome de cliente não se adivinha |
+
 ⚠️ **C-02 é o mais grave dos quatro** e o mais silencioso: só aparece depois da carga, que é exatamente o momento em que menos se quer descobrir um defeito. Com D-101 a carga roda em produção, então este era o defeito com maior chance de estragar a virada.
 
 > **Como C-04 foi encontrada, sem poder consultar dado nenhum.** Erro de sintaxe do PostgREST (`PGRST100`) e erro de relacionamento (`PGRST200`) acontecem **antes** da checagem de permissão; `42501` só aparece quando a consulta já foi entendida. Isso permite validar a forma de uma consulta contra a base real usando apenas a chave anônima, sem ter acesso a linha nenhuma: se volta `42501`, a sintaxe está correta. Vale para toda a construção enquanto o login não existir.
@@ -384,6 +396,21 @@ create index on atividade (negocio_id);
 create index on evento_negocio (negocio_id, ocorrido_em);
 create index on organizacao using gin (nome gin_trgm_ops);   -- busca por nome
 ```
+
+### 3.12 Acréscimos da sessão 09 (18/08/2026)
+
+Quatro migrações entraram, todas ensaiadas em transação com `rollback` antes de valer:
+
+| Migração | O que acrescenta |
+|---|---|
+| `20260818120000_preferencia_lista_negocios` | `usuario.preferencia_lista_negocios text` — guarda a última combinação de filtro e ordenação da Lista como a própria *query string* (B-045). Texto, e não `jsonb`: não há estrutura a validar, e decompor e recompor um objeto a cada coluna nova de filtro seria trabalho sem ganho |
+| `20260818210000_agrupa_organizacoes_iguais` | `public.chave_nome(text)` — normaliza para minúsculas, sem acento e sem pontuação — e `organizacao.chave_agrupamento`, **coluna gerada e indexada** a partir dela. ⚠️ `unaccent` é `stable`, não `immutable`, e coluna gerada exige função imutável; o invólucro fixa o dicionário explicitamente, o que torna o resultado determinístico |
+| `20260818211000_lista_organizacoes_agrupadas` | `organizacoes_agrupadas`, `conta_organizacoes_agrupadas` e `organizacoes_do_grupo`. O PostgREST não expõe `group by`, e paginar por linha traria a mesma organização repetida em páginas diferentes — a agregação roda no banco e a página continua carregando 50 registros (R-006) |
+| `20260818230000_negocios_como_referencia_no_contato` | As duas funções de listagem passam a devolver `titulos text[]` com os negócios mais recentes (D-122). ⚠️ Precisaram **cair e renascer**: o Postgres recusa `create or replace` que mude o tipo de retorno |
+
+⚠️ **A repetição de organizações é estrutural na base, não um acidente:** 1.195 dos 2.889 cadastros são duplicata de nome, em 668 grupos. O agrupamento é de **apresentação** — mesclar continua fora do MVP.
+
+---
 
 **Nunca carregar a base inteira no navegador** (R-006): paginação no servidor, lista virtualizada na tela, e o Kanban carregando por partes conforme rola — especialmente a coluna Cold Lead, que será a mais cheia (D-086).
 | **C-05** | O gatilho do log gravava `autor uuid := auth.uid()` em `evento_negocio.autor_id`, que referencia `usuario(id)` | Correto **até a D-109**, que separou as duas coisas: `usuario.id` virou id próprio e o id da conta de login foi para `usuario.auth_id`. A partir daí `auth.uid()` deixou de existir em `usuario(id)` para todo mundo vindo da carga — a chave estrangeira recusa e **a escrita inteira falha**. Não era hipótese: Julio Manfrini, único usuário migrado que já tinha entrado, não conseguia mover cartão no Kanban; os outros quatro cairiam no mesmo ao entrar. Só a conta anterior à D-109 escapava, por ter `auth_id` igual ao próprio id | O gatilho passa a resolver o autor por `public.usuario_atual()`. Verificado simulando a sessão do Julio numa transação com `rollback`. ⚠️ **Lição:** mudar o significado de uma chave primária alcança todo lugar que a referencia, inclusive gatilhos escritos meses antes — procurar `auth.uid()` no schema inteiro passa a ser obrigatório depois de qualquer mexida em identidade |
@@ -512,6 +539,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.5** — 18/08/2026 — **Sessão 09.** Seção **3.12** criada com as quatro migrações da sessão: a preferência de filtro por usuário, a chave de agrupamento de organizações (coluna gerada e indexada, com o cuidado do `unaccent` imutável), as funções que paginam por grupo — o PostgREST não expõe `group by` — e os títulos de negócio como referência. Correções **C-06** (manipulador de evento cruzando a fronteira servidor→cliente, que derrubava a aba Pessoas) e **C-07** (388 registros com acento destruído **na origem**, no dado do próprio Pipedrive, com 343 recuperados por cruzamento com a própria extração) acrescentadas à seção 3.11.
 - **v0.4** — 14/08/2026 — **O schema saiu do papel: as três migrações e a semente foram aplicadas na base de produção.** Seção 4 ganha os dados concretos do projeto (referência, região, URL) e passa a descrever **um ambiente só**: D-106 revoga a D-102, não haverá banco de ensaio e a carga roda uma única vez na base definitiva. Registrado também que o host de conexão direta resolve só em IPv6, tornando o *Session pooler* o único caminho gratuito para aplicar migração. **C-04 acrescentada à seção 3.11** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca da Lista — junto do método que permite validar a forma de uma consulta contra a base real usando só a chave anônima.
 - **v0.3** — 14/08/2026 — **Seção 4 reescrita por D-101**: base única, sem ambiente de desenvolvimento na nuvem, carga direto em produção; ensaio no banco local. Seção 4.1 criada para corrigir o entendimento de P-026 — o retorno do OAuth vai para o Supabase, não para a aplicação. **Seção 3.11 criada com as três correções (C-01 a C-03) descobertas ao aplicar as migrações contra um PostgreSQL real**; seções 3.7, 3.8 e 3.9 corrigidas de acordo. Seção 5.1 atualizada com a estrutura real, incluindo `proxy.ts` (o `middleware.ts` do Next 16). P-025 encerrada em favor do Tailwind v4; P-029 criada.
 - **v0.2** — 13/08/2026 — Convenções técnicas validadas: português nos nomes (D-099) e exclusão real com restrição nos vínculos (D-100). T-02 a T-05 e T-07 aprovados em bloco.

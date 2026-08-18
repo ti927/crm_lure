@@ -1,11 +1,11 @@
-﻿# 00 — Status e Retomada (v2.0)
+﻿# 00 — Status e Retomada (v2.1)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v2.0 |
-| **Última atualização** | 18/08/2026 — Sessão 08 |
+| **Versão** | v2.1 |
+| **Última atualização** | 18/08/2026 — Sessão 09 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -32,18 +32,18 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v2.0.md` |
+| `00-status-e-retomada-v2.1.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.13.md` |
+| `03-log-de-decisoes-v0.14.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.4.md` |
+| `09-arquitetura-tecnica-v0.5.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.2.md` |
-| `12-claude-md-v0.3.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.6.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
@@ -95,8 +95,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ## 4. ONDE ESTAMOS
 
-**Fase:** **construção**. **F0, F1 e F2 concluídas.** F3 parcial, F5 iniciada.
-**Perguntas respondidas:** 80 · 12 blocos · **118 decisões** · 153 requisitos · 126 itens de backlog
+**Fase:** **construção — todas as telas do MVP de pé.** F0 a F7 e F9 concluídas; **F8 adiada** (D-124); resta a **F10, a virada**.
+**Perguntas respondidas:** 80 · 12 blocos · **124 decisões** · 153 requisitos · 126 itens de backlog
+
+⏳ **Faltam 16 dias para 3/9.**
 
 ⚠️ **Ordem alterada por D-105:** F0 → F3 → OAuth/Vercel → F1 → F2. O Doc 10 descreve a ordem original.
 
@@ -211,19 +213,19 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v2.0 | vivo | — |
+| 00 | Status e Retomada | v2.1 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.13 | vivo | — |
+| 03 | Log de Decisões | v0.14 | vivo | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.1 | rascunho — **aguarda validação** | criado 13/08 |
-| 09 | Arquitetura Técnica | v0.4 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
+| 09 | Arquitetura Técnica | v0.5 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.2 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.5 | rascunho — **na raiz do repositório** | atualizado 17/08, sessão 06 |
+| 12 | CLAUDE.md | v0.6 | vivo — **na raiz do repositório** | atualizado 18/08, sessão 09 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 14* | *Referência da API Pipedrive* | v0.1 | **anexo do Doc 14** | endpoints e limites de uso |
@@ -270,7 +272,7 @@ Registro completo no documento **03 — Log de Decisões**: **102 decisões (D-0
 |---|---|---|---|
 | P-005 | Inventário funcional do que a equipe usa no Pipedrive | Doc 05 | Amplamente coberto pelos prints; revisar na Fase 2 |
 | P-006 | Estimar custo de manutenção contínua | Doc 09/10 | **Infraestrutura encerrada** (D-083 + D-101): planos Pro já existentes e **um projeto só**, sem os ~US$ 10/mês do projeto adicional. Sobra o custo do tempo do maestro conduzindo o Claude Code |
-| P-014 | Modelar a entidade Notificação | Doc 06 | A-07, ainda aberto |
+| P-014 | Modelar a entidade Notificação | Doc 06 | A-07, ainda aberto — **pré-requisito da F8** (D-124) |
 | P-016 | Revisitar cartão do Kanban: responsável e indicador de atividade | Doc 07 | Revisar no Bloco 11 |
 | P-018 | Definir papéis e permissões granulares | Fase 2 | Adiado por decisão do maestro (D-049) |
 | ~~P-020~~ | ~~Extrair a base do Pipedrive~~ | — | ✅ **encerrada 17/08.** 13 entidades em `dados/pipedrive/` |
@@ -278,7 +280,10 @@ Registro completo no documento **03 — Log de Decisões**: **102 decisões (D-0
 | P-022 | Habilitar a Data API do Bubble e obter token | fase final | **Saiu do caminho crítico** por D-110 |
 | P-023 | Mapear os eixos admissíveis de cada um dos treze indicadores | Doc 05/07 | A-09 — trabalho de Fase 2 |
 | ~~P-024~~ | ~~Obter os vetores do logotipo, símbolo "+" e monograma~~ | — | ✅ **encerrada 18/08.** O maestro subiu o handoff de marca (BR/BAUEN). Símbolo, favicon e assinatura implementados; referência em `docs/marca/` |
-| P-027 | Modelar a entidade Notificação no schema | Doc 09 | A-07 — pendente desde o Bloco 4 |
+| P-027 | Modelar a entidade Notificação no schema | Doc 09 | A-07 — pendente desde o Bloco 4, **pré-requisito da F8** |
+| P-036 | **Definir o prazo do alerta de "negócio parado"** e a antecedência do lembrete | F8 | **Criada 18/08.** Nunca foi definido em documento nenhum. Bloqueia a F8 junto do desenho do painel (D-124) |
+| P-037 | **Curar os 45 nomes com acento perdido** | qualidade | **Criada 18/08.** Listados em `acentos-pendentes.tsv`, fora do git porque o repositório é público. Conserto pela ficha, que agora é editável (C-07) |
+| P-038 | **Validar a criação de área embutida no cadastro de produto** | escopo | **Criada 18/08.** A base nasceu com zero áreas e as listas configuráveis não têm tela no MVP — sem isso o campo nunca poderia ser preenchido. Se o maestro preferir, volta a ser só painel do Supabase |
 | ~~P-028~~ | ~~Regra de conversão de status~~ | — | ✅ **aplicada na carga de 17/08**, conforme a proposta da seção 5.1 |
 | ~~P-026~~ | ~~URL de retorno OAuth~~ | — | ✅ **encerrada 17/08.** Login por Google funcionando em produção |
 | ~~P-031~~ | ~~Publicar na Vercel~~ | — | ✅ **encerrada 17/08.** `crm-lure.vercel.app`. ⚠️ Plano **Hobby**, cujo uso comercial contraria os termos da Vercel — decisão pendente |
@@ -325,12 +330,15 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 04 | 14/08/2026 | **Primeira sessão de construção.** Repositório criado e publicado; biblioteca movida para `docs/`. **P-025 encerrada em favor do Tailwind v4.** F0 executada até onde não depende do maestro: scaffold, tokens da Lure com as três correções do Doc 08, dois temas conferidos na tela, schema do Doc 09 em três migrações, gatilho do log, acesso por domínio, clientes Supabase e login por Google. **Três defeitos do Doc 09 encontrados e corrigidos** (C-01 a C-03) ao aplicar as migrações contra um PostgreSQL real. **D-101**: base única, carga direto em produção — biblioteca inteira revista de acordo. | F0 bloqueada em P-030 e P-031; F1 sem token |
 | 05 | 14/08/2026 | **A base de produção entrou no ar.** Projeto do Supabase criado (`qyitrhflinkfcylobsfp`, us-east-1) e as três migrações mais a semente aplicadas — **P-029 e P-030 encerradas**. Conexão verificada de ponta a ponta: 20 tabelas, tipos do código batendo com o banco, leitura e escrita anônimas negadas. **F3 iniciada fora de ordem** (D-105): moldura do sistema e Lista de negócios com as dez colunas de D-104, paginação no servidor, ordenação em todas, busca e filtros. **C-04 encontrada** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca; corrigida em dois passos. D-103 (região), D-106 (ambiente único, **revoga D-102**). P-032 criada. **`CLAUDE.md` corrigido** (Doc 12 v0.3): saiu a instrução de ensaiar a carga no banco local, revogada por D-106, e a referência a um `tailwind.config.ts` inexistente. Tudo publicado no GitHub. | **F0 bloqueada no Google OAuth (P-026) e na Vercel (P-031).** Nada da F3 foi conferido em tela — é a primeira coisa a fazer quando o login funcionar || 06 | 17/08/2026 | **A base real entrou no sistema, e o CRM virou sistema de trabalho.** F0 fechada (Google OAuth e Vercel, depois de uma longa caçada a variáveis de ambiente cadastradas na área compartilhada da conta em vez do projeto). **F1 e F2 concluídas:** 2.458 negócios, 2.889 organizações, 4.589 pessoas, 6.483 atividades e 922 anotações carregados numa transação única, com ensaio por rollback. **Oito decisões (D-107 a D-114)**, três delas revogando regras tomadas antes de existir extração. Kanban com arrastar-e-soltar e **trava de desfecho** funcionando; filtro por responsável com foto. **F4 concluída** no fim da sessão: detalhe em três zonas, linha do tempo e trava valendo nos três caminhos. Passada de animação com guarda de acessibilidade. **P-032 e P-034 encerradas.** Encontrado e corrigido um defeito que a própria D-109 desta sessão criou (C-05). | F3 incompleta; **log de eventos ainda com zero linhas**; acesso a clientes pelo celular pedido e não construído |
 | 07 | 18/08/2026 | **F3 fechada.** Filtro por coluna nas dez colunas (B-042) substituindo a barra de filtros única, indicador de coluna filtrada (B-044), persistência da combinação de filtro/ordenação por usuário via nova coluna `usuario.preferencia_lista_negocios` (B-045, migração aplicada em produção), exportação CSV do conjunto filtrado inteiro por rota dedicada (B-047), lista virtualizada com `@tanstack/react-virtual`. Corrigidos dois defeitos apontados pelo maestro: o link "voltar" do detalhe do negócio agora respeita se a origem foi a Lista ou o Kanban, e o seletor de responsável — que renderizava atrás de outros elementos — foi reescrito sobre `Popover` do Radix (Portal), eliminando a causa (conflito de `z-index` com o cabeçalho fixo da tabela) em vez de só ajustar um número. Verificado por `tsc`, `eslint` e `next build` contra o banco de produção; **nenhuma tela foi aberta no navegador** — o Google OAuth impede login automatizado pelo agente. | **Verificação visual pendente nos dois temas**, inclusive das telas novas desta sessão; log de eventos não checado nesta sessão; acesso a clientes pelo celular continua sem construir |
+
 | 08 | 18/08/2026 | **F6 — Atividades.** Tela própria em dois modos: lista **um dia por vez (abre em Hoje, padrão do Pipedrive)** com navegação entre dias e vencidas fixas no topo, e calendário mensal, alternáveis. Criação em diálogo com tipo, título, data, horas, responsável, descrição e vínculo opcional a negócio/organização/pessoa (D-108) via busca única das três entidades; conclusão otimista pela lista; registro retroativo (data no passado, "já concluída"); filtros por situação, tipo e responsável; exportação CSV (B-085). O recorte "abre em Hoje" foi um ajuste pedido pelo maestro depois da primeira versão, que mostrava todas as pendentes de uma vez. Sem migração — o schema de 17/08 já tinha `organizacao_id`/`pessoa_id` e o gatilho que encadeia a organização. Verificado por `tsc`, `eslint` e `next build`. | **Verificação visual pendente** (Google OAuth barra o agente); F7 (contatos e produtos) é a próxima; acesso a clientes pelo celular continua sem construir |
+| 09 | 18/08/2026 | **A maratona: F3, F6, F7 e F9 fechadas, marca implantada e dois defeitos de dado resolvidos.** F3 concluída (filtro por coluna, persistência por usuário, CSV, lista virtualizada). **F6** — atividades em lista por dia e calendário, com as vencidas em aba própria depois de duas rodadas de ajuste com o maestro. **Identidade visual** do handoff BR/BAUEN implantada, encerrando a **P-024**: símbolo, assinatura, favicon, login em split-screen e rodapé; a navegação fica na lateral por decisão explícita (**D-120**). **F7** — Contatos com CRUD completo e histórico derivado, mais o **agrupamento de duplicatas** (**D-121**: 1.195 dos 2.889 cadastros são repetição) com os negócios como referência (**D-122**); e Produtos. **F9** — celular com lista em cartões, filtros em gaveta e Kanban uma etapa por vez. **Dois defeitos de dado:** o crash da aba Pessoas (**C-06**) e **388 registros com acento destruído na origem** (**C-07**), dos quais 343 recuperados. Rodada de UI/UX: avisos de ação, busca instantânea, foco nos diálogos, esqueletos, barra de progresso e navegação no celular. **F8 adiada** (**D-124**). | **F10, a virada.** Nada foi conferido em tela pelo agente — o Google OAuth impede login automatizado. 45 nomes seguem com acento perdido, listados fora do git |
 
 ---
 
 ## Changelog
 
+- **v2.1** — 18/08/2026 — **Fim da sessão 09.** Registro do que fechou: **F3, F6, F7 e F9**, mais a identidade visual da marca (**P-024 encerrada**). **F8 adiada** por decisão do maestro (**D-124**), para voltar com painel de configuração e alertas derivados na leitura. Doc 03 vai a v0.14 com **D-119 a D-124**; Doc 09 vai a v0.5 com a seção **3.12** (as quatro migrações da sessão) e as correções **C-06** e **C-07**. Pendências novas: **P-036** (o prazo do "negócio parado", que nunca foi definido), **P-037** (45 nomes com acento perdido) e **P-038** (validar a criação de área embutida). ⚠️ **Nada foi conferido em tela pelo agente** — o Google OAuth impede login automatizado; toda a verificação foi por `tsc`, `eslint`, `next build` e consulta ao banco real.
 - **v2.0** — 18/08/2026 — **F7 concluída (Contatos e Produtos), mais uma rodada de UI/UX.** Contatos com as duas abas, CRUD completo, fichas com histórico derivado, e o **agrupamento de duplicatas** (1.195 dos 2.889 cadastros são repetição) com os títulos dos negócios como referência para distinguir cadastros de mesmo nome. Produtos com nome e área, com criação de área embutida no seletor por a base ter nascido vazia. **Corrigido um crash na aba Pessoas** — handler de evento em Server Component passado a Client Component; o app inteiro foi auditado. Fluidez: **avisos de ação** (nenhuma ação confirmava nada até aqui), **busca instantânea** com atalho `/`, **foco preso e devolvido nos diálogos**, esqueletos legíveis no tema escuro, **barra de progresso de navegação** e filtros que esmaecem enquanto respondem. **Navegação no celular voltou** — a sidebar sumia e não havia como trocar de seção.
 - **v1.9** — 18/08/2026 — **Identidade visual da marca implementada (P-024 encerrada).** O maestro subiu o handoff BR/BAUEN. O símbolo "+" em cinco blocos (miolo amarelo) virou componente React (`components/dominio/marca.tsx`), com os braços em `currentColor` para servir os dois temas sem variantes. O placeholder "L" da sidebar deu lugar à assinatura **LURE + chip CRM**; a tela de login ganhou o split-screen da marca (painel escuro com tagline "Organize potencial em resultados." + acesso Google); favicon e apple-icon vieram dos vetores do handoff. A pasta de referência foi movida de `components/ui/` para **`docs/marca/`**. Navegação segue na sidebar (decisão do maestro — nada foi para a top bar). **Dois ajustes após revisão do maestro:** no login em tema escuro os dois painéis ficavam ambos pretos e se fundiam — o painel de acesso passou a `bg-surface` (mais claro que o painel de marca) com borda divisória; e o **rodapé da marca** (footer.html do handoff) entrou no sistema, faixa escura fixa no pé com o símbolo, "Ferramenta interna · Lure Consultoria" e copyright, sem os links do protótipo que ainda não têm página.
 - **v1.8** — 18/08/2026 — **Sessão 08: F6 construída.** Tela de Atividades em dois modos — lista **um dia por vez, abrindo em Hoje** (padrão do Pipedrive, ajustado a pedido do maestro), com vencidas fixas no topo, e calendário mensal. Criação com campos completos e vínculo opcional a negócio, organização ou pessoa (D-108), conclusão otimista, registro retroativo, filtros por situação/tipo/responsável e exportação CSV (B-085). **Sem migração** — o schema já sustentava os três vínculos desde a carga. ⚠️ Sem verificação visual (Google OAuth barra o agente); o calendário ficou em visão mensal, anotado em 4.2.

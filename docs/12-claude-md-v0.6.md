@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.3 · 14/08/2026
+> Documento 12 da biblioteca do projeto · v0.6 · 18/08/2026
 
 ---
 
@@ -75,6 +75,8 @@ Detalhamento no Doc 06; estrutura física no Doc 09.
 
 Cada etapa carrega um status inicial sugerido. Cold Lead nasce `parado`.
 
+⚠️ **A base tem duas sujeiras estruturais, medidas em 18/08.** (a) **1.195 das 2.889 organizações são duplicata de nome** — 668 grupos, 41% da lista; "Sicoob Credseguro" aparece seis vezes. A Lista **agrupa na apresentação** (D-121), o que **não é mesclagem** — mesclar segue fora do MVP. (b) **388 registros vieram com acento destruído** direto do Pipedrive, não da carga; 343 foram recuperados por `scripts/recupera-acentos.mjs` e **45 seguem quebrados** (C-07).
+
 ⚠️ **A extração de 17/08 desmentiu a suposição de que a maior parte da base estaria parada.** O real: 74% dos negócios estão nas duas últimas etapas — **Proposta Enviada 1.168** e **Aguardando Contrato 642** —, contra 360 em Cold Lead. Dos 2.458, apenas 306 seguem abertos: 1.121 foram perdidos e 1.031 ganhos. Qualquer decisão de carregamento, ordenação ou desempenho tem que partir daí, não da intuição anterior.
 
 **Status `parado` congela o negócio:** nenhuma automação o monitora, e ele fica fora dos indicadores de desempenho por padrão.
@@ -128,6 +130,8 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 
 **Movimento** (D-116): entrada escalonada sempre com teto — dez a catorze itens, senão cascata vira espera. O que se arrasta **sai do plano da tela** (inclina, cresce, ganha sombra) em vez de deslizar nele. ⚠️ **`prefers-reduced-motion` desliga tudo**, por guarda global no `globals.css`: movimento não pedido causa enjoo em quem tem sensibilidade vestibular. Nada some, só para.
 
+⚠️ **Manipulador de evento não atravessa a fronteira servidor→cliente.** Montar JSX num Server Component e entregá-lo a um Client Component é padrão útil e usado aqui (a tabela virtualizada recebe as linhas prontas), mas qualquer `onClick`, `onChange`, `onSubmit` ou `onBlur` nesse JSX **derruba a rota inteira** na serialização. Foi o que quebrou a aba Pessoas (C-06, Doc 09 §3.11). Depois de mexer numa página desse tipo, varra os Server Components à procura desses atributos.
+
 ⚠️ **Nome de classe do Tailwind nunca pode ser montado em tempo de execução.** O v4 varre o código à procura de literais; `bg-status-${x}` simplesmente não é gerado, e a cor some sem erro nenhum. Escreva as classes por extenso em mapas — é o que `components/dominio/etiquetas.tsx` faz.
 
 ---
@@ -135,6 +139,8 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 ## Escopo do MVP
 
 **Entra:** Negócios (Kanban com arrastar-e-soltar, Lista de dez colunas com filtro e ordenação em todas, detalhe em três zonas com aba Linha do Tempo) · Atividades (lista e calendário) · Contatos · Produtos/Serviços · trava de desfecho · quatro automações com notificação interna · **log de eventos** · exportação CSV · dois temas · Google OAuth · migração completa · **celular em modo consulta e marcação**.
+
+⚠️ **A F8 (automações e notificações) foi adiada** (D-124): volta acompanhada de um painel de configuração, com os alertas **derivados na leitura** — sem agendador. Faltam definir o prazo do "negócio parado" e a antecedência do lembrete (P-036), e a entidade Notificação nunca foi modelada (P-014, P-027).
 
 **Fora — não construa:** **seletor de cliente Bubble no Ganho** (D-110, foi para fase final) · telas de estatísticas e painel de indicadores · mesclagem de duplicados · transferência entre usuários · telas de configuração · criação e edição pelo celular · metas · Google Agenda · API pública e webhooks · envio de e-mail (nenhum, em hipótese alguma) · múltiplas moedas · módulo de LGPD.
 
@@ -187,6 +193,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.6** — 18/08/2026 — **Fim da sessão 09.** Entram os dois avisos que custaram tempo nesta sessão: manipulador de evento não atravessa a fronteira servidor→cliente (C-06, derrubou a aba Pessoas) e as duas sujeiras estruturais da base — 41% das organizações são duplicata de nome e 388 registros vieram com acento destruído da origem, 45 ainda quebrados. Registrado que a **F8 foi adiada** (D-124) com o motor já escolhido. Do MVP, só falta a virada: F0 a F7 e F9 estão de pé.
 - **v0.5** — 17/08/2026 — **Fim da sessão 06.** Movimento entra na identidade visual como regra (D-116), com a guarda de `prefers-reduced-motion`. A trava de desfecho passa a valer nos três caminhos que movem um negócio, sempre verificada no servidor. Acrescentado o aviso que custou caro nesta sessão: mexeu em identidade, procure `auth.uid()` no schema inteiro — a D-109 quebrou o gatilho do log e só se descobriu porque um usuário real não conseguia trabalhar.
 - **v0.4** — 17/08/2026 — **Sessão 06: a extração corrigiu o documento.** A afirmação de que "a maior parte da base está parada" saiu — 74% dos negócios estão nas duas últimas etapas, e só 306 dos 2.458 seguem abertos. A carga **aconteceu** e está conferida; o medo de contaminar o log não se materializou, porque o gatilho é `after update` e não `after insert`. **D-108** revoga parte da D-030: atividade e anotação podem pertencer a organização ou pessoa, como no Pipedrive — 76% das atividades da base não têm negócio. **D-109**: `usuario` deixa de depender de conta de login. **D-110**: o seletor do Bubble sai do MVP. Volume real corrigido em todo o documento: 2.458 negócios e 2.889 organizações, não 2.453 e 422.
 - **v0.3** — 14/08/2026 — **Sessão 05.** Regra 8 acrescentada: há um ambiente só, e `npm run dev` aponta para a base real. A seção "A carga da migração" corrigida por **D-106**, que revogou a D-102 — não há ensaio, a carga é operação de uma tentativa só, e o backup verificado passa a ser a mitigação principal. Identidade visual corrigida: os tokens estão em `app/tokens.css` e a ponte em `app/globals.css`, **não** em `tailwind.config.ts`, que não existe — o texto anterior contradizia a própria tabela de stack. O aviso do bloco `spacing` saiu (resolvido em P-025) e deu lugar ao que de fato morde no Tailwind v4: nome de classe montado em tempo de execução não é gerado. Contagem de decisões atualizada para 106.
