@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Building2, Users, Search, Plus, X } from "lucide-react";
+import { Building2, Users, Plus } from "lucide-react";
+import { CampoBusca } from "@/components/dominio/campo-busca";
 import { DialogoOrganizacao } from "./dialogo-organizacao";
 import { DialogoPessoa } from "./dialogo-pessoa";
 import type { Aba } from "./consulta";
@@ -36,13 +37,19 @@ export function BarraContatos({
     iniciar(() => router.push(s ? `${caminho}?${s}` : caminho));
   }
 
-  function aplicarBusca(valor: string) {
-    const p = new URLSearchParams(params);
-    if (valor) p.set("busca", valor);
-    else p.delete("busca");
-    p.delete("pagina");
-    iniciar(() => router.push(`${caminho}?${p}`));
-  }
+  const aplicarBusca = useCallback(
+    (valor: string) => {
+      const p = new URLSearchParams(params);
+      if (valor) p.set("busca", valor);
+      else p.delete("busca");
+      // Busca nova sempre volta à primeira página: continuar na página 7
+      // de um conjunto que encolheu mostraria vazio.
+      p.delete("pagina");
+      const s = p.toString();
+      iniciar(() => router.push(s ? `${caminho}?${s}` : caminho));
+    },
+    [params, caminho, router, iniciar]
+  );
 
   function aoFecharDialogo(r: { mudou: boolean; id?: string }) {
     setDialogo(null);
@@ -87,39 +94,13 @@ export function BarraContatos({
             da tela, e um campo de 14rem espremido ao lado do botão seria
             pequeno demais para o polegar. */}
         <div className="flex w-full items-center gap-2 md:w-auto">
-          <form
-            className="relative min-w-0 flex-1 md:flex-none"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const dado = new FormData(e.currentTarget);
-              aplicarBusca(String(dado.get("busca") ?? "").trim());
-            }}
-          >
-            <Search
-              className="text-text-muted pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2"
-              aria-hidden
-            />
-            <input
-              name="busca"
-              type="search"
-              defaultValue={busca}
-              key={busca}
-              placeholder={aba === "organizacoes" ? "Buscar organização" : "Buscar pessoa"}
-              aria-label="Buscar por nome"
-              className="h-control-md bg-surface border-border text-md w-full rounded-md border pl-8 pr-2.5 md:w-56"
-            />
-          </form>
+          <CampoBusca
+            valor={busca}
+            aoBuscar={aplicarBusca}
+            placeholder={aba === "organizacoes" ? "Buscar organização" : "Buscar pessoa"}
+            className="min-w-0 flex-1 md:w-56 md:flex-none"
+          />
 
-          {busca && (
-            <button
-              type="button"
-              onClick={() => aplicarBusca("")}
-              className="h-control-md text-text-secondary hover:bg-surface-hover inline-flex items-center gap-1 rounded-md px-2 text-sm font-medium"
-            >
-              <X className="size-3.5" aria-hidden />
-              Limpar
-            </button>
-          )}
 
           <button
             type="button"

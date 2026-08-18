@@ -128,7 +128,6 @@ export default async function PaginaContatos({
                     href={`https://wa.me/${paraWhatsApp(c.valor)}`}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
                     className="border-border hover:border-brand-ink inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
                   >
                     <Phone className="size-3" aria-hidden />
@@ -138,7 +137,6 @@ export default async function PaginaContatos({
                   <a
                     key={j}
                     href={`mailto:${c.valor}`}
-                    onClick={(e) => e.stopPropagation()}
                     className="border-border hover:border-brand-ink inline-flex max-w-[14rem] items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
                   >
                     <Mail className="size-3 shrink-0" aria-hidden />

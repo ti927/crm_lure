@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { Trophy, XCircle } from "lucide-react";
 import type { Desfecho } from "./constantes";
 
@@ -26,6 +27,7 @@ export function DialogoDesfecho({
   aoCancelar: () => void;
 }) {
   const [escolha, setEscolha] = useState<"ganho" | "perdido" | null>(null);
+  const caixaDialogo = useFocoDialogo<HTMLDivElement>();
   const [motivoId, setMotivoId] = useState("");
 
   // Esc cancela a transicao, como fechar no X.
@@ -46,6 +48,8 @@ export function DialogoDesfecho({
       onMouseDown={(e) => e.target === e.currentTarget && aoCancelar()}
     >
       <div
+        ref={caixaDialogo}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-desfecho"

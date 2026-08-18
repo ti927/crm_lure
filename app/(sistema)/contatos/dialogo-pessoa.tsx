@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
+import { useAviso } from "@/components/dominio/avisos";
 import { criarPessoa, editarPessoa } from "./acoes";
 
 /**
@@ -16,8 +18,10 @@ export function DialogoPessoa({
   aoFechar: (r: { mudou: boolean; id?: string }) => void;
 }) {
   const [nome, setNome] = useState(edicao?.nome ?? "");
+  const caixaDialogo = useFocoDialogo<HTMLDivElement>();
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
 
   useEffect(() => {
     const naTecla = (e: KeyboardEvent) =>
@@ -34,6 +38,7 @@ export function DialogoPessoa({
       : await criarPessoa(nome);
     setSalvando(false);
     if (r?.erro) return setErro(r.erro);
+    avisar(edicao ? "Pessoa atualizada." : "Pessoa criada.");
     aoFechar({ mudou: true, id: edicao?.id ?? (r as { id?: string }).id });
   }
 
@@ -43,6 +48,8 @@ export function DialogoPessoa({
       onMouseDown={(e) => e.target === e.currentTarget && aoFechar({ mudou: false })}
     >
       <div
+        ref={caixaDialogo}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-pessoa"

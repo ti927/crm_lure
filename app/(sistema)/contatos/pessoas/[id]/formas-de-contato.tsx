@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Phone, Mail, X, Plus } from "lucide-react";
 import { paraWhatsApp } from "../../consulta";
+import { useAviso } from "@/components/dominio/avisos";
 import { adicionarFormaContato, removerFormaContato } from "../../acoes";
 
 export type Contato = { id: string; tipo: string; valor: string };
@@ -22,6 +23,7 @@ export function FormasDeContato({
   const [valor, setValor] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
 
   async function adicionar() {
     const limpo = valor.trim();
@@ -32,12 +34,14 @@ export function FormasDeContato({
     setSalvando(false);
     if (r?.erro) return setErro(r.erro);
     setValor("");
+    avisar("Contato adicionado.");
     router.refresh();
   }
 
   async function remover(id: string) {
     const r = await removerFormaContato(id, pessoaId);
     if (r?.erro) return setErro(r.erro);
+    avisar("Contato removido.");
     router.refresh();
   }
 

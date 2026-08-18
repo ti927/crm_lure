@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 import { DialogoPessoa } from "../../dialogo-pessoa";
+import { useAviso } from "@/components/dominio/avisos";
 import { excluirPessoa } from "../../acoes";
 
 /** Nome da pessoa com editar e excluir (B-094: exclusão leva vínculos e
@@ -14,6 +15,7 @@ export function CabecalhoPessoa({ pessoa }: { pessoa: { id: string; nome: string
   const [confirmando, setConfirmando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
 
   async function excluir() {
     setErro(null);
@@ -24,6 +26,7 @@ export function CabecalhoPessoa({ pessoa }: { pessoa: { id: string; nome: string
       setConfirmando(false);
       return setErro(r.erro);
     }
+    avisar("Pessoa excluída.");
     router.push("/contatos?aba=pessoas");
   }
 

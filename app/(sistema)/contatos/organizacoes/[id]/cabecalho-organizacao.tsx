@@ -7,6 +7,7 @@ import {
   DialogoOrganizacao,
   type OrganizacaoEdicao,
 } from "../../dialogo-organizacao";
+import { useAviso } from "@/components/dominio/avisos";
 import { excluirOrganizacao } from "../../acoes";
 
 /** Nome da organização com as ações de editar (B-090) e excluir (B-095). */
@@ -16,6 +17,7 @@ export function CabecalhoOrganizacao({ org }: { org: OrganizacaoEdicao }) {
   const [confirmando, setConfirmando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
 
   async function excluir() {
     setErro(null);
@@ -26,6 +28,7 @@ export function CabecalhoOrganizacao({ org }: { org: OrganizacaoEdicao }) {
       setConfirmando(false);
       return setErro(r.erro);
     }
+    avisar("Organização excluída.");
     router.push("/contatos");
   }
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
+import { useAviso } from "@/components/dominio/avisos";
 import {
   criarOrganizacao,
   editarOrganizacao,
@@ -27,11 +29,13 @@ export function DialogoOrganizacao({
   aoFechar: (r: { mudou: boolean; id?: string }) => void;
 }) {
   const [nome, setNome] = useState(edicao?.nome ?? "");
+  const caixaDialogo = useFocoDialogo<HTMLDivElement>();
   const [cidade, setCidade] = useState(edicao?.cidade ?? "");
   const [website, setWebsite] = useState(edicao?.website ?? "");
   const [bubbleId, setBubbleId] = useState(edicao?.bubbleId ?? "");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
 
   useEffect(() => {
     const naTecla = (e: KeyboardEvent) =>
@@ -49,6 +53,7 @@ export function DialogoOrganizacao({
       : await criarOrganizacao(dados);
     setSalvando(false);
     if (r?.erro) return setErro(r.erro);
+    avisar(edicao ? "Organização atualizada." : "Organização criada.");
     aoFechar({ mudou: true, id: edicao?.id ?? (r as { id?: string }).id });
   }
 
@@ -62,6 +67,8 @@ export function DialogoOrganizacao({
       onMouseDown={(e) => e.target === e.currentTarget && aoFechar({ mudou: false })}
     >
       <div
+        ref={caixaDialogo}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-org"

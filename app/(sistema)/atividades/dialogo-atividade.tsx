@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { Trash2 } from "lucide-react";
+import { useAviso } from "@/components/dominio/avisos";
 import { SeletorVinculo, type Vinculo } from "./seletor-vinculo";
 import {
   criarAtividade,
@@ -51,6 +53,7 @@ export function DialogoAtividade({
   aoFechar: (mudou: boolean) => void;
 }) {
   const [tipoId, setTipoId] = useState(edicao?.tipoId ?? "");
+  const caixaDialogo = useFocoDialogo<HTMLDivElement>();
   const [titulo, setTitulo] = useState(edicao?.titulo ?? "");
   const [data, setData] = useState(edicao?.data ?? dataInicial ?? "");
   const [horaInicio, setHoraInicio] = useState(edicao?.horaInicio?.slice(0, 5) ?? "");
@@ -65,6 +68,7 @@ export function DialogoAtividade({
   const [salvando, setSalvando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
 
   useEffect(() => {
     const naTecla = (e: KeyboardEvent) => e.key === "Escape" && aoFechar(false);
@@ -92,6 +96,7 @@ export function DialogoAtividade({
       : await criarAtividade(dados);
     setSalvando(false);
     if (r?.erro) return setErro(r.erro);
+    avisar(edicao ? "Atividade atualizada." : "Atividade criada.");
     aoFechar(true);
   }
 
@@ -101,6 +106,7 @@ export function DialogoAtividade({
     const r = await excluirAtividade(edicao.id);
     setExcluindo(false);
     if (r?.erro) return setErro(r.erro);
+    avisar("Atividade excluída.");
     aoFechar(true);
   }
 
@@ -114,6 +120,8 @@ export function DialogoAtividade({
       onMouseDown={(e) => e.target === e.currentTarget && aoFechar(false)}
     >
       <div
+        ref={caixaDialogo}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-dialogo-atividade"

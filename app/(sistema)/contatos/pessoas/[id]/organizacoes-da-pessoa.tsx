@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Building2, X, Plus } from "lucide-react";
 import { SeletorAsync } from "../../seletor-async";
+import { useAviso } from "@/components/dominio/avisos";
 import {
   buscarOrganizacoes,
   vincularOrganizacao,
@@ -25,6 +26,7 @@ export function OrganizacoesDaPessoa({
 }) {
   const router = useRouter();
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
   const [adicionando, setAdicionando] = useState(false);
 
   async function vincular(orgId: string) {
@@ -32,12 +34,14 @@ export function OrganizacoesDaPessoa({
     const r = await vincularOrganizacao(pessoaId, orgId, "");
     if (r?.erro) return setErro(r.erro);
     setAdicionando(false);
+    avisar("Vínculo criado.");
     router.refresh();
   }
 
   async function remover(orgId: string) {
     const r = await desvincularOrganizacao(pessoaId, orgId);
     if (r?.erro) return setErro(r.erro);
+    avisar("Vínculo removido.");
     router.refresh();
   }
 

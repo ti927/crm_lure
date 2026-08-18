@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Phone, Mail, X, UserPlus } from "lucide-react";
 import { paraWhatsApp } from "../../consulta";
 import { SeletorAsync } from "../../seletor-async";
+import { useAviso } from "@/components/dominio/avisos";
 import {
   buscarPessoas,
   vincularOrganizacao,
@@ -34,6 +35,7 @@ export function PessoasDaOrganizacao({
 }) {
   const router = useRouter();
   const [erro, setErro] = useState<string | null>(null);
+  const avisar = useAviso();
   const [adicionando, setAdicionando] = useState(false);
 
   async function vincular(pessoaId: string) {
@@ -41,12 +43,14 @@ export function PessoasDaOrganizacao({
     const r = await vincularOrganizacao(organizacaoId, pessoaId, "");
     if (r?.erro) return setErro(r.erro);
     setAdicionando(false);
+    avisar("Vínculo criado.");
     router.refresh();
   }
 
   async function remover(pessoaId: string) {
     const r = await desvincularOrganizacao(organizacaoId, pessoaId);
     if (r?.erro) return setErro(r.erro);
+    avisar("Vínculo removido.");
     router.refresh();
   }
 
