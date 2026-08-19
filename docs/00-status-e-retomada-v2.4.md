@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v2.3)
+﻿# 00 — Status e Retomada (v2.4)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v2.3 |
+| **Versão** | v2.4 |
 | **Última atualização** | 19/08/2026 — Sessão 10 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,20 +32,21 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v2.3.md` |
+| `00-status-e-retomada-v2.4.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.15.md` |
+| `03-log-de-decisoes-v0.16.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.5.md` |
+| `09-arquitetura-tecnica-v0.6.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.8.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.9.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
+| `15-plano-central-de-notificacoes-v0.1.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
 | `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
@@ -96,7 +97,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ## 4. ONDE ESTAMOS
 
 **Fase:** **F10, a virada — em andamento.** F0 a F7 e F9 concluídas; **F8 adiada** (D-124). Falta o dia de operação real dos sócios.
-**Perguntas respondidas:** 80 · 12 blocos · **128 decisões** · 153 requisitos · 126 itens de backlog
+**Perguntas respondidas:** 80 · 12 blocos · **138 decisões** · 153 requisitos · 126 itens de backlog
 
 ✅ **Não há mais contagem regressiva** (D-125, 19/08/2026). Os dados estão no Supabase desde 17/08, conferidos — a virada é decidida por prontidão, não por data.
 
@@ -120,7 +121,8 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F9 — Mobile** | ✅ **construída 18/08.** Lista de negócios em cartões (B-110), filtros em gaveta própria (B-111), Kanban uma etapa por vez com seletor e **sem arrastar** (B-112), ficha empilhada (B-113), marcar concluída (B-114). Navegação lateral vira gaveta no celular |
 | **F8 — Automações** | ⏸️ **adiada por decisão do maestro (18/08)**, para vir depois com **painel de configuração de notificações**. Motor já decidido: alertas **derivados na leitura**, sem agendador |
 | **Financeiro** | ✅ **construído 19/08** (D-131). Aba própria em `/estatisticas/financeiro`, no padrão do Insights do Pipedrive: receita realizada com comparativo de período, ticket médio, pipeline em aberto, valor perdido, evolução mês a mês, receita por vendedor/origem/cliente/área, dez maiores contratos e CSV. **Ancorado em `fechado_em`**, não em `criado_em`. Gráficos com neon e animação (D-132) |
-| **Estatísticas** | ✅ **construída 19/08** (D-130, revoga a D-093). Os treze indicadores da D-063 em `/estatisticas`, calculados por sete funções versionadas no banco, com os recortes da D-064, interruptor de parados (D-067) e exportação CSV (D-066). **3.406 eventos históricos do Pipedrive carregados no log** (D-129) — sem eles os indicadores 7, 8 e 9 nasceriam cegos |
+| **Estatísticas** | ✅ **construída e refeita 19/08.** Duas abas em `/estatisticas` — **Comercial** (por data de entrada) e **Financeiro** (por data de fechamento). Recorte com período pronto, ano, etapa, status, faixa de valor, motivo, responsável, origem, produto e área. Gráficos validados por medição (D-133), brilho opcional só no escuro (D-135), gêmeo em tabela em todo painel e CSV. **Indicadores que só o volume sustenta** (D-134): ciclo de venda × taxa de ganho, ticket típico com mediana, perdas em valor |
+| *(detalhe)* | ✅ **construída 19/08** (D-130, revoga a D-093). Os treze indicadores da D-063 em `/estatisticas`, calculados por sete funções versionadas no banco, com os recortes da D-064, interruptor de parados (D-067) e exportação CSV (D-066). **3.406 eventos históricos do Pipedrive carregados no log** (D-129) — sem eles os indicadores 7, 8 e 9 nasceriam cegos |
 | **F10 — Virada** | 🔵 **iniciada 19/08.** Os sete critérios da D-098 passaram a ser medidos por script contra a base real: **cinco técnicos verdadeiros**, um bloqueado por três negócios legados (ver 4.2) e dois — operação real e celular — dependendo de gente. A verificação encontrou a **C-08** |
 | **F7 — Contatos e Produtos** | ✅ **construída 18/08.** Contatos com abas Organizações/Pessoas, CRUD completo, fichas com histórico derivado (B-090 a B-095) e **agrupamento de cadastros duplicados**; Produtos com nome e área (B-096) |
 | **F6 — Atividades** | ✅ **construída 18/08.** Três abas: **Lista** (um dia por vez, abrindo em Hoje, padrão do Pipedrive, com navegação ‹ › entre dias), **Vencidas** (a pilha de atrasadas, cada uma com a data em que venceu e há quantos dias, número na aba) e **Calendário** mensal; criação com vínculo opcional a negócio/organização/pessoa (D-108); conclusão; registro retroativo; filtros por situação/tipo/responsável; exportação CSV. **Sem migração** — o schema já sustentava os três vínculos |
@@ -159,7 +161,23 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ⚠️ **A C-08 foi encontrada nesta sessão e é a razão de a F10 não ter começado antes:** o negócio era a única entidade do sistema sem caminho de criação. Ver 4.6.
 
-**Depois:** a **F8**, quando o maestro definir P-036, P-014/P-027 e o desenho do painel.
+**Depois:** a **F8**. O desenho está pronto — **Doc 15, plano da central de notificações**, que encerra P-014 e P-027. Faltam três definições do maestro (seção 7 daquele documento) e elas bloqueiam o primeiro passo.
+
+### 4.8 O que a sessão 10 quebrou, e o que isso ensina
+
+⚠️ **A rota `/estatisticas` foi ao ar quebrada duas vezes**, e as duas na mesma fronteira servidor→cliente (C-09 e C-10, Doc 09 §3.11). Uma por passar um formatador como propriedade a um componente de cliente; outra por reexportar uma referência de cliente através de um `const`.
+
+O que torna isso registro e não desabafo: **o aviso já estava escrito no `CLAUDE.md`** desde a sessão 09, e mesmo assim aconteceu. Aviso não protege — o que protege é **rodar a página**.
+
+**O método que funciona**, já que o Google OAuth impede o agente de logar:
+
+1. desligar `PUBLICAS` em `proxy.ts` **localmente**;
+2. `npm run build && npm run start`;
+3. pedir a rota por `curl` e ler a pilha real no log do servidor;
+4. **restaurar o `proxy.ts`**.
+
+⚠️ **`tsc`, `eslint` e `next build` passam felizes** por erro de serialização — ele é de tempo de execução.
+⚠️ **Limite:** sem sessão a RLS devolve vazio, então isso exercita o caminho de **dado vazio**. Pega erro de serialização, que independe do dado; não pega defeito que só aparece com dado real.
 
 ### 4.7 Estatísticas — o que o histórico revelou
 
@@ -280,7 +298,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v2.3 | vivo | — |
+| 00 | Status e Retomada | v2.4 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
 | 03 | Log de Decisões | v0.15 | vivo — **128 decisões** | — |
@@ -289,12 +307,13 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.1 | rascunho — **aguarda validação** | criado 13/08 |
-| 09 | Arquitetura Técnica | v0.5 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
+| 09 | Arquitetura Técnica | v0.6 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.8 | vivo — **na raiz do repositório** | atualizado 19/08, sessão 10 |
+| 12 | CLAUDE.md | v0.9 | vivo — **na raiz do repositório** | atualizado 19/08, sessão 10 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
+| 15 | Plano da Central de Notificações | v0.1 | **proposta — aguarda validação** | criado 19/08 |
 | 14* | *Referência da API Pipedrive* | v0.1 | **anexo do Doc 14** | endpoints e limites de uso |
 
 ---
@@ -401,13 +420,14 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 07 | 18/08/2026 | **F3 fechada.** Filtro por coluna nas dez colunas (B-042) substituindo a barra de filtros única, indicador de coluna filtrada (B-044), persistência da combinação de filtro/ordenação por usuário via nova coluna `usuario.preferencia_lista_negocios` (B-045, migração aplicada em produção), exportação CSV do conjunto filtrado inteiro por rota dedicada (B-047), lista virtualizada com `@tanstack/react-virtual`. Corrigidos dois defeitos apontados pelo maestro: o link "voltar" do detalhe do negócio agora respeita se a origem foi a Lista ou o Kanban, e o seletor de responsável — que renderizava atrás de outros elementos — foi reescrito sobre `Popover` do Radix (Portal), eliminando a causa (conflito de `z-index` com o cabeçalho fixo da tabela) em vez de só ajustar um número. Verificado por `tsc`, `eslint` e `next build` contra o banco de produção; **nenhuma tela foi aberta no navegador** — o Google OAuth impede login automatizado pelo agente. | **Verificação visual pendente nos dois temas**, inclusive das telas novas desta sessão; log de eventos não checado nesta sessão; acesso a clientes pelo celular continua sem construir |
 
 | 08 | 18/08/2026 | **F6 — Atividades.** Tela própria em dois modos: lista **um dia por vez (abre em Hoje, padrão do Pipedrive)** com navegação entre dias e vencidas fixas no topo, e calendário mensal, alternáveis. Criação em diálogo com tipo, título, data, horas, responsável, descrição e vínculo opcional a negócio/organização/pessoa (D-108) via busca única das três entidades; conclusão otimista pela lista; registro retroativo (data no passado, "já concluída"); filtros por situação, tipo e responsável; exportação CSV (B-085). O recorte "abre em Hoje" foi um ajuste pedido pelo maestro depois da primeira versão, que mostrava todas as pendentes de uma vez. Sem migração — o schema de 17/08 já tinha `organizacao_id`/`pessoa_id` e o gatilho que encadeia a organização. Verificado por `tsc`, `eslint` e `next build`. | **Verificação visual pendente** (Google OAuth barra o agente); F7 (contatos e produtos) é a próxima; acesso a clientes pelo celular continua sem construir |
-| 10 | 19/08/2026 | **O prazo caiu e a F10 começou.** **D-125** revoga a data de 3/9 e com ela a D-069 e a R-008: o prazo existia porque a API do Pipedrive fecharia com o contrato, e a extração de 17/08 desfez essa dependência — a biblioteca inteira foi varrida para não pressionar mais por calendário. **P-034 encerrada**: o maestro conferiu os dois temas, fechando a dívida aberta desde a sessão 05. **F10 iniciada** com `scripts/verifica-virada.mjs`, que mede os sete critérios da D-098 contra a base real em vez de contra o documento — e foi ele que encontrou a **C-08**: **o negócio era a única entidade do sistema sem caminho de criação**, omissão do backlog que tornava o critério 2 impossível. Corrigida com o pacote completo de paridade (**D-126**): criar, excluir, título, organização e pessoas, com a trava de desfecho valendo também na criação. Verificado em transação com `rollback` contra a base real. | ⭐ **Falta marcar o dia de operação real dos sócios.** 3 negócios legados em Aguardando Contrato aguardam decisão (P-039); D-127 aguarda validação (P-040) |
+| 10 | 19/08/2026 | **O prazo caiu, a F10 começou e as Estatísticas nasceram.** **D-125** revoga a data de 3/9 e com ela a D-069 e a R-008: o prazo existia porque a API do Pipedrive fecharia com o contrato, e a extração de 17/08 desfez essa dependência — a biblioteca inteira foi varrida para não pressionar mais por calendário. **P-034 encerrada**: o maestro conferiu os dois temas, fechando a dívida aberta desde a sessão 05. **F10 iniciada** com `scripts/verifica-virada.mjs`, que mede os sete critérios da D-098 contra a base real em vez de contra o documento — e foi ele que encontrou a **C-08**: **o negócio era a única entidade do sistema sem caminho de criação**, omissão do backlog que tornava o critério 2 impossível. Corrigida com o pacote completo de paridade (**D-126**): criar, excluir, título, organização e pessoas, com a trava de desfecho valendo também na criação. Verificado em transação com `rollback` contra a base real. ⚠️ **Segunda metade da sessão:** o módulo de Estatísticas nasceu (D-130), com o histórico do Pipedrive carregado no log (D-129, 3.406 eventos) e a data de fechamento trazida para o banco (D-131, 2.152 desfechos). O relatório financeiro veio junto. Os gráficos foram refeitos **três vezes** até passarem por medição em vez de gosto (D-133), e ganharam indicadores que só o volume sustenta (D-134). Entraram filtros de paridade com o Pipedrive (D-136), agendar atividade na ficha (D-137) e o WhatsApp sem aba (D-138). **A rota de estatísticas foi ao ar quebrada duas vezes** — ver 4.8. | ⭐ **Falta marcar o dia de operação real dos sócios.** F8 desenhada no Doc 15, aguardando três definições. P-039 a P-042 abertas |
 | 09 | 18/08/2026 | **A maratona: F3, F6, F7 e F9 fechadas, marca implantada e dois defeitos de dado resolvidos.** F3 concluída (filtro por coluna, persistência por usuário, CSV, lista virtualizada). **F6** — atividades em lista por dia e calendário, com as vencidas em aba própria depois de duas rodadas de ajuste com o maestro. **Identidade visual** do handoff BR/BAUEN implantada, encerrando a **P-024**: símbolo, assinatura, favicon, login em split-screen e rodapé; a navegação fica na lateral por decisão explícita (**D-120**). **F7** — Contatos com CRUD completo e histórico derivado, mais o **agrupamento de duplicatas** (**D-121**: 1.195 dos 2.889 cadastros são repetição) com os negócios como referência (**D-122**); e Produtos. **F9** — celular com lista em cartões, filtros em gaveta e Kanban uma etapa por vez. **Dois defeitos de dado:** o crash da aba Pessoas (**C-06**) e **388 registros com acento destruído na origem** (**C-07**), dos quais 343 recuperados. Rodada de UI/UX: avisos de ação, busca instantânea, foco nos diálogos, esqueletos, barra de progresso e navegação no celular. **F8 adiada** (**D-124**). | **F10, a virada.** Nada foi conferido em tela pelo agente — o Google OAuth impede login automatizado. 45 nomes seguem com acento perdido, listados fora do git |
 
 ---
 
 ## Changelog
 
+- **v2.4** — 19/08/2026 — **Fim da sessão 10.** Registra a segunda metade: Estatísticas e Financeiro de pé, com o histórico do Pipedrive no log e a data de fechamento no banco; gráficos refeitos até passarem por medição; filtros de paridade; atividade na ficha do negócio; WhatsApp sem aba. **Seção 4.8 nova** com as duas quebras da rota de estatísticas e o método de verificação que faltava — `tsc` e `next build` não pegam erro de serialização, só rodar a página pega. Doc 15 criado com o plano da central de notificações, encerrando o desenho da F8. Pendências novas: **P-041** (validar `whatsapp://`) e **P-042** (conferir a aba de atividade em tela).
 - **v2.3** — 19/08/2026 — **Sessão 10, parte 2: a F10 começou e encontrou o que faltava.** `scripts/verifica-virada.mjs` passa a medir os sete critérios da D-098 contra a base real; cinco técnicos deram verdadeiro. O inventário revelou a **C-08** — **o negócio era a única entidade do sistema sem caminho de criação** —, corrigida pelo pacote completo de paridade (**D-126**, B-127 a B-133): criar com a trava valendo na criação, excluir, título editável, organização trocável e vínculo de pessoas. **D-127** (organização criada de dentro do diálogo) fica 🟡 aguardando validação, junto da **P-040**. **P-039** criada para os 3 negócios legados em Aguardando Contrato. **P-034 encerrada** — o maestro conferiu os dois temas, fechando a dívida mais antiga do projeto.
 - **v2.2** — 19/08/2026 — **Sessão 10: o prazo saiu do projeto (D-125).** A data de 3/9 foi revogada a pedido do maestro, e com ela a **D-069** e a **R-008**. A razão é factual: o prazo existia porque a API do Pipedrive fecharia junto com o contrato e os dados ficariam presos lá — a extração e a carga de 17/08 desfizeram essa dependência, e a premissa da data caiu junto. A contagem regressiva saiu da seção 4, o risco "prazo × escopo" foi encerrado na seção 9, e a mesma varredura passou por `CLAUDE.md` (v0.7), `README.md` e os Docs 03 (v0.15), 04, 10, 11, 13 e 14. **Os sete critérios da D-098 continuam inteiros** — o que caiu foi o calendário, não o critério. Corrigido também um erro de registro: a seção 4.2 dava "acesso rápido a clientes pelo celular" como não construído, mas os cartões de contato existem desde a sessão 09.
 - **v2.1** — 18/08/2026 — **Fim da sessão 09.** Registro do que fechou: **F3, F6, F7 e F9**, mais a identidade visual da marca (**P-024 encerrada**). **F8 adiada** por decisão do maestro (**D-124**), para voltar com painel de configuração e alertas derivados na leitura. Doc 03 vai a v0.14 com **D-119 a D-124**; Doc 09 vai a v0.5 com a seção **3.12** (as quatro migrações da sessão) e as correções **C-06** e **C-07**. Pendências novas: **P-036** (o prazo do "negócio parado", que nunca foi definido), **P-037** (45 nomes com acento perdido) e **P-038** (validar a criação de área embutida). ⚠️ **Nada foi conferido em tela pelo agente** — o Google OAuth impede login automatizado; toda a verificação foi por `tsc`, `eslint`, `next build` e consulta ao banco real.

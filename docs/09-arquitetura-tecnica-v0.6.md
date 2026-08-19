@@ -1,10 +1,10 @@
-﻿# 09 — Arquitetura Técnica (v0.5)
+﻿# 09 — Arquitetura Técnica (v0.6)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.5 |
+| **Versão** | v0.6 |
 | **Data** | 14/08/2026 |
 | **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-05 |
 
@@ -388,6 +388,26 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 
 > **Como foi encontrado.** Não por alguém usando o sistema, e sim por `scripts/verifica-virada.mjs`, escrito para medir os sete critérios da D-098 contra a base real. Ao inventariar quais entidades o sistema sabe escrever, o negócio apareceu como a única com escrita parcial. ⚠️ **Lição:** construir telas sobre uma base migrada esconde os caminhos de criação, porque o dado já está lá. Vale perguntar de cada entidade não "a tela mostra?" mas "existe `insert`?".
 
+#### C-09 — função atravessando a fronteira servidor→cliente (19/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-09** | `/estatisticas` fora do ar em produção com *"A server error occurred"*; no console, `Minified React error #441`. Funcionava em desenvolvimento | A página é Server Component e passava `formata={(v) => realCurto(Number(v))}` para um gráfico, que é Client Component. **Função não atravessa a fronteira servidor→cliente**: a serialização do RSC falha e derruba a rota inteira. O erro #441 é só um invólucro genérico — *"An error occurred in the Server Components render"* — e não diz a causa | A propriedade passa a ser um **nome** de formato (`"numero" \| "moeda"`); quem escolhe a função é o componente de cliente |
+
+⚠️ **É a mesma família da C-06**, que derrubou a aba Pessoas na sessão 09. Lá era `onClick`, aqui um formatador. O aviso já estava escrito no `CLAUDE.md` — e ainda assim aconteceu, o que diz que o aviso sozinho não basta: **o que protege é rodar a página**.
+
+> **Como foi encontrada, sem conseguir logar.** O Google OAuth impede o agente de abrir a tela. O caminho que funcionou: desligar a barreira de autenticação **localmente** em `proxy.ts`, rodar `npm run build && npm run start`, pedir a rota por `curl` e ler a pilha real no log do servidor — depois restaurar o `proxy.ts`. `tsc`, `eslint` e `next build` **passam felizes** por este defeito, porque ele é de tempo de execução na serialização.
+>
+> ⚠️ **Limite do método:** sem sessão, a RLS devolve vazio. O teste exercita o caminho de **dado vazio** — suficiente para pegar erro de serialização, que independe do dado, mas **não** valida o caminho com dado real.
+
+#### C-10 — reexportação de referência de cliente (19/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-10** | Mesma tela, mesmo sintoma. Encontrada antes da C-09 e corrigida primeiro, mas **não era a causa daquela queda** | Um módulo de servidor fazia `import { Painel } from "./grafico-base"` (módulo `"use client"`) e reexportava por atribuição: `export const Painel = PainelCliente`. Num módulo de servidor, importar de um `"use client"` devolve uma **referência de cliente**, não o componente; reatribuí-la a um `const` e reexportar quebra o vínculo com o módulo | As páginas importam o componente direto do módulo `"use client"`. Sem indireção |
+
+⚠️ **Duas quebras no mesmo dia, ambas na fronteira servidor→cliente.** O padrão de montar JSX no servidor e entregá-lo ao cliente é útil e usado aqui, mas **tudo que for função — ou referência a componente — morre na travessia**.
+
 ⚠️ **C-02 é o mais grave dos quatro** e o mais silencioso: só aparece depois da carga, que é exatamente o momento em que menos se quer descobrir um defeito. Com D-101 a carga roda em produção, então este era o defeito com maior chance de estragar a virada.
 
 > **Como C-04 foi encontrada, sem poder consultar dado nenhum.** Erro de sintaxe do PostgREST (`PGRST100`) e erro de relacionamento (`PGRST200`) acontecem **antes** da checagem de permissão; `42501` só aparece quando a consulta já foi entendida. Isso permite validar a forma de uma consulta contra a base real usando apenas a chave anônima, sem ter acesso a linha nenhuma: se volta `42501`, a sintaxe está correta. Vale para toda a construção enquanto o login não existir.
@@ -547,6 +567,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.6** — 19/08/2026 — **Sessão 10.** Sete migrações novas: procedência do log (`importado_do_pipedrive`), data de fechamento do negócio (`fechado_em`, com gatilho de carimbo), e as funções de indicador — comerciais, financeiras, de volume — mais a ampliação do recorte. Correções **C-08** (o negócio era a única entidade sem caminho de criação), **C-09** (função atravessando a fronteira servidor→cliente, que derrubou `/estatisticas` em produção) e **C-10** (reexportação de referência de cliente). ⚠️ Registrado o **método que encontrou a C-09**, já que o OAuth impede o agente de logar: desligar a barreira localmente, rodar o build de produção, pedir a rota e ler a pilha — `tsc`, `eslint` e `next build` não pegam erro de serialização.
 - **v0.5** — 18/08/2026 — **Sessão 09.** Seção **3.12** criada com as quatro migrações da sessão: a preferência de filtro por usuário, a chave de agrupamento de organizações (coluna gerada e indexada, com o cuidado do `unaccent` imutável), as funções que paginam por grupo — o PostgREST não expõe `group by` — e os títulos de negócio como referência. Correções **C-06** (manipulador de evento cruzando a fronteira servidor→cliente, que derrubava a aba Pessoas) e **C-07** (388 registros com acento destruído **na origem**, no dado do próprio Pipedrive, com 343 recuperados por cruzamento com a própria extração) acrescentadas à seção 3.11.
 - **v0.4** — 14/08/2026 — **O schema saiu do papel: as três migrações e a semente foram aplicadas na base de produção.** Seção 4 ganha os dados concretos do projeto (referência, região, URL) e passa a descrever **um ambiente só**: D-106 revoga a D-102, não haverá banco de ensaio e a carga roda uma única vez na base definitiva. Registrado também que o host de conexão direta resolve só em IPv6, tornando o *Session pooler* o único caminho gratuito para aplicar migração. **C-04 acrescentada à seção 3.11** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca da Lista — junto do método que permite validar a forma de uma consulta contra a base real usando só a chave anônima.
 - **v0.3** — 14/08/2026 — **Seção 4 reescrita por D-101**: base única, sem ambiente de desenvolvimento na nuvem, carga direto em produção; ensaio no banco local. Seção 4.1 criada para corrigir o entendimento de P-026 — o retorno do OAuth vai para o Supabase, não para a aplicação. **Seção 3.11 criada com as três correções (C-01 a C-03) descobertas ao aplicar as migrações contra um PostgreSQL real**; seções 3.7, 3.8 e 3.9 corrigidas de acordo. Seção 5.1 atualizada com a estrutura real, incluindo `proxy.ts` (o `middleware.ts` do Next 16). P-025 encerrada em favor do Tailwind v4; P-029 criada.

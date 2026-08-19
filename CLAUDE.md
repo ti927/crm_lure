@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.8 · 19/08/2026
+> Documento 12 da biblioteca do projeto · v0.9 · 19/08/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 132 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 138 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
@@ -97,6 +97,7 @@ Outras regras que costumam ser esquecidas:
 - **Não existe data prevista de fechamento** — logo, não existe previsão de receita. Não invente o campo. ⚠️ `negocio.fechado_em` (D-131) **não é isso**: ela registra quando o desfecho *aconteceu*, e é o eixo do relatório financeiro. Nunca use para prever.
 - **Campos são fixos.** O usuário não cria campo personalizado.
 - Anotação pertence ao negócio; as fichas de organização e pessoa mostram histórico **derivado**.
+- **Telefone abre o WhatsApp por `whatsapp://`**, nunca por `wa.me` (D-138). O link universal carrega uma página antes de abrir o aplicativo e deixa uma aba órfã por clique. Função única em `lib/formato.ts`.
 
 ---
 
@@ -137,9 +138,15 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 - **A distinção de etapa nunca depende só de cor** — o nome da etapa sempre aparece escrito.
 - Linha de tabela: **44px**. Tema claro e escuro, ambos.
 
+**Gráficos** (D-133): nenhum hex entra sem passar pelo validador de paleta — banda de luminosidade, croma, separação sob daltonismo e contraste são **medidos**. Categoria nominal não ganha uma cor por item (vira arco-íris e a cor troca de dono ao filtrar); a hierarquia vem da intensidade e do rótulo escrito. Cor por item só onde significa: **status** e **etapa**. Nunca dois eixos no mesmo gráfico. O brilho neon exige **tema escuro e interruptor ligado** (D-135).
+
 **Movimento** (D-116): entrada escalonada sempre com teto — dez a catorze itens, senão cascata vira espera. O que se arrasta **sai do plano da tela** (inclina, cresce, ganha sombra) em vez de deslizar nele. ⚠️ **`prefers-reduced-motion` desliga tudo**, por guarda global no `globals.css`: movimento não pedido causa enjoo em quem tem sensibilidade vestibular. Nada some, só para.
 
-⚠️ **Manipulador de evento não atravessa a fronteira servidor→cliente.** Montar JSX num Server Component e entregá-lo a um Client Component é padrão útil e usado aqui (a tabela virtualizada recebe as linhas prontas), mas qualquer `onClick`, `onChange`, `onSubmit` ou `onBlur` nesse JSX **derruba a rota inteira** na serialização. Foi o que quebrou a aba Pessoas (C-06, Doc 09 §3.11). Depois de mexer numa página desse tipo, varra os Server Components à procura desses atributos.
+⚠️ **NADA QUE SEJA FUNÇÃO atravessa a fronteira servidor→cliente.** Este aviso já existia e ainda assim derrubou a rota de estatísticas em 19/08 — duas vezes no mesmo dia (C-09 e C-10). Vale para `onClick`, `onChange`, `onSubmit`, `onBlur`, **e também para um formatador passado como propriedade** (`formata={(v) => ...}`) ou para a reexportação de um componente de cliente por `const`. Passe um **nome** e deixe o componente de cliente escolher a função.
+
+⚠️ **`tsc`, `eslint` e `next build` NÃO pegam esse defeito** — ele é de tempo de execução, na serialização. O que pega é rodar a página. Como o Google OAuth impede o agente de logar, o caminho é: desligar `PUBLICAS` em `proxy.ts` **localmente**, `npm run build && npm run start`, pedir a rota por `curl`, ler a pilha no log do servidor e **restaurar o `proxy.ts`**. Sem sessão a RLS devolve vazio, então isso testa o caminho de dado vazio — suficiente para erro de serialização, insuficiente para o resto.
+
+⚠️ *(histórico)* **Manipulador de evento não atravessa a fronteira servidor→cliente.** Montar JSX num Server Component e entregá-lo a um Client Component é padrão útil e usado aqui (a tabela virtualizada recebe as linhas prontas), mas qualquer `onClick`, `onChange`, `onSubmit` ou `onBlur` nesse JSX **derruba a rota inteira** na serialização. Foi o que quebrou a aba Pessoas (C-06, Doc 09 §3.11). Depois de mexer numa página desse tipo, varra os Server Components à procura desses atributos.
 
 ⚠️ **Nome de classe do Tailwind nunca pode ser montado em tempo de execução.** O v4 varre o código à procura de literais; `bg-status-${x}` simplesmente não é gerado, e a cor some sem erro nenhum. Escreva as classes por extenso em mapas — é o que `components/dominio/etiquetas.tsx` faz.
 
@@ -192,7 +199,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **132 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **138 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -202,6 +209,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.9** — 19/08/2026 — **Fim da sessão 10.** O aviso da fronteira servidor→cliente foi reescrito e ampliado: ele já existia e ainda assim derrubou a rota de estatísticas **duas vezes no mesmo dia** — uma por formatador passado como propriedade, outra por reexportação de referência de cliente. Entra junto o método que encontrou o defeito, porque `tsc`, `eslint` e `next build` passam por ele. Acrescentadas as regras de gráfico (D-133) e o link do WhatsApp por aplicativo (D-138).
 - **v0.8** — 19/08/2026 — **Estatísticas voltam ao escopo (D-130) e a procedência do log ganha um terceiro estado (D-129).** A seção "o que não pode dar errado" passa a descrever os três estados de `evento_negocio`: sintético da carga, importado do Pipedrive, e nascido neste sistema — com a regra dos indicadores intacta. Recharts sai de "fase 2" e entra em uso. O recorte do MVP passa a incluir Estatísticas; sai da lista de proibidos o painel de indicadores e entra, no lugar, o **construtor genérico de relatórios** (E-008), que é o que de fato continua fora.
 - **v0.7** — 19/08/2026 — **O prazo saiu do documento (D-125).** A linha "prazo imutável: 3 de setembro" foi apagada daqui, do `README.md` e dos Docs 00, 03, 10 e 11: ela existia porque a API do Pipedrive fecharia com o contrato, e isso deixou de valer quando a extração e a carga rodaram em 17/08. **D-069 e R-008 revogadas.** A virada passa a ser decidida por prontidão, não por calendário — e prazo deixa de ser argumento admissível em qualquer decisão de escopo.
 - **v0.6** — 18/08/2026 — **Fim da sessão 09.** Entram os dois avisos que custaram tempo nesta sessão: manipulador de evento não atravessa a fronteira servidor→cliente (C-06, derrubou a aba Pessoas) e as duas sujeiras estruturais da base — 41% das organizações são duplicata de nome e 388 registros vieram com acento destruído da origem, 45 ainda quebrados. Registrado que a **F8 foi adiada** (D-124) com o motor já escolhido. Do MVP, só falta a virada: F0 a F7 e F9 estão de pé.
