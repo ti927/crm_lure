@@ -51,16 +51,16 @@ export const LeadTime = dynamic(
 );
 
 export const ReceitaNoTempo = dynamic(
-  () => import("./financeiro/graficos-neon").then((m) => m.ReceitaNoTempo),
+  () => import("./financeiro/graficos-financeiro").then((m) => m.ReceitaNoTempo),
   { ssr: false, loading: () => <Espera altura={320} /> }
 );
 
 export const ReceitaPorCategoria = dynamic(
-  () => import("./financeiro/graficos-neon").then((m) => m.ReceitaPorCategoria),
+  () => import("./financeiro/graficos-financeiro").then((m) => m.ReceitaPorCategoria),
   { ssr: false, loading: () => <Espera altura={280} /> }
 );
 
 export const PipelinePorEtapa = dynamic(
-  () => import("./financeiro/graficos-neon").then((m) => m.PipelinePorEtapa),
+  () => import("./financeiro/graficos-financeiro").then((m) => m.PipelinePorEtapa),
   { ssr: false, loading: () => <Espera altura={260} /> }
 );

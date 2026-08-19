@@ -10,9 +10,9 @@ export const Painel = PainelCliente;
  * ⚠️ Sem `tabular-nums`. Dígito de largura fixa alinha coluna de tabela,
  * mas num número grande e solto deixa vãos — "121" fica frouxo.
  *
- * ⚠️ O realce neon é a faixa e o halo, não a tinta do número. Texto usa
+ * ⚠️ O realce é uma faixa fina no topo, não a tinta do número. Texto usa
  * tinta de texto: uma cor de série no número troca legibilidade por
- * decoração, e no tema claro o ciano fica abaixo do contraste mínimo.
+ * decoração, e no tema claro o azul fica abaixo do contraste mínimo.
  */
 export function CartaoNumero({
   rotulo,
@@ -31,12 +31,7 @@ export function CartaoNumero({
         <span
           aria-hidden
           className="absolute inset-x-0 top-0 h-0.5"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, var(--color-serie-1), transparent)",
-            filter: "drop-shadow(0 0 6px var(--color-serie-1))",
-            opacity: "var(--neon-halo)",
-          }}
+          style={{ background: "var(--color-dado-forte)" }}
         />
       )}
       <p className="text-text-muted text-xs font-semibold uppercase tracking-caps">
