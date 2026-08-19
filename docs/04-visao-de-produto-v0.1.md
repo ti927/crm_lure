@@ -92,7 +92,7 @@ Registrar o "não" é regra do método (Doc 01, princípio 7).
 
 ## 7. Medida de sucesso
 
-**No dia da virada:** os sete critérios de D-098, com destaque para o segundo — um dia inteiro de operação real antes de 3/9.
+**No dia da virada:** os sete critérios de D-098, com destaque para o segundo — um dia inteiro de operação real dos sócios sem abrir o Pipedrive. *(A data saiu com a D-125; o critério não.)*
 
 **Em três meses:** a equipe não pede o Pipedrive de volta, e o custo de infraestrutura permanece irrelevante.
 
@@ -104,7 +104,7 @@ Registrar o "não" é regra do método (Doc 01, princípio 7).
 
 | Risco | Situação |
 |---|---|
-| **Prazo de 21 dias** para construir o MVP inteiro | Apresentado pelo consultor e assumido conscientemente pelo maestro (R-008) |
+| ~~**Prazo de 21 dias** para construir o MVP inteiro~~ | ✅ **deixou de existir em 19/08 (D-125).** A R-008 foi revogada quando a extração e a carga tiraram os dados de dentro do Pipedrive |
 | **Acesso amplo** — qualquer conta do domínio vê valores e motivos de perda | Consequência de D-049 e D-050. Item de fase 2 |
 | **Sem histórico de trajetória** se os changelogs do Pipedrive não permitirem reconstituição | Investigação técnica pendente (P-021) |
 | **Recuperação limitada** a backup diário | Escolha consciente (D-089) |

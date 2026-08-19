@@ -132,6 +132,21 @@
   --chart-7: #d99000;
   --chart-8: #118937;
 
+  /* ---------- Neon (D-132) ----------
+     Pedido do maestro para o relatorio financeiro: graficos com brilho.
+     ⚠️ Desvio consciente do manual da Lure, que pede "cor pontuando"
+     sobre base preto-e-branco. O desvio e ESTETICO e fica CONFINADO aos
+     graficos do financeiro: tipografia, tabelas e navegacao seguem o
+     manual. Cor de texto nunca vira neon — contraste nao e estilo.
+     No tema claro o halo e discreto: neon sobre branco vira borrao. */
+  --neon-1: #00b4d8;   /* ciano   — receita */
+  --neon-2: #e5007d;   /* magenta — perdido */
+  --neon-3: #009d5c;   /* verde   — contratos */
+  --neon-4: #7b2ff7;   /* roxo    — pipeline */
+  --neon-5: #d99000;   /* ambar   — ticket */
+  --neon-halo: 0.28;   /* opacidade do brilho */
+  --neon-desfoque: 2.5px;
+
   /* ---------- Densidade: altura de linha de tabela e de controle ---------- */
   --row-h-compact: 32px;
   --row-h-cozy:    44px;   /* D-090 */
@@ -213,6 +228,17 @@
   --chart-6: #d98aa6;
   --chart-7: #e8a52b;
   --chart-8: #2ea85a;
+
+  /* Neon no escuro: e aqui que ele existe de verdade. Cores mais
+     saturadas e halo forte — o fundo #141414 aguenta, e e o contraste
+     que faz o efeito. */
+  --neon-1: #22e0ff;
+  --neon-2: #ff2d95;
+  --neon-3: #00ff9d;
+  --neon-4: #b14aff;
+  --neon-5: #ffd400;
+  --neon-halo: 0.85;
+  --neon-desfoque: 4px;
 
   --elev-xs:      0 1px 0 rgba(0,0,0,.5);
   --elev-sm:      0 1px 2px rgba(0,0,0,.6);

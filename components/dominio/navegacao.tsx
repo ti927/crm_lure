@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Columns3, Calendar, Users, Package } from "lucide-react";
+import { Briefcase, Columns3, Calendar, Users, Package, ChartColumn } from "lucide-react";
 
 /**
  * Menu lateral.
  *
  * D-059 lista seis destinos: Negocios, Atividades, Contatos,
- * Produtos/Servicos, Estatisticas e Configuracoes. Os dois ultimos ficaram
- * FORA do MVP (D-093 e D-096) e por isso nao aparecem aqui — item de menu
- * que leva a lugar nenhum e defeito, nao antecipacao. Entram na fase 2,
- * junto das telas que eles abrem.
+ * Produtos/Servicos, Estatisticas e Configuracoes.
+ *
+ * Estatisticas estava fora do MVP pela D-093 e voltou em 19/08 por pedido
+ * do maestro (D-130), depois que a D-125 tirou o prazo — metade da
+ * justificativa da D-093 era o calendario. Configuracoes segue fora
+ * (D-096): item de menu que leva a lugar nenhum e defeito, nao
+ * antecipacao.
  */
 const DESTINOS = [
   { href: "/negocios", rotulo: "Negócios", Icone: Briefcase },
@@ -19,6 +22,7 @@ const DESTINOS = [
   { href: "/atividades", rotulo: "Atividades", Icone: Calendar },
   { href: "/contatos", rotulo: "Contatos", Icone: Users },
   { href: "/produtos", rotulo: "Produtos", Icone: Package },
+  { href: "/estatisticas", rotulo: "Estatísticas", Icone: ChartColumn },
 ];
 
 export function Navegacao({ aoNavegar }: { aoNavegar?: () => void } = {}) {

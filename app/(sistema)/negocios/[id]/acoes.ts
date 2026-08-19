@@ -18,6 +18,10 @@ const CAMPOS = [
   "produto_id",
   "motivo_perda_id",
   "titulo",
+  // Trocar a organização de um negócio é paridade com o Pipedrive, e
+  // acontece de verdade: negócio aberto no cadastro errado entre os 668
+  // grupos de nome repetido (D-121) só se conserta assim.
+  "organizacao_id",
 ] as const;
 
 type Campo = (typeof CAMPOS)[number];
@@ -173,6 +177,50 @@ export async function alternarAtividade(
 ) {
   const supabase = await createClient();
   const { error } = await supabase.from("atividade").update({ concluida }).eq("id", id);
+
+  if (error) return { erro: error.message };
+
+  revalidatePath(`/negocios/${negocioId}`);
+  return { ok: true };
+}
+
+/* ---------- pessoas do negócio (negocio_pessoa) ----------
+ *
+ * A tabela existia e era só lida: a ficha mostrava as pessoas vindas da
+ * migração e não havia como acrescentar nem tirar. Num negócio novo a
+ * lista nascia sempre vazia, sem remédio.
+ *
+ * ⚠️ O cargo NÃO é gravado aqui. Ele pertence ao vínculo pessoa↔organização
+ * (D-036), não ao vínculo pessoa↔negócio — e é a ficha do contato que o
+ * edita. Aqui só se declara quem participa deste negócio.
+ */
+
+export async function vincularPessoa(negocioId: string, pessoaId: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("negocio_pessoa")
+    .insert({ negocio_id: negocioId, pessoa_id: pessoaId });
+
+  if (error) {
+    // 23505 = chave duplicada. Vincular quem já está vinculado não é
+    // erro do ponto de vista de quem clicou: o estado desejado já vale.
+    if (error.code === "23505") return { ok: true };
+    return { erro: error.message };
+  }
+
+  revalidatePath(`/negocios/${negocioId}`);
+  return { ok: true };
+}
+
+export async function desvincularPessoa(negocioId: string, pessoaId: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("negocio_pessoa")
+    .delete()
+    .eq("negocio_id", negocioId)
+    .eq("pessoa_id", pessoaId);
 
   if (error) return { erro: error.message };
 

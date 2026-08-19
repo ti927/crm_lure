@@ -1,11 +1,11 @@
-﻿# 03 — Log de Decisões (v0.14)
+﻿# 03 — Log de Decisões (v0.15)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.14 |
-| **Data** | 18/08/2026 |
+| **Versão** | v0.15 |
+| **Data** | 19/08/2026 |
 | **Status** | vivo |
 
 > Registro de toda decisão validada pelo maestro. Nada entra aqui sem confirmação explícita.
@@ -36,7 +36,7 @@
 | D-013 | 10/08/2026 | Cold lead e hot lead são **classificações equivalentes de entrada**, não progressão | Esclarecimento do maestro | ✅ |
 | D-014 | 10/08/2026 | Ciclo de venda longo (meses); ticket médio de ~R$ 100.000 por contrato anual | Perfil da operação | ✅ |
 | D-015 | 10/08/2026 | Sem conceito de contrato ativo, vigência ou renovação no escopo. O negócio encerra ao ser ganho | Definição do maestro no Bloco 2 | ✅ |
-| D-069 | 13/08/2026 | ⚠️ **Virada imediata em 3/9/2026**, sem operação em paralelo. O contrato do Pipedrive encerra nessa data e o MVP precisa estar no ar | Decisão do maestro, com o risco de prazo explicitamente apresentado e assumido | ✅ |
+| ~~D-069~~ | 13/08/2026 | ~~⚠️ **Virada imediata em 3/9/2026**, sem operação em paralelo. O contrato do Pipedrive encerra nessa data e o MVP precisa estar no ar~~ | Decisão do maestro, com o risco de prazo explicitamente apresentado e assumido | ⛔ **revogada em 19/08 por D-125.** A virada segue sendo seca, sem operação em paralelo — o que caiu foi a **data** |
 | D-075 | 13/08/2026 | Existe **sistema interno próprio construído em Bubble.io**, para onde o cliente migra depois do ganho | Informação nova do Bloco 8 — primeiro sistema vizinho do CRM | ✅ |
 
 ## Decisões de Produto
@@ -175,7 +175,7 @@
 
 | # | Data | Decisão | Justificativa | Situação |
 |---|---|---|---|---|
-| D-093 | 13/08/2026 | **Módulo de Estatísticas fora do MVP** — telas de indicadores e painel montável vão para a fase 2. ⚠️ **O log de eventos permanece no MVP**, por gatilho no banco | Estatística não é ferramenta de trabalho, é de avaliação do trabalho; em setembro nem haveria período completo para comparar. Mas adiar as **telas** é seguro, adiar o **log** não é: os indicadores 7, 8 e 9 dependem de registro desde o dia 1 e não são recuperáveis. D-033 e D-081 permanecem intactos | ✅ |
+| ~~D-093~~ | 13/08/2026 | ~~**Módulo de Estatísticas fora do MVP**~~ — telas de indicadores e painel montável vão para a fase 2. ⚠️ **O log de eventos permanece no MVP**, por gatilho no banco | Estatística não é ferramenta de trabalho, é de avaliação do trabalho; em setembro nem haveria período completo para comparar. Mas adiar as **telas** é seguro, adiar o **log** não é: os indicadores 7, 8 e 9 dependem de registro desde o dia 1 e não são recuperáveis. D-033 e D-081 permanecem intactos | ⛔ **revogada em 19/08 por D-130**, depois que a D-125 tirou o prazo que era metade da justificativa. O log, que a decisão manteve no MVP, foi o que tornou os indicadores possíveis |
 | D-094 | 13/08/2026 | **Mesclagem de duplicados fora do MVP** (E-005) | Uso eventual. A base migrada vem com as duplicidades que já tem; unir dois registros exige regra para atividades, log e vínculos — custo médio-alto sem impacto no trabalho diário | ✅ |
 | D-095 | 13/08/2026 | **Transferência entre usuários fora do MVP** (E-007) | Só se usa quando alguém entra ou sai. Com dois sócios operando, não há para quem transferir. **Encerra P-013** | ✅ |
 | D-096 | 13/08/2026 | **Telas de configuração fora do MVP.** As listas configuráveis (origem, motivo de perda, área, tipo de atividade, etapas) existem no banco, populadas pela migração; edição pelo painel do Supabase quando necessário | Configuração é uso de entrada, não de rotina. A tela vem na fase 2 sem alterar o modelo | ✅ |
@@ -258,12 +258,53 @@ Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões
 
 **Correção registrada:** **C-05** no Doc 09 §3.11 — o gatilho do log gravava `auth.uid()` em `evento_negocio.autor_id`, quebrado pela própria D-109 desta sessão. Julio Manfrini não conseguia mover cartão no Kanban. Corrigido para resolver o autor por `public.usuario_atual()`.
 
+---
+
+### Sessão 10 — 19/08/2026
+
+| # | Data | Decisão | Justificativa | Status |
+|---|---|---|---|---|
+| D-125 | 19/08/2026 | ⛔ **O prazo de 3/9/2026 é revogado, e com ele a D-069 e a R-008.** Não há data de virada: o Pipedrive é desligado quando o sistema estiver pronto, pelos sete critérios da D-098. **Prazo deixa de ser argumento admissível em decisão de escopo, de recorte ou de qualidade** | Decisão do maestro. O prazo nunca foi um fim em si — existia porque a API do Pipedrive fecharia junto com o contrato e os 2.458 negócios ficariam inacessíveis. **A extração e a carga aconteceram em 17/08 e estão conferidas ao centavo** (R$ 27.015.293,04 em ganhos batendo com a origem): a base inteira vive no Supabase e não depende mais do Pipedrive para nada. A premissa da data caiu, então a data cai junto. A "ordem de sacrifício" do Doc 10 §4 perde a função de plano de emergência e vira só ordem de prioridade | ✅ |
+
+| D-126 | 19/08/2026 | **O negócio ganha o pacote completo de paridade com o Pipedrive:** criar (com a trava de desfecho valendo também na criação), excluir, editar o título, trocar a organização e vincular/desvincular pessoas | Escolha do maestro entre três recortes, diante da descoberta de que **o negócio era a única entidade do sistema sem caminho de criação** (C-08). Sem criar, o critério 2 da D-098 é impossível: todo contato novo vira um negócio em Cold Lead, e não havia onde registrar. Os outros quatro são coisas que o Pipedrive faz, e sem prazo apertando (D-125) fazer pela metade só adiaria a outra metade | ✅ |
+| D-127 | 19/08/2026 | **A organização pode ser criada de dentro do diálogo de negócio**, informando só o nome | Sem isso, registrar um lead que acabou de ligar exigiria ir a Contatos, cadastrar a organização e voltar — quebrando justamente o fluxo que a D-126 veio consertar. É o comportamento do Pipedrive. ⚠️ Mesma natureza da criação de área embutida no cadastro de produto (**P-038**), que segue pendente de validação: se o maestro recusar aquela, esta cai junto | 🟡 **proposta — aguarda validação** |
+
+| D-128 | 19/08/2026 | **Os 3 negócios que a carga trouxe parados em Aguardando Contrato sem desfecho ficam como estão** — *Plano de Carreira*, *Melhoria de Processos 2* e *Vaga Ger Planejamento*. O critério 4 da D-098 fecha com esta exceção registrada | Decisão do maestro entre declarar o desfecho de cada um, devolvê-los a Proposta Enviada ou mantê-los. São história do Pipedrive, que não tinha a trava; não atrapalham ninguém e mexer neles inventaria um desfecho que só os sócios saberiam. **A trava não está furada:** o sistema novo não deixaria esse estado nascer | ✅ |
+
+| D-129 | 19/08/2026 | **O histórico do Pipedrive é carregado no log de eventos.** 3.406 mudanças de etapa, valor e status entre 2021 e 2026 entram em `evento_negocio` com **`origem_carga = false` e uma coluna nova, `importado_do_pipedrive = true`** | Escolha do maestro entre três formas de marcar a procedência. Os indicadores 7, 8 e 9 da D-063 dependem de trajetória, e o log tinha 9 eventos — nasceriam cegos, sem recuperação possível depois que a API do Pipedrive fechasse. Marcá-los como carga os excluiria dos indicadores; marcá-los como operação real apagaria a procedência para sempre, e a tabela é somente inserção. A terceira marca mantém as duas perguntas separáveis **sem emendar a regra do `CLAUDE.md`** | ✅ |
+| D-130 | 19/08/2026 | **O módulo de Estatísticas volta ao escopo** — revoga a D-093. Entra no nível B da D-062: catálogo de indicadores com recortes, painel único, exportação CSV. O construtor genérico (E-008) segue na fase 2 | Pedido do maestro. Metade da justificativa da D-093 era o calendário — *"em setembro nem haveria período completo para comparar"* — e o prazo caiu na mesma data com a **D-125**. A outra metade ("estatística avalia o trabalho, não o executa") continua verdadeira, mas deixa de ser motivo de adiamento quando não há adiamento a fazer. Os treze indicadores já estavam especificados desde 13/08 | ✅ |
+
+| D-131 | 19/08/2026 | **`negocio` ganha a coluna `fechado_em`**, preenchida de uma vez com `won_time`/`lost_time` da extração e mantida por gatilho daí em diante. **O relatório financeiro se ancora nela, não em `criado_em`** | Escolha do maestro entre três eixos de tempo. Um relatório financeiro responde *"quando entrou dinheiro"*, e o sistema só sabia responder *"quando o lead entrou"*. Ancorar pelo log cobriria 58,5% dos ganhos e daria **137 ganhos em 2021 quando o real é 477** — errado por 3,5× no ano de maior volume. Os 1.031 `won_time` e 1.121 `lost_time` estavam 100% completos num arquivo em disco, que não fica lá para sempre. **2.152 de 2.152 desfechos datados**, e a soma por ano fecha em R$ 27.015.293,04, batendo com o total conferido | ✅ |
+| D-132 | 19/08/2026 | **Os gráficos do relatório financeiro usam paleta neon com brilho e animação de entrada** | Pedido do maestro. ⚠️ **Desvio consciente do manual da Lure**, que pede preto-e-branco de base com cor pontuando. O desvio é estético e fica **confinado aos gráficos do financeiro**: tipografia, tabelas, navegação e o restante do sistema seguem o manual, e **cor de texto nunca vira neon** — contraste não é estilo. A intensidade sai de tokens por tema (`--neon-halo`, `--neon-desfoque`): forte no escuro, discreta no claro, porque neon sobre branco vira borrão | ✅ |
+
+⚠️ **A guarda de acessibilidade não foi negociada junto com o estilo.** `prefers-reduced-motion` continua desligando toda animação (D-116). A guarda global do `globals.css` **não alcança** animação de SVG feita em JavaScript pelo Recharts, então ela é lida no componente por `useSyncExternalStore` — e o valor no servidor assume "sem movimento", porque errar para o lado de não animar é o erro barato.
+
+⚠️ **Os dois painéis de estatística usam eixos de tempo diferentes, de propósito.** Comercial filtra por `criado_em` ("quando o lead entrou"); Financeiro, por `fechado_em` ("quando entrou dinheiro"). **Os números não fecham entre si e não deveriam** — foi por isso que viraram abas separadas em vez de um painel só.
+
+⚠️ **Não há e não haverá projeção de receita** (D-024). O pipeline em aberto é valor na mesa hoje, etapa a etapa, sem probabilidade e sem data prevista. Quem ler aquilo como receita esperada está lendo errado, e a tela diz isso por escrito.
+
+⚠️ **CSS não leva BOM.** A regra 6 pede UTF-8 com BOM, mas `globals.css` e `tokens.css` são exceção: um BOM antes de `@import` quebra o parser do Tailwind com *"Invalid dangling combinator in selector"*, e o erro aponta para a linha 1 do arquivo gerado, não para a causa.
+
+⚠️ **A regra da procedência, em uma linha.** `not origem_carga` = aconteceu de verdade (inclui o importado). `not origem_carga and not importado_do_pipedrive` = aconteceu **neste** sistema. A regra do `CLAUDE.md` — "todo indicador filtra `origem_carga = false`" — segue valendo palavra por palavra.
+
+⚠️ **Suposição declarada na tradução do changelog.** O Pipedrive tem três status (`open`/`won`/`lost`) e nós temos quatro. Num evento não dá para repetir a regra da carga (que olhava a etapa para decidir entre `parado` e `negociacao`) sem reconstituir a etapa vigente naquele instante. Então `open` virou `negociacao`. **Consequência: `parado` nunca aparece no histórico importado** — o que descreve a realidade, já que `parado` é cadastro dormente e o Pipedrive não registrava esse estado.
+
+⚠️ **Seis eventos foram descartados de propósito:** apontam para etapas de um **funil antigo do Pipedrive** (ids 7 a 12), anterior à reestruturação de 09/09/2021. Mapeá-los para as etapas de hoje inventaria dado. Quando só a *origem* da transição é desconhecida, o evento é mantido com origem nula — que é exatamente o que se sabe.
+
+⚠️ **Como o verificador separa legado de violação, sem lista fixa de ids.** Um negócio que *entrou* em Aguardando Contrato pelo sistema tem, obrigatoriamente, um evento de `etapa` no log — não há outro caminho, porque a trava barra os três. Sem esse evento, só pode ter vindo da carga. A regra se mantém sozinha conforme a base muda, e **o dia em que um negócio aparecer ali com evento de etapa e sem desfecho, a trava furou de verdade** — e `verifica-virada.mjs` acusa falha.
+
+⚠️ **A trava de desfecho na criação não abre um segundo diálogo.** Escolher "Aguardando Contrato" no formulário de criação revela Ganho/Perdido ali mesmo, em vez de empilhar modal sobre modal. A obrigação é idêntica — e a *server action* recusa a criação sem desfecho de qualquer forma, porque formulário se contorna e servidor não.
+
+⚠️ **Criar negócio não gera evento no log, e está certo.** O tipo `tipo_evento` tem quatro valores — etapa, valor, responsável e status — e o gatilho é `after update`. O log registra a **trajetória** de um negócio, não o seu nascimento, que já está em `criado_em`. Verificado em transação com `rollback` contra a base real: criar não gera evento, e a primeira mudança de etapa depois disso gera.
+
+⚠️ **O que a D-125 *não* muda:** os sete critérios da D-098 continuam inteiros, inclusive o ⭐ dia de operação real dos sócios. A lista de "nunca cortar" do Doc 10 §4 continua valendo — log de eventos, trava de desfecho, migração completa e login por domínio. Tirar o prazo tira a pressa, não o critério.
+
 
 ---
 
 ## Critério de Pronto do MVP (D-098)
 
-Tudo isto precisa ser verdadeiro para o Pipedrive ser desligado em 3/9:
+Tudo isto precisa ser verdadeiro para o Pipedrive ser desligado. ⚠️ **A data saiu com a D-125** — os sete critérios continuam valendo integralmente; o que mudou é que eles não competem mais com um calendário:
 
 | # | Critério |
 |---|---|
@@ -339,7 +380,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 | R-005 | 10/08/2026 | **Sem serviço de envio de e-mail** na arquitetura | D-041 | ✅ reconfirmada em 13/08 |
 | R-006 | 12/08/2026 | Volume real: 2.453 negócios, 422 organizações. Filtro, ordenação e paginação são requisito de UX. **Nunca carregar a base inteira no navegador** — paginação no servidor e lista virtualizada | Prints da base | ✅ |
 | R-007 | 12/08/2026 | Autenticação delegada ao **Google (OAuth)**, com autorização por domínio | D-050 | ✅ atendida por D-078 |
-| R-008 | 13/08/2026 | ⚠️ **Prazo imutável: 3/9/2026.** O MVP precisa estar no ar quando o Pipedrive encerrar | D-069 | ✅ |
+| ~~R-008~~ | 13/08/2026 | ~~⚠️ **Prazo imutável: 3/9/2026.** O MVP precisa estar no ar quando o Pipedrive encerrar~~ | D-069 | ⛔ **revogada em 19/08 por D-125** — a extração e a carga de 17/08 tiraram os dados de dentro do Pipedrive, que era a razão da data |
 | R-009 | 13/08/2026 | A arquitetura deve permitir **expor endpoints de leitura e escrita sem reescrita da camada de regras** | E-012 (agentes de IA) | ✅ atendida por D-078 |
 
 ---
@@ -347,6 +388,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 ## Changelog
 
 - **v0.13** — 17/08/2026 — **Sessão 06, parte 2.** D-115 a D-118: Kanban vira seção própria, movimento entra como parte do design com guarda de `prefers-reduced-motion`, a etapa deixa de ser editável na zona de dados para não haver caminho sem trava, e o Kanban ganha sensor de teclado. Registrada a **C-05**: a D-109 desta mesma sessão quebrou o gatilho do log, e o defeito foi encontrado com um usuário real afetado. **118 decisões.**
+- **v0.15** — 19/08/2026 — **Sessão 10.** **D-125 revoga a D-069 e a R-008**: não há mais data de virada. O prazo de 3/9 existia porque a API do Pipedrive fecharia junto com o contrato — a extração e a carga de 17/08 tiraram os dados de lá, e com a premissa caiu a data. A biblioteca inteira foi varrida: `CLAUDE.md`, `README.md` e os Docs 00, 03, 10, 11, 13 e 14 não pressionam mais por calendário. Os sete critérios da D-098 e a lista de "nunca cortar" seguem intactos. **132 decisões.** Encontrada e corrigida a **C-08** — o negócio era a única entidade sem caminho de criação —, com **D-126** (pacote completo de paridade) e **D-127** (organização criada de dentro do diálogo, aguardando validação) e **D-128** (os 3 negócios legados em Aguardando Contrato ficam como estão). **D-129** carrega 3.406 eventos históricos do Pipedrive no log com coluna de procedência própria, e **D-130 revoga a D-093**: o módulo de Estatísticas volta ao escopo com os treze indicadores da D-063. **D-131** acrescenta `negocio.fechado_em` — o eixo do relatório financeiro, que responde "quando entrou dinheiro" e não "quando o lead entrou" — e **D-132** registra o desvio estético do manual da Lure nos gráficos do financeiro, com a guarda de `prefers-reduced-motion` preservada. Criado `scripts/verifica-virada.mjs`, que mede os sete critérios da D-098 contra a base real.
 - **v0.14** — 18/08/2026 — **Sessão 09.** D-119 a D-124, todas vindas de pedido ou escolha explícita do maestro: a lista de atividades abre no dia e as vencidas ganham aba própria; a navegação fica na lateral e não vai para o topo; organizações duplicadas são agrupadas na apresentação, **sem mesclar**; os títulos dos negócios viram referência para distinguir cadastros de mesmo nome; Contatos ganha CRUD completo; e a **F8 é adiada** para voltar com painel de configuração, com o motor já escolhido (alertas derivados na leitura). Correções **C-06** e **C-07** e o extra **E-014** registrados. **124 decisões.**
 - **v0.12** — 17/08/2026 — **Sessão 06: os dados mandaram.** D-107 a D-114. Três revogações vindas da extração: a D-030 deixa de exigir negócio em toda atividade (D-108), o usuário deixa de depender de conta de login (D-109) e o seletor do Bubble sai do MVP (D-110). Registradas as descobertas que corrigem a documentação — a base tem 2.880 organizações e não 422, não está parada, a coluna Origem não tem fonte, e a carga não contamina o log porque o gatilho é `after update`. **114 decisões.**
 - **v0.11** — 14/08/2026 — **Sessão 05: a base de produção entrou no ar.** D-103 (região us-east-1 mantida; Vercel vai para iad1 para ficar colada ao banco), D-104 (as dez colunas da Lista, derivadas do Doc 14 §4.3, com o conjunto deixando de ser imutável), D-105 (ordem de construção alterada — front-end antes da migração, com o risco da janela de 3/9 assumido pelo maestro) e D-106 (o projeto do Supabase é o definitivo; **revoga a D-102** — não haverá ambiente de ensaio, e a carga roda uma única vez na base real). **P-029 e P-030 encerradas.**

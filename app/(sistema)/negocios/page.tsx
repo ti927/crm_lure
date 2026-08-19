@@ -10,6 +10,7 @@ import {
 } from "@/components/dominio/etiquetas";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { Filtros } from "./filtros";
+import { BotaoNovoNegocio } from "./botao-novo-negocio";
 import { CartoesNegocio } from "./cartoes-negocio";
 import { PainelFiltrosMobile } from "./painel-filtros-mobile";
 import { LinkOrdenacao } from "./link-ordenacao";
@@ -131,12 +132,21 @@ export default async function PaginaNegocios({
     .range(inicio, inicio + POR_PAGINA - 1)
     .returns<LinhaNegocio[]>();
 
+  // Quem está logado, para o "Novo negócio" já nascer no nome de quem
+  // cadastra — é o padrão do Pipedrive e evita um clique repetido.
+  // Resolve por `auth_id`, nunca por `id`: a D-109 separou os dois, e
+  // confundi-los foi o que quebrou o log (C-05).
+  const {
+    data: { user: logado },
+  } = await supabase.auth.getUser();
+
   const [
     { data: etapas },
     { data: usuarios },
     { data: origens },
     { data: produtos },
     { data: motivos },
+    { data: eu },
   ] = await Promise.all([
     supabase.from("etapa").select("id, nome, ordem").order("ordem"),
     // Só quem está ativo entra no filtro: ex-integrante continua existindo
@@ -146,8 +156,14 @@ export default async function PaginaNegocios({
     supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("produto").select("id, nome").order("nome"),
     supabase.from("motivo_perda").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase
+      .from("usuario")
+      .select("id")
+      .eq("auth_id", logado?.id ?? "")
+      .maybeSingle(),
   ]);
 
+  const euId = eu?.id ?? null;
   const total = count ?? 0;
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA));
   const algumFiltro = temFiltro(filtros);
@@ -385,6 +401,14 @@ export default async function PaginaNegocios({
             usuarios={usuarios ?? []}
           />
           <Filtros />
+          <BotaoNovoNegocio
+            etapas={etapas ?? []}
+            usuarios={usuarios ?? []}
+            origens={origens ?? []}
+            produtos={produtos ?? []}
+            motivos={motivos ?? []}
+            responsavelPadrao={euId}
+          />
         </div>
       </div>
 

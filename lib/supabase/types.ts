@@ -6,6 +6,53 @@
   | { [key: string]: Json | undefined }
   | Json[]
 
+/**
+ * O recorte que todo indicador aceita (D-064), mais o interruptor de
+ * negócios parados (D-067). Fica aqui em cima porque as sete funções o
+ * repetem — e porque um recorte que diverge entre indicadores faria dois
+ * números da mesma tela discordarem sobre o mesmo conjunto.
+ */
+export type RecorteIndicador = {
+  p_de?: string | null
+  p_ate?: string | null
+  p_responsavel?: string | null
+  p_origem?: string | null
+  p_produto?: string | null
+  p_area?: string | null
+  p_incluir_parados?: boolean
+}
+
+/**
+ * O recorte do financeiro. Não tem interruptor de parados de propósito:
+ * cadastro dormente não é receita nem pipeline, e oferecer a escolha
+ * convidaria a somar dinheiro que não existe.
+ */
+export type RecorteFinanceiro = {
+  p_de?: string | null
+  p_ate?: string | null
+  p_responsavel?: string | null
+  p_origem?: string | null
+  p_produto?: string | null
+  p_area?: string | null
+}
+
+/** As dimensões que `financeiro_por_dimensao` sabe agrupar. */
+export type DimensaoFinanceira =
+  | "responsavel"
+  | "origem"
+  | "produto"
+  | "area"
+  | "organizacao"
+
+/** As dimensões que `indicadores_por_dimensao` sabe agrupar. */
+export type Dimensao =
+  | "motivo_perda"
+  | "origem"
+  | "status"
+  | "responsavel"
+  | "produto"
+  | "etapa"
+
 export type Database = {
   graphql_public: {
     Tables: {
@@ -206,6 +253,7 @@ export type Database = {
         Row: {
           autor_id: string | null
           id: number
+          importado_do_pipedrive: boolean
           negocio_id: string
           ocorrido_em: string
           origem_carga: boolean
@@ -216,6 +264,7 @@ export type Database = {
         Insert: {
           autor_id?: string | null
           id?: number
+          importado_do_pipedrive?: boolean
           negocio_id: string
           ocorrido_em?: string
           origem_carga?: boolean
@@ -226,6 +275,7 @@ export type Database = {
         Update: {
           autor_id?: string | null
           id?: number
+          importado_do_pipedrive?: boolean
           negocio_id?: string
           ocorrido_em?: string
           origem_carga?: boolean
@@ -320,6 +370,7 @@ export type Database = {
           atualizado_em: string
           criado_em: string
           etapa_id: string | null
+          fechado_em: string | null
           id: string
           motivo_perda_id: string | null
           organizacao_id: string
@@ -334,6 +385,7 @@ export type Database = {
           atualizado_em?: string
           criado_em?: string
           etapa_id?: string | null
+          fechado_em?: string | null
           id?: string
           motivo_perda_id?: string | null
           organizacao_id: string
@@ -348,6 +400,7 @@ export type Database = {
           atualizado_em?: string
           criado_em?: string
           etapa_id?: string | null
+          fechado_em?: string | null
           id?: string
           motivo_perda_id?: string | null
           organizacao_id?: string
@@ -714,6 +767,115 @@ export type Database = {
           website: string | null
           negocios: number
           titulos: string[] | null
+        }[]
+      }
+
+      /* ---------- Indicadores (D-062, D-063) ----------
+       * Todas compartilham o mesmo recorte da D-064: período, responsável,
+       * origem, produto, área — mais o interruptor de parados (D-067).
+       * O cálculo mora no banco porque a regra 3 do CLAUDE.md proíbe
+       * trazer 2.458 negócios e 3.415 eventos para somar no navegador. */
+      indicadores_resumo: {
+        Args: RecorteIndicador
+        Returns: {
+          iniciados: number
+          ganhos: number
+          perdidos: number
+          valor_ganho: number
+          em_andamento: number
+          valor_em_aberto: number
+          taxa_ganho: number | null
+        }[]
+      }
+      indicadores_serie_mensal: {
+        Args: RecorteIndicador
+        Returns: { mes: string; iniciados: number; ganhos: number; valor_ganho: number }[]
+      }
+      indicadores_funil: {
+        Args: RecorteIndicador
+        Returns: {
+          etapa: string
+          ordem: number
+          alcancaram: number
+          avancaram: number
+          conversao: number | null
+        }[]
+      }
+      indicadores_lead_time: {
+        Args: RecorteIndicador
+        Returns: {
+          etapa: string
+          ordem: number
+          passagens: number
+          dias_medios: number | null
+        }[]
+      }
+      indicadores_valor_inicial_final: {
+        Args: RecorteIndicador
+        Returns: {
+          negocios: number
+          soma_inicial: number
+          soma_final: number
+          variacao: number | null
+        }[]
+      }
+      indicadores_por_dimensao: {
+        Args: RecorteIndicador & { p_dimensao: Dimensao }
+        Returns: { rotulo: string; negocios: number; valor: number; ganhos: number }[]
+      }
+
+      /* ---------- Financeiro (D-131) ----------
+       * ⚠️ Recorte SEM `p_incluir_parados`: em financeiro, cadastro
+       * dormente é ruído, não escolha. E o eixo do tempo é `fechado_em`,
+       * não `criado_em` — "quando entrou dinheiro", não "quando o lead
+       * entrou". */
+      financeiro_resumo: {
+        Args: RecorteFinanceiro
+        Returns: {
+          receita: number
+          contratos: number
+          ticket_medio: number | null
+          valor_perdido: number
+          contratos_perdidos: number
+          pipeline_aberto: number
+          negocios_abertos: number
+          receita_anterior: number
+          contratos_anterior: number
+        }[]
+      }
+      financeiro_mensal: {
+        Args: RecorteFinanceiro
+        Returns: {
+          mes: string
+          receita: number
+          contratos: number
+          perdido: number
+          ticket: number | null
+        }[]
+      }
+      financeiro_por_dimensao: {
+        Args: RecorteFinanceiro & { p_dimensao: DimensaoFinanceira }
+        Returns: {
+          rotulo: string
+          receita: number
+          contratos: number
+          ticket: number | null
+          perdido: number
+        }[]
+      }
+      financeiro_pipeline: {
+        Args: Omit<RecorteFinanceiro, "p_de" | "p_ate">
+        Returns: { etapa: string; ordem: number; negocios: number; valor: number }[]
+      }
+      financeiro_maiores: {
+        Args: RecorteFinanceiro & { p_limite?: number }
+        Returns: {
+          id: string
+          titulo: string
+          organizacao: string
+          valor: number
+          fechado_em: string
+          responsavel: string
         }[]
       }
     }

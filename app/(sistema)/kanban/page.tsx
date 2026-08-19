@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FiltroKanban } from "./filtro-kanban";
 import { Quadro, type ColunaEtapa, type Cartao } from "./quadro";
 import { KanbanMobile } from "./kanban-mobile";
+import { BotaoNovoNegocio } from "@/app/(sistema)/negocios/botao-novo-negocio";
 
 /**
  * F5 — Kanban.
@@ -68,6 +69,18 @@ export default async function PaginaKanban({
     .eq("ativo", true)
     .order("nome");
 
+  // As listas que o diálogo de criação precisa, e quem está logado para
+  // o negócio já nascer no nome de quem cadastra.
+  const {
+    data: { user: logado },
+  } = await supabase.auth.getUser();
+
+  const [{ data: origens }, { data: produtos }, { data: eu }] = await Promise.all([
+    supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase.from("produto").select("id, nome").order("nome"),
+    supabase.from("usuario").select("id").eq("auth_id", logado?.id ?? "").maybeSingle(),
+  ]);
+
   const total = colunas.reduce((s, c) => s + c.total, 0);
 
   return (
@@ -80,7 +93,17 @@ export default async function PaginaKanban({
             {total === 1 ? "negócio" : "negócios"} · arraste para mudar de etapa
           </p>
         </div>
-        <FiltroKanban usuarios={usuarios ?? []} />
+        <div className="flex items-center gap-2">
+          <FiltroKanban usuarios={usuarios ?? []} />
+          <BotaoNovoNegocio
+            etapas={etapas ?? []}
+            usuarios={usuarios ?? []}
+            origens={origens ?? []}
+            produtos={produtos ?? []}
+            motivos={motivos ?? []}
+            responsavelPadrao={eu?.id ?? null}
+          />
+        </div>
       </div>
 
       {/* A chave amarra o estado do quadro ao filtro: trocar de responsável

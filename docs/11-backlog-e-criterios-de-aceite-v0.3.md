@@ -1,10 +1,10 @@
-﻿# 11 — Backlog e Critérios de Aceite (v0.2)
+﻿# 11 — Backlog e Critérios de Aceite (v0.3)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Backlog e Critérios de Aceite |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.2 |
+| **Versão** | v0.3 |
 | **Data** | 14/08/2026 |
 | **Status** | rascunho — aguarda validação do maestro |
 
@@ -154,6 +154,22 @@ Nenhuma tarefa é considerada pronta sem isto:
 | B-114 | Marcar concluída | Atividade pode ser concluída pelo celular |
 | B-115 | Escrita fora de escopo | Não há formulário de criação nem edição no celular — é lacuna consciente (D-097) |
 
+## Negócio — criação e ciclo completo (D-126)
+
+⚠️ **Itens criados em 19/08/2026, depois da C-08.** Esta seção não existia: o backlog cobria Lista, detalhe e Kanban e **nunca disse "criar negócio"**, embora a D-017 e o RF-024 já pressupusessem a criação. A omissão só apareceu quando `scripts/verifica-virada.mjs` inventariou o que o sistema sabe escrever.
+
+| # | Item | Critério de aceite |
+|---|---|---|
+| B-127 | **Criar negócio** | Botão "Novo negócio" na Lista e no Kanban; título e organização obrigatórios, o resto opcional. O negócio aparece na Lista e na coluna certa do Kanban sem recarregar a página à mão |
+| B-128 | ⚠️ **Trava de desfecho na criação** | Escolher "Aguardando Contrato" no formulário obriga a declarar Ganho ou Perdido, e Perdido obriga o motivo. A *server action* recusa a criação sem desfecho mesmo que o formulário seja contornado |
+| B-129 | **Status vem da etapa** | Negócio criado em Cold Lead nasce `parado`; a tela não oferece escolha de status na criação (D-045) |
+| B-130 | **Excluir negócio** | Confirmação nomeia o que se perde — atividades, anotações, vínculos e **o histórico da linha do tempo**. Organização e pessoas continuam existindo |
+| B-131 | **Título e organização editáveis** | O título edita no próprio cabeçalho; a organização troca pela zona lateral, com busca |
+| B-132 | **Pessoas do negócio** | Vincular e desvincular contatos já cadastrados. Desvincular não apaga a pessoa; o cargo continua sendo do vínculo com a organização (D-036) |
+| B-133 | **Organização nova pelo diálogo** | Informando só o nome, sem sair do formulário de negócio (D-127 — 🟡 aguarda validação) |
+
+---
+
 ## F10 — Virada
 
 | # | Item | Critério de aceite |
@@ -161,10 +177,10 @@ Nenhuma tarefa é considerada pronta sem isto:
 | B-120 | ⚠️ **Ensaio da migração** | A carga roda **no banco local** do zero ao fim, com contagens batendo, ao menos duas vezes seguidas. Com D-101 este é o único ensaio que existe: a próxima execução é na base real |
 | B-121 | Carga em produção | Contagens conferidas: 2.453 negócios, 422 organizações, e as demais entidades. Backup do Supabase verificado **antes** de começar |
 | B-122 | Log gravando | Primeiro negócio alterado em produção gera evento com `origem_carga = false` |
-| B-123 | ⭐ **Ensaio de operação** | Os dois sócios trabalham um dia inteiro sem abrir o Pipedrive, **antes de 3/9** |
+| B-123 | ⭐ **Ensaio de operação** | Os dois sócios trabalham um dia inteiro sem abrir o Pipedrive. *(A data "antes de 3/9" saiu com a D-125 — o ensaio continua sendo pré-requisito do desligamento.)* |
 | B-124 | Login do domínio | Todas as contas da equipe entram |
 | B-125 | Celular utilizável | Um sócio consulta um negócio pelo celular, fora do escritório |
-| B-126 | Sete critérios de D-098 | Todos verificados e registrados |
+| B-126 | Sete critérios de D-098 | Todos verificados e registrados. ✅ **Automatizado** em `scripts/verifica-virada.mjs`, somente leitura, reexecutável a qualquer momento — os critérios 2 e 6 aparecem marcados como humanos, porque script nenhum os verifica |
 
 ---
 
@@ -176,5 +192,6 @@ Não construir. Registrados para não serem esquecidos na fase 2: telas de estat
 
 ## Changelog
 
+- **v0.3** — 19/08/2026 — **Seção "Negócio — criação e ciclo completo" criada (B-127 a B-133)**, depois da C-08: o backlog cobria Lista, detalhe e Kanban e nunca dizia "criar negócio", embora a D-017 e o RF-024 já o pressupusessem. B-123 perde a data de 3/9 (D-125) e B-126 passa a apontar o verificador automático. **133 itens.**
 - **v0.2** — 14/08/2026 — **D-101 incorporada.** B-004 passa a pedir um projeto único; B-012 deixa de falar em duas URLs de retorno; a F2 vira "carga de ensaio, no banco local"; B-120 ganha o aviso de que é o único ensaio existente e B-121 passa a exigir backup verificado antes da carga. T6 reescrito.
 - **v0.1** — 13/08/2026 — Criação a partir do Doc 10. 126 itens com critério verificável, agrupados por fase, mais sete critérios transversais.

@@ -63,3 +63,22 @@ export function dataHora(iso: string | null | undefined): string {
     minute: "2-digit",
   });
 }
+
+/**
+ * Valor curto para eixo de gráfico: R$ 27,0 mi · R$ 350 mil.
+ *
+ * O eixo de um gráfico não comporta "R$ 27.015.293,04" sem virar sopa de
+ * dígitos, e ninguém lê centavo num eixo. O valor exato continua na
+ * dica de contexto (tooltip) e nos cartões de número.
+ */
+export function realCurto(valor: number | string | null | undefined): string {
+  if (valor === null || valor === undefined || valor === "") return "—";
+  const n = typeof valor === "string" ? Number(valor) : valor;
+  if (!Number.isFinite(n)) return "—";
+
+  const abs = Math.abs(n);
+  const sinal = n < 0 ? "-" : "";
+  if (abs >= 1_000_000) return `${sinal}R$ ${(abs / 1_000_000).toFixed(1).replace(".", ",")} mi`;
+  if (abs >= 1_000) return `${sinal}R$ ${Math.round(abs / 1_000)} mil`;
+  return `${sinal}R$ ${Math.round(abs)}`;
+}

@@ -8,7 +8,7 @@
 | **Data** | 14/08/2026 |
 | **Status** | rascunho — F0 em execução |
 
-> Roteiro de execução para o Claude Code. **Prazo imutável: 3/9/2026** (R-008). Em 14/08 restam 20 dias.
+> Roteiro de execução para o Claude Code. ✅ **Sem prazo** — a R-008 foi revogada em 19/08 pela **D-125**, porque a extração e a carga de 17/08 tiraram os dados de dentro do Pipedrive. A ordem das fases continua valendo; a pressa, não.
 
 ---
 
@@ -154,7 +154,9 @@ F0 Fundação ──► F2 Carga de ensaio (banco local)
 
 ## 4. Se o prazo apertar
 
-Ordem de sacrifício, do que dói menos ao que dói mais. Registrada agora, com a cabeça fria, para não ser improvisada em 30 de agosto.
+⚠️ **Esta seção perdeu a função original com a D-125 (19/08).** Não há prazo, logo não há sacrifício a fazer sob pressão. O que sobra é uma **ordem de prioridade** útil — o que entra antes e o que pode esperar — e, sobretudo, a lista do que **nunca** se corta, que continua valendo por inteiro.
+
+Ordem de sacrifício, do que dói menos ao que dói mais. Registrada com a cabeça fria, para não ser improvisada sob pressão.
 
 | Ordem | O que cortar | O que se perde | O que **não** muda |
 |---|---|---|---|

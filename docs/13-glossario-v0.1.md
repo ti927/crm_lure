@@ -133,7 +133,7 @@ O norte do produto: fazer o que o Pipedrive faz **no uso atual da empresa**, nã
 ## Sistemas externos
 
 **Pipedrive**
-O CRM sendo substituído. Contrato encerra em **3/9/2026**, quando o acesso à API também termina.
+O CRM sendo substituído. ✅ **A base já saiu de lá** — extraída e carregada no Supabase em 17/08/2026, conferida. O contrato tem fim previsto para 3/9/2026, quando o acesso à API termina, mas isso deixou de ser prazo do projeto (**D-125**): a extração já aconteceu.
 
 **Bubble**
 Plataforma onde a empresa mantém seu **sistema interno próprio**, para onde o cliente migra depois do ganho (D-075). Única integração do MVP: o seletor de cliente no diálogo de Ganho.

@@ -137,6 +137,11 @@
   --color-chart-6: var(--chart-6);
   --color-chart-7: var(--chart-7);
   --color-chart-8: var(--chart-8);
+  --color-neon-1: var(--neon-1);
+  --color-neon-2: var(--neon-2);
+  --color-neon-3: var(--neon-3);
+  --color-neon-4: var(--neon-4);
+  --color-neon-5: var(--neon-5);
 
   /* ---------- Sombra ---------- */
   --shadow-xs: var(--elev-xs);

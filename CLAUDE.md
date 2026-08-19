@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.6 · 18/08/2026
+> Documento 12 da biblioteca do projeto · v0.8 · 19/08/2026
 
 ---
 
@@ -11,7 +11,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 
 **Motivo único: custo.** O Pipedrive atende bem; sai por preço. Isso significa que o norte é **paridade funcional com o uso atual**, não superação. Funcionalidade que o Pipedrive não tem e ninguém pediu é escopo indevido.
 
-⚠️ **Prazo imutável: 3 de setembro de 2026.** O contrato do Pipedrive encerra nessa data, sem operação em paralelo. Virada seca.
+✅ **Não há prazo de virada** (D-125, 19/08/2026 — revoga D-069 e R-008). O prazo de 3/9 existia por um motivo só: a API do Pipedrive fecharia junto com o contrato e os dados ficariam inacessíveis. **A extração e a carga aconteceram em 17/08 e estão conferidas ao centavo** — a base inteira vive no Supabase, independente do Pipedrive. A virada acontece quando o sistema estiver pronto, não numa data. Não trate prazo como argumento em decisão nenhuma.
 
 ---
 
@@ -22,8 +22,8 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 3. **Nunca carregue a base inteira no navegador.** São 2.458 negócios, 2.889 organizações, 4.589 pessoas e 6.483 atividades na base real. Paginação no servidor, lista virtualizada, Kanban carregando por partes.
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
-6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.**
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 118 decisões registradas no Doc 03 — provavelmente a resposta existe.
+6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 132 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
@@ -38,13 +38,22 @@ A tabela `evento_negocio` registra toda mudança de **etapa, valor, responsável
 
 - A tabela é **somente inserção**. `update` e `delete` são revogados. Não é convenção, é permissão.
 - Se o log entrar depois da virada, os indicadores de funil de conversão, lead time e valor inicial × fechado nascem cegos, **e não há como recuperar**.
-- As telas de estatística ficaram para a fase 2. **O log não.**
+- ✅ **As telas de estatística voltaram ao escopo em 19/08 (D-130)** — e só foram possíveis porque o log existia. A D-093 as tinha adiado; metade da justificativa era o prazo, que caiu com a D-125.
 
 ### 2. A carga da migração não pode contaminar o log
 
 Os 2.453 negócios entram de uma vez. Se isso disparar o gatilho normalmente, o log nasce com milhares de eventos falsos datados do dia da migração, e todo cálculo de lead time vira ficção.
 
 A carga roda com `set local app.carga_migracao = true`, e os eventos gerados ficam marcados em `origem_carga`. Todo indicador filtra `origem_carga = false`.
+
+⚠️ **Procedência tem TRÊS estados desde 19/08 (D-129)**, não dois. `evento_negocio` ganhou a coluna `importado_do_pipedrive`:
+
+| Pergunta | Filtro |
+|---|---|
+| Aconteceu de verdade? | `not origem_carga` — **inclui** o histórico importado |
+| Aconteceu **neste** sistema? | `not origem_carga and not importado_do_pipedrive` |
+
+A regra acima segue valendo palavra por palavra: os indicadores filtram `origem_carga = false`. O que mudou é que **3.406 eventos reais de 2021 a 2026**, reconstituídos do changelog do Pipedrive, agora entram nessa conta — sem eles, funil de conversão, lead time e valor inicial × fechado nasceriam cegos. Carregados por `scripts/carga-changelog.mjs`, que ensaia por padrão e recusa rodar duas vezes.
 
 ✅ **A carga aconteceu em 17/08/2026** e está conferida: 2.458 negócios, 2.889 organizações, 4.589 pessoas, 6.483 atividades, 922 anotações, com a soma dos ganhos batendo ao centavo com o Pipedrive (R$ 27.015.293,04). Roda por `scripts/carga-migracao.mjs`.
 
@@ -85,7 +94,7 @@ Outras regras que costumam ser esquecidas:
 
 - **Atividade pertence a negócio, organização ou pessoa** — os três vínculos são opcionais e independentes, como no Pipedrive (D-108, revoga parte da D-030). Não é preferência: 76% das atividades da base real não têm negócio, e entre elas 125 das 206 pendências vivas dos sócios. O mesmo vale para anotação.
 - **Um produto por negócio** (relação N:1). ⚠️ O Pipedrive não tinha **nenhum** produto cadastrado: a base nasce vazia aqui e o cadastro passa a ser feito neste sistema.
-- **Não existe data prevista de fechamento** — logo, não existe previsão de receita. Não invente o campo.
+- **Não existe data prevista de fechamento** — logo, não existe previsão de receita. Não invente o campo. ⚠️ `negocio.fechado_em` (D-131) **não é isso**: ela registra quando o desfecho *aconteceu*, e é o eixo do relatório financeiro. Nunca use para prever.
 - **Campos são fixos.** O usuário não cria campo personalizado.
 - Anotação pertence ao negócio; as fichas de organização e pessoa mostram histórico **derivado**.
 
@@ -101,7 +110,7 @@ Outras regras que costumam ser esquecidas:
 | Estilo | Tailwind CSS **v4** + shadcn/ui — tema em CSS, sem `tailwind.config.ts` (P-025) |
 | Dados no cliente | TanStack Query |
 | Kanban | dnd-kit |
-| Gráficos | Recharts (fase 2) |
+| Gráficos | Recharts — **em uso** desde 19/08 (D-130) |
 | Ícones | lucide-react |
 | Fonte | Archivo (Google Fonts) |
 
@@ -138,11 +147,11 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 
 ## Escopo do MVP
 
-**Entra:** Negócios (Kanban com arrastar-e-soltar, Lista de dez colunas com filtro e ordenação em todas, detalhe em três zonas com aba Linha do Tempo) · Atividades (lista e calendário) · Contatos · Produtos/Serviços · trava de desfecho · quatro automações com notificação interna · **log de eventos** · exportação CSV · dois temas · Google OAuth · migração completa · **celular em modo consulta e marcação**.
+**Entra:** Negócios (Kanban com arrastar-e-soltar, Lista de dez colunas com filtro e ordenação em todas, detalhe em três zonas com aba Linha do Tempo) · Atividades (lista e calendário) · Contatos · Produtos/Serviços · trava de desfecho · quatro automações com notificação interna · **log de eventos** · exportação CSV · dois temas · Google OAuth · migração completa · **celular em modo consulta e marcação** · **Estatísticas** (D-130: os treze indicadores da D-063, com recortes e CSV).
 
 ⚠️ **A F8 (automações e notificações) foi adiada** (D-124): volta acompanhada de um painel de configuração, com os alertas **derivados na leitura** — sem agendador. Faltam definir o prazo do "negócio parado" e a antecedência do lembrete (P-036), e a entidade Notificação nunca foi modelada (P-014, P-027).
 
-**Fora — não construa:** **seletor de cliente Bubble no Ganho** (D-110, foi para fase final) · telas de estatísticas e painel de indicadores · mesclagem de duplicados · transferência entre usuários · telas de configuração · criação e edição pelo celular · metas · Google Agenda · API pública e webhooks · envio de e-mail (nenhum, em hipótese alguma) · múltiplas moedas · módulo de LGPD.
+**Fora — não construa:** **seletor de cliente Bubble no Ganho** (D-110, foi para fase final) · **construtor genérico de relatórios** (E-008 — o catálogo de indicadores existe, o construtor não) · metas e seu acompanhamento · mesclagem de duplicados · transferência entre usuários · telas de configuração · criação e edição pelo celular · Google Agenda · API pública e webhooks · envio de e-mail (nenhum, em hipótese alguma) · múltiplas moedas · módulo de LGPD.
 
 **Sobre o celular:** no dia 1 o vendedor **consulta** — Lista em cartões, busca, ficha do negócio, atividades, anotações, linha do tempo, Kanban uma etapa por vez, e marcar atividade como concluída. Criação e edição pelo celular são fase 2. Telas próprias, não apenas redimensionadas.
 
@@ -183,7 +192,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **118 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **132 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -193,6 +202,8 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.8** — 19/08/2026 — **Estatísticas voltam ao escopo (D-130) e a procedência do log ganha um terceiro estado (D-129).** A seção "o que não pode dar errado" passa a descrever os três estados de `evento_negocio`: sintético da carga, importado do Pipedrive, e nascido neste sistema — com a regra dos indicadores intacta. Recharts sai de "fase 2" e entra em uso. O recorte do MVP passa a incluir Estatísticas; sai da lista de proibidos o painel de indicadores e entra, no lugar, o **construtor genérico de relatórios** (E-008), que é o que de fato continua fora.
+- **v0.7** — 19/08/2026 — **O prazo saiu do documento (D-125).** A linha "prazo imutável: 3 de setembro" foi apagada daqui, do `README.md` e dos Docs 00, 03, 10 e 11: ela existia porque a API do Pipedrive fecharia com o contrato, e isso deixou de valer quando a extração e a carga rodaram em 17/08. **D-069 e R-008 revogadas.** A virada passa a ser decidida por prontidão, não por calendário — e prazo deixa de ser argumento admissível em qualquer decisão de escopo.
 - **v0.6** — 18/08/2026 — **Fim da sessão 09.** Entram os dois avisos que custaram tempo nesta sessão: manipulador de evento não atravessa a fronteira servidor→cliente (C-06, derrubou a aba Pessoas) e as duas sujeiras estruturais da base — 41% das organizações são duplicata de nome e 388 registros vieram com acento destruído da origem, 45 ainda quebrados. Registrado que a **F8 foi adiada** (D-124) com o motor já escolhido. Do MVP, só falta a virada: F0 a F7 e F9 estão de pé.
 - **v0.5** — 17/08/2026 — **Fim da sessão 06.** Movimento entra na identidade visual como regra (D-116), com a guarda de `prefers-reduced-motion`. A trava de desfecho passa a valer nos três caminhos que movem um negócio, sempre verificada no servidor. Acrescentado o aviso que custou caro nesta sessão: mexeu em identidade, procure `auth.uid()` no schema inteiro — a D-109 quebrou o gatilho do log e só se descobriu porque um usuário real não conseguia trabalhar.
 - **v0.4** — 17/08/2026 — **Sessão 06: a extração corrigiu o documento.** A afirmação de que "a maior parte da base está parada" saiu — 74% dos negócios estão nas duas últimas etapas, e só 306 dos 2.458 seguem abertos. A carga **aconteceu** e está conferida; o medo de contaminar o log não se materializou, porque o gatilho é `after update` e não `after insert`. **D-108** revoga parte da D-030: atividade e anotação podem pertencer a organização ou pessoa, como no Pipedrive — 76% das atividades da base não têm negócio. **D-109**: `usuario` deixa de depender de conta de login. **D-110**: o seletor do Bubble sai do MVP. Volume real corrigido em todo o documento: 2.458 negócios e 2.889 organizações, não 2.453 e 422.

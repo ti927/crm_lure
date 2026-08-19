@@ -18,7 +18,7 @@
 
 **A fronteira:** migra-se tudo que **cabe no modelo**. Campos que o Doc 06 não previu não têm destino e são deliberadamente perdidos.
 
-⚠️ **Janela dura:** o acesso à API se encerra com o contrato, em **3/9/2026**. A extração precisa acontecer antes — e é a única tarefa do projeto que não depende de nenhuma outra.
+✅ **A janela fechou a favor:** a extração e a carga aconteceram em **17/08/2026** e estão conferidas. O acesso à API do Pipedrive se encerra com o contrato, em 3/9/2026, mas isso não ameaça mais nada — e é por isso que o prazo do projeto pôde ser revogado (**D-125**). *(Histórico: enquanto a extração não acontecia, esta era a única tarefa do projeto que não dependia de nenhuma outra, e a única com prazo irrecuperável.)*
 
 ---
 
