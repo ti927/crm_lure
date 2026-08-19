@@ -6,7 +6,8 @@ import type { RecorteFinanceiro } from "@/lib/supabase/types";
 import { AbasEstatisticas } from "../abas";
 import { FiltrosIndicadores } from "../filtros-indicadores";
 import { FiltroAno } from "../filtro-ano";
-import { Painel, CartaoNumero } from "../painel";
+import { Painel } from "../grafico-base";
+import { CartaoNumero } from "../painel";
 import { parseFiltros, comoConsulta, anosDisponiveis, type Busca } from "../consulta";
 import {
   ReceitaNoTempo,

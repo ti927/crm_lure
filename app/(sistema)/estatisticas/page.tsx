@@ -3,7 +3,8 @@ import { real, realCurto } from "@/lib/formato";
 import { AbasEstatisticas } from "./abas";
 import { FiltrosIndicadores } from "./filtros-indicadores";
 import { FiltroAno } from "./filtro-ano";
-import { Painel, CartaoNumero } from "./painel";
+import { Painel } from "./grafico-base";
+import { CartaoNumero } from "./painel";
 import { SerieMensal, BarrasCategoria, LeadTime, CicloDeVenda } from "./graficos-adiados";
 import {
   parseFiltros,

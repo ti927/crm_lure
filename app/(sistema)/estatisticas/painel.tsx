@@ -1,8 +1,18 @@
 import type { ReactNode } from "react";
-import { Painel as PainelCliente } from "./grafico-base";
 
-/** Reexporta o painel com gêmeo em tabela, para as páginas de servidor. */
-export const Painel = PainelCliente;
+/*
+ * ⚠️ Este arquivo NAO reexporta o `Painel`.
+ *
+ * Ele fazia isso — `import { Painel } from "./grafico-base"; export const
+ * Painel = Painel;` — e derrubava a rota inteira em producao com "server
+ * error", passando em desenvolvimento. Num modulo de SERVIDOR, importar
+ * de um modulo "use client" devolve uma REFERENCIA de cliente, nao o
+ * componente; reatribui-la a um `const` e reexportar quebra o vinculo com
+ * o modulo, e o renderizador nao sabe mais o que instanciar.
+ *
+ * As paginas importam o `Painel` direto de `./grafico-base`. Aqui fica so
+ * o que e de servidor mesmo.
+ */
 
 /**
  * Cartão de número.
