@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { realCurto } from "@/lib/formato";
 import {
   AMARELO,
   AZUL,
@@ -112,13 +113,22 @@ export function BarrasCategoria({
   dados,
   altura = 280,
   larguraRotulo = 150,
-  formata = num,
+  formato = "numero",
   status,
 }: {
   dados: { rotulo: string; valor: number }[];
   altura?: number;
   larguraRotulo?: number;
-  formata?: (v: unknown) => string;
+  /**
+   * ⚠️ Um NOME de formato, e não a função que formata.
+   *
+   * Passar `formata={(v) => ...}` daqui de um componente de servidor
+   * derruba a rota inteira: função não atravessa a fronteira
+   * servidor→cliente, e a serialização do RSC falha. É a mesma armadilha
+   * da C-06 (Doc 09 §3.11), que já tinha quebrado a aba Pessoas — lá era
+   * `onClick`, aqui era um formatador.
+   */
+  formato?: "numero" | "moeda";
   /** Quando o eixo é status, a cor SIGNIFICA o estado (Doc 08 §4). */
   status?: boolean;
 }) {
@@ -127,6 +137,7 @@ export function BarrasCategoria({
 
   const pontos = dados.map((d) => ({ ...d, Valor: Number(d.valor) }));
   const maior = Math.max(...pontos.map((p) => p.Valor));
+  const formata = formato === "moeda" ? (v: unknown) => realCurto(Number(v)) : num;
 
   return (
     <ResponsiveContainer width="100%" height={altura}>

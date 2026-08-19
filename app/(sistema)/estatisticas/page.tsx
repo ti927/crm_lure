@@ -223,7 +223,7 @@ export default async function PaginaEstatisticas({
                 .sort((a, b) => Number(b.valor) - Number(a.valor))
                 .slice(0, 7)
                 .map((m) => ({ rotulo: m.rotulo, valor: Number(m.valor) }))}
-              formata={(v) => realCurto(Number(v))}
+              formato="moeda"
               larguraRotulo={170}
             />
           </Painel>
