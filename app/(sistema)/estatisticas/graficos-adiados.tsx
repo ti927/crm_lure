@@ -32,17 +32,22 @@ function Espera({ altura }: { altura: number }) {
 
 export const SerieMensal = dynamic(
   () => import("./graficos").then((m) => m.SerieMensal),
-  { ssr: false, loading: () => <Espera altura={300} /> }
+  { ssr: false, loading: () => <Espera altura={280} /> }
 );
 
 export const BarrasCategoria = dynamic(
   () => import("./graficos").then((m) => m.BarrasCategoria),
-  { ssr: false, loading: () => <Espera altura={300} /> }
+  { ssr: false, loading: () => <Espera altura={280} /> }
+);
+
+export const CicloDeVenda = dynamic(
+  () => import("./graficos").then((m) => m.CicloDeVenda),
+  { ssr: false, loading: () => <Espera altura={260} /> }
 );
 
 export const LeadTime = dynamic(
   () => import("./graficos").then((m) => m.LeadTime),
-  { ssr: false, loading: () => <Espera altura={280} /> }
+  { ssr: false, loading: () => <Espera altura={260} /> }
 );
 
 export const ReceitaNoTempo = dynamic(
@@ -52,7 +57,7 @@ export const ReceitaNoTempo = dynamic(
 
 export const ReceitaPorCategoria = dynamic(
   () => import("./financeiro/graficos-neon").then((m) => m.ReceitaPorCategoria),
-  { ssr: false, loading: () => <Espera altura={300} /> }
+  { ssr: false, loading: () => <Espera altura={280} /> }
 );
 
 export const PipelinePorEtapa = dynamic(

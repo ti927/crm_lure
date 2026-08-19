@@ -867,6 +867,28 @@ export type Database = {
         Args: Omit<RecorteFinanceiro, "p_de" | "p_ate">
         Returns: { etapa: string; ordem: number; negocios: number; valor: number }[]
       }
+      indicadores_ciclo: {
+        Args: RecorteFinanceiro
+        Returns: {
+          faixa: string
+          ordem: number
+          negocios: number
+          ganhos: number
+          taxa_ganho: number | null
+          valor_ganho: number
+        }[]
+      }
+      indicadores_ticket: {
+        Args: RecorteFinanceiro
+        Returns: {
+          contratos: number
+          media: number | null
+          mediana: number | null
+          q1: number | null
+          q3: number | null
+          maior: number | null
+        }[]
+      }
       financeiro_maiores: {
         Args: RecorteFinanceiro & { p_limite?: number }
         Returns: {

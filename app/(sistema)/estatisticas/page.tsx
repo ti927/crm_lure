@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { real } from "@/lib/formato";
+import { real, realCurto } from "@/lib/formato";
 import { AbasEstatisticas } from "./abas";
 import { FiltrosIndicadores } from "./filtros-indicadores";
 import { FiltroAno } from "./filtro-ano";
 import { Painel, CartaoNumero } from "./painel";
-import { SerieMensal, BarrasCategoria, LeadTime } from "./graficos-adiados";
+import { SerieMensal, BarrasCategoria, LeadTime, CicloDeVenda } from "./graficos-adiados";
 import {
   parseFiltros,
   comoArgumentos,
@@ -32,6 +32,16 @@ export default async function PaginaEstatisticas({
 }) {
   const filtros = parseFiltros(await searchParams);
   const args = comoArgumentos(filtros);
+  // Ciclo e ticket falam de quem já fechou: o interruptor de parados não
+  // se aplica, então o recorte vai sem ele.
+  const semParados = {
+    p_de: args.p_de,
+    p_ate: args.p_ate,
+    p_responsavel: args.p_responsavel,
+    p_origem: args.p_origem,
+    p_produto: args.p_produto,
+    p_area: args.p_area,
+  };
   const supabase = await createClient();
 
   const [
@@ -41,7 +51,7 @@ export default async function PaginaEstatisticas({
     { data: leadTime },
     { data: valores },
     { data: porMotivo },
-    { data: porOrigem },
+    { data: ciclo },
     { data: porVendedor },
     { data: porStatus },
     { data: usuarios },
@@ -49,6 +59,7 @@ export default async function PaginaEstatisticas({
     { data: produtos },
     { data: areas },
     { data: primeiro },
+    { data: ticket },
   ] = await Promise.all([
     supabase.rpc("indicadores_resumo", args),
     supabase.rpc("indicadores_serie_mensal", args),
@@ -56,7 +67,7 @@ export default async function PaginaEstatisticas({
     supabase.rpc("indicadores_lead_time", args),
     supabase.rpc("indicadores_valor_inicial_final", args),
     supabase.rpc("indicadores_por_dimensao", { ...args, p_dimensao: "motivo_perda" }),
-    supabase.rpc("indicadores_por_dimensao", { ...args, p_dimensao: "origem" }),
+    supabase.rpc("indicadores_ciclo", semParados),
     supabase.rpc("indicadores_por_dimensao", { ...args, p_dimensao: "responsavel" }),
     supabase.rpc("indicadores_por_dimensao", { ...args, p_dimensao: "status" }),
     supabase.from("usuario").select("id, nome").eq("ativo", true).order("nome"),
@@ -70,10 +81,12 @@ export default async function PaginaEstatisticas({
       .order("criado_em", { ascending: true })
       .limit(1)
       .maybeSingle(),
+    supabase.rpc("indicadores_ticket", semParados),
   ]);
 
   const r = resumo?.[0];
   const v = valores?.[0];
+  const t = ticket?.[0];
   const consulta = comoConsulta(filtros);
   const anos = anosDisponiveis(primeiro?.criado_em);
 
@@ -198,20 +211,32 @@ export default async function PaginaEstatisticas({
 
           <Painel
             titulo="Perdas por motivo"
-            apoio="Só negócios perdidos"
-            colunas={["Motivo", "Negócios", "Valor"]}
-            linhas={(porMotivo ?? []).map((m) => [m.rotulo, m.negocios, real(m.valor)])}
+            apoio="Por valor: perder trinta negócios pequenos não é perder cinco grandes"
+            colunas={["Motivo", "Valor", "Negócios"]}
+            linhas={(porMotivo ?? []).map((m) => [m.rotulo, real(m.valor), m.negocios])}
           >
-            <BarrasCategoria dados={(porMotivo ?? []).slice(0, 8)} chave="motivo" />
+            <BarrasCategoria
+              dados={[...(porMotivo ?? [])]
+                .sort((a, b) => Number(b.valor) - Number(a.valor))
+                .slice(0, 7)
+                .map((m) => ({ rotulo: m.rotulo, valor: Number(m.valor) }))}
+              formata={(v) => realCurto(Number(v))}
+              larguraRotulo={170}
+            />
           </Painel>
 
           <Painel
-            titulo="Negócios por origem"
-            apoio="De onde vieram os cadastros do recorte"
-            colunas={["Origem", "Negócios", "Ganhos"]}
-            linhas={(porOrigem ?? []).map((o) => [o.rotulo, o.negocios, o.ganhos])}
+            titulo="Ciclo de venda"
+            apoio="Quanto tempo levou até o desfecho, e quanto disso virou ganho"
+            colunas={["Faixa", "Desfechos", "Ganhos", "Taxa"]}
+            linhas={(ciclo ?? []).map((c) => [
+              c.faixa,
+              c.negocios,
+              c.ganhos,
+              c.taxa_ganho == null ? "—" : `${c.taxa_ganho}%`,
+            ])}
           >
-            <BarrasCategoria dados={(porOrigem ?? []).slice(0, 8)} chave="origem" />
+            <CicloDeVenda dados={ciclo ?? []} />
           </Painel>
         </div>
 
@@ -262,7 +287,51 @@ export default async function PaginaEstatisticas({
             colunas={["Status", "Negócios", "Valor"]}
             linhas={status.map((s) => [s.rotulo, s.negocios, real(s.valor)])}
           >
-            <BarrasCategoria dados={status} chave="status" altura={200} status />
+            <BarrasCategoria
+              dados={status.map((s) => ({ rotulo: s.rotulo, valor: Number(s.negocios) }))}
+              altura={190}
+              larguraRotulo={96}
+              status
+            />
+          </Painel>
+
+          <Painel
+            titulo="Quanto vale o negócio típico"
+            apoio="A média sozinha engana: poucos contratos grandes a puxam para cima"
+          >
+            {!t || Number(t.contratos) === 0 ? (
+              <p className="text-text-muted py-8 text-center text-sm">
+                Nenhum contrato ganho com valor no recorte.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3 py-1">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="border-border bg-surface-sunken rounded-md border p-3">
+                    <p className="text-text-muted text-xs font-semibold uppercase tracking-caps">
+                      Mediana
+                    </p>
+                    <p className="text-text mt-1 text-lg font-semibold">{real(t.mediana)}</p>
+                    <p className="text-text-muted mt-0.5 text-xs">metade fecha abaixo disso</p>
+                  </div>
+                  <div className="border-border rounded-md border p-3">
+                    <p className="text-text-muted text-xs font-semibold uppercase tracking-caps">
+                      Média
+                    </p>
+                    <p className="text-text-secondary mt-1 text-lg font-semibold">
+                      {real(t.media)}
+                    </p>
+                    <p className="text-text-muted mt-0.5 text-xs">
+                      {t.media && t.mediana
+                        ? `${(Number(t.media) / Number(t.mediana)).toFixed(1)}× a mediana`
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+                <Linha rotulo="Metade dos contratos entre" valor={`${real(t.q1)} e ${real(t.q3)}`} />
+                <Linha rotulo="Maior contrato" valor={real(t.maior)} />
+                <Linha rotulo="Contratos considerados" valor={num(t.contratos)} />
+              </div>
+            )}
           </Painel>
 
           <Painel

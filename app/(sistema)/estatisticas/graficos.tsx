@@ -15,36 +15,32 @@ import {
   YAxis,
 } from "recharts";
 import {
-  Brilho,
+  ACENTO,
   COR_STATUS,
   DICA,
   EIXO,
+  FORTE,
+  GRADE,
+  MEDIO,
   RAMPA,
-  SERIE_1,
-  SERIE_2,
   SemDados,
-  slotDaCategoria,
   usePrefereMenosMovimento,
 } from "./grafico-base";
 
 /**
- * Gráficos da aba Comercial (D-133).
+ * Gráficos da aba Comercial (D-134).
  *
- * ⚠️ O que mudou em relação à primeira versão, e por quê:
+ * ⚠️ Uma matiz só, em duas intensidades. O item que lidera vem forte, o
+ * resto recuado — a hierarquia é o que faz a leitura, não a variedade de
+ * cor. Uma cor por categoria foi tentada e virou arco-íris sem sentido.
  *
- *   · **Saiu o eixo duplo.** Contagem e valor tinham escalas próprias no
- *     mesmo gráfico — o alinhamento entre duas escalas é arbitrário, e o
- *     desenho inventa uma correlação que o dado não tem. Contagem fica
- *     aqui; valor mora na aba Financeiro.
- *   · **Categoria nominal usa uma cor.** Antes cada barra pegava um hex
- *     pelo índice: a cor trocava de dono quando o filtro mudava a ordem,
- *     e repetia em cor o que o comprimento já dizia.
- *   · **Etapa usa a rampa ordinal**, porque etapa tem ordem de verdade.
+ * ⚠️ Sem eixo de valor nas barras horizontais: o número está escrito na
+ * ponta de cada uma. Eixo + rótulo é a mesma informação duas vezes.
  */
 
 const num = (v: unknown) => Number(v).toLocaleString("pt-BR");
 
-/* ---------- Indicador 5: iniciados e ganhos por mês ---------- */
+/* ---------- Iniciados e ganhos por mês ---------- */
 
 export function SerieMensal({
   dados,
@@ -52,7 +48,7 @@ export function SerieMensal({
   dados: { mes: string; iniciados: number; ganhos: number }[];
 }) {
   const reduzido = usePrefereMenosMovimento();
-  if (dados.length === 0) return <SemDados altura={300} texto="Sem negócios no recorte." />;
+  if (dados.length === 0) return <SemDados altura={280} texto="Sem negócios no recorte." />;
 
   const pontos = dados.map((d) => ({
     rotulo: new Date(`${d.mes}T12:00:00`).toLocaleDateString("pt-BR", {
@@ -64,78 +60,77 @@ export function SerieMensal({
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={pontos} margin={{ top: 12, right: 12, bottom: 0, left: 4 }}>
-        <defs>
-          <Brilho id="ini" cor={SERIE_1} />
-          <Brilho id="gan" cor={SERIE_2} />
-        </defs>
-
-        <CartesianGrid stroke="var(--color-border)" vertical={false} opacity={0.6} />
-        <XAxis dataKey="rotulo" {...EIXO} tickLine={false} minTickGap={24} />
+    <ResponsiveContainer width="100%" height={280}>
+      <LineChart data={pontos} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <CartesianGrid {...GRADE} vertical={false} />
+        <XAxis dataKey="rotulo" {...EIXO} tickLine={false} axisLine={false} minTickGap={28} />
         {/* Um eixo só: as duas séries contam a mesma coisa — negócios. */}
-        <YAxis {...EIXO} tickLine={false} axisLine={false} width={40} />
-        <Tooltip {...DICA} cursor={{ stroke: "var(--color-border)", strokeWidth: 2 }} />
-        <Legend wrapperStyle={{ fontSize: 12, color: "var(--color-text-secondary)" }} />
+        <YAxis {...EIXO} tickLine={false} axisLine={false} width={36} />
+        <Tooltip {...DICA} cursor={{ stroke: "var(--color-border)", strokeWidth: 1 }} />
+        <Legend
+          verticalAlign="top"
+          align="right"
+          height={28}
+          wrapperStyle={{ fontSize: 12, color: "var(--color-text-secondary)" }}
+        />
 
+        {/* Iniciados é o contexto; ganhos é o que importa, e vem forte. */}
         <Line
           type="monotone"
           dataKey="Iniciados"
-          stroke={SERIE_1}
-          strokeWidth={2}
+          stroke={MEDIO}
+          strokeWidth={1.5}
           dot={false}
-          activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-surface)" }}
-          filter="url(#halo-ini)"
+          activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
           isAnimationActive={!reduzido}
-          animationDuration={800}
+          animationDuration={700}
         />
         <Line
           type="monotone"
           dataKey="Ganhos"
-          stroke={SERIE_2}
-          strokeWidth={2}
+          stroke={FORTE}
+          strokeWidth={2.25}
           dot={false}
-          activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-surface)" }}
-          filter="url(#halo-gan)"
+          activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
           isAnimationActive={!reduzido}
-          animationDuration={800}
+          animationDuration={700}
         />
       </LineChart>
     </ResponsiveContainer>
   );
 }
 
-/* ---------- Indicadores 10 a 13: categoria nominal ---------- */
+/* ---------- Barras por categoria ---------- */
 
 export function BarrasCategoria({
   dados,
-  altura = 300,
-  chave,
+  altura = 280,
+  larguraRotulo = 150,
+  formata = num,
   status,
 }: {
-  dados: { rotulo: string; negocios: number }[];
+  dados: { rotulo: string; valor: number }[];
   altura?: number;
-  chave: string;
+  larguraRotulo?: number;
+  formata?: (v: unknown) => string;
   /** Quando o eixo é status, a cor SIGNIFICA o estado (Doc 08 §4). */
   status?: boolean;
 }) {
   const reduzido = usePrefereMenosMovimento();
   if (dados.length === 0) return <SemDados altura={altura} texto="Sem dados no recorte." />;
 
-  const pontos = dados.map((d) => ({ ...d, Negócios: Number(d.negocios) }));
+  const pontos = dados.map((d) => ({ ...d, Valor: Number(d.valor) }));
+  const maior = Math.max(...pontos.map((p) => p.Valor));
 
   return (
     <ResponsiveContainer width="100%" height={altura}>
       <BarChart
         data={pontos}
         layout="vertical"
-        margin={{ top: 4, right: 52, bottom: 4, left: 4 }}
+        margin={{ top: 0, right: 64, bottom: 0, left: 0 }}
+        barCategoryGap="28%"
       >
-        <defs>
-          <Brilho id={chave} cor={SERIE_1} />
-        </defs>
-
-        <CartesianGrid stroke="var(--color-border)" horizontal={false} opacity={0.5} />
+        {/* Sem grade e sem eixo de valor: o número está na ponta da barra. */}
         <XAxis type="number" hide />
         <YAxis
           type="category"
@@ -143,37 +138,42 @@ export function BarrasCategoria({
           {...EIXO}
           tickLine={false}
           axisLine={false}
-          width={148}
+          width={larguraRotulo}
         />
         <Tooltip
           {...DICA}
-          cursor={{ fill: "var(--color-surface-hover)", opacity: 0.5 }}
-          formatter={(v) => num(v)}
+          cursor={{ fill: "var(--color-surface-hover)", opacity: 0.45 }}
+          formatter={(v) => formata(v)}
         />
-        {/* Rótulo direto na ponta: o valor não fica refém da dica de
-            contexto, e o eixo X some — a barra já é a escala. */}
         <Bar
-          dataKey="Negócios"
-          radius={[0, 4, 4, 0]}
-          filter={`url(#halo-${chave})`}
+          dataKey="Valor"
+          name="Valor"
+          radius={[0, 3, 3, 0]}
           isAnimationActive={!reduzido}
-          animationDuration={700}
-          barSize={18}
+          animationDuration={650}
+          barSize={14}
         >
-          {/* Cor presa ao nome da categoria, nunca à ordem da lista. */}
+          {/* Quem lidera vem forte; o resto recua. É a hierarquia que
+              carrega a leitura, não uma cor diferente por linha. */}
           {pontos.map((p) => (
             <Cell
               key={p.rotulo}
-              fill={status ? COR_STATUS[p.rotulo] ?? SERIE_1 : slotDaCategoria(p.rotulo)}
+              fill={
+                status
+                  ? COR_STATUS[p.rotulo] ?? FORTE
+                  : p.Valor === maior
+                    ? FORTE
+                    : MEDIO
+              }
             />
           ))}
           <LabelList
-            dataKey="Negócios"
+            dataKey="Valor"
             position="right"
-            offset={8}
+            offset={10}
             className="fill-text-secondary"
             fontSize={12}
-            formatter={(v: unknown) => num(v)}
+            formatter={(v: unknown) => formata(v)}
           />
         </Bar>
       </BarChart>
@@ -181,7 +181,7 @@ export function BarrasCategoria({
   );
 }
 
-/* ---------- Indicador 8: lead time por etapa (ordinal) ---------- */
+/* ---------- Lead time por etapa (ordinal) ---------- */
 
 export function LeadTime({
   dados,
@@ -189,27 +189,20 @@ export function LeadTime({
   dados: { etapa: string; passagens: number; dias_medios: number | null }[];
 }) {
   const reduzido = usePrefereMenosMovimento();
-  if (dados.length === 0) return <SemDados altura={280} texto="Sem passagens no recorte." />;
+  if (dados.length === 0) return <SemDados altura={260} texto="Sem passagens no recorte." />;
 
-  const pontos = dados.map((d) => ({ ...d, Dias: Number(d.dias_medios ?? 0) }));
+  const pontos = dados.map((d) => ({
+    // Nome curto no eixo: "Apresentação Realizada" inclinado fica ilegível.
+    curto: d.etapa.split(" ")[0],
+    etapa: d.etapa,
+    Dias: Number(d.dias_medios ?? 0),
+  }));
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={pontos} margin={{ top: 20, right: 8, bottom: 0, left: 4 }}>
-        <defs>
-          <Brilho id="lead" cor={SERIE_1} />
-        </defs>
-
-        <CartesianGrid stroke="var(--color-border)" vertical={false} opacity={0.6} />
-        <XAxis
-          dataKey="etapa"
-          {...EIXO}
-          tickLine={false}
-          interval={0}
-          height={54}
-          angle={-14}
-          textAnchor="end"
-        />
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={pontos} margin={{ top: 24, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid {...GRADE} vertical={false} />
+        <XAxis dataKey="curto" {...EIXO} tickLine={false} axisLine={false} interval={0} />
         <YAxis
           {...EIXO}
           tickLine={false}
@@ -219,17 +212,18 @@ export function LeadTime({
         />
         <Tooltip
           {...DICA}
-          cursor={{ fill: "var(--color-surface-hover)", opacity: 0.5 }}
-          formatter={(v) => `${Number(v).toLocaleString("pt-BR")} dias em média`}
+          cursor={{ fill: "var(--color-surface-hover)", opacity: 0.45 }}
+          labelFormatter={(_, p) => p?.[0]?.payload?.etapa ?? ""}
+          formatter={(v) => `${num(v)} dias em média`}
         />
-        {/* Etapa tem ordem, então a cor mostra a ordem: rampa de uma
-            matiz, do escuro ao claro, na sequência do funil. */}
+        {/* Etapa tem ordem de verdade, então a cor mostra a ordem. */}
         <Bar
           dataKey="Dias"
-          radius={[4, 4, 0, 0]}
-          filter="url(#halo-lead)"
+          name="Dias na etapa"
+          radius={[3, 3, 0, 0]}
           isAnimationActive={!reduzido}
-          animationDuration={700}
+          animationDuration={650}
+          maxBarSize={56}
         >
           {pontos.map((_, i) => (
             <Cell key={i} fill={RAMPA[Math.min(i, RAMPA.length - 1)]} />
@@ -237,10 +231,69 @@ export function LeadTime({
           <LabelList
             dataKey="Dias"
             position="top"
-            offset={6}
+            offset={8}
             className="fill-text-secondary"
             fontSize={12}
-            formatter={(v: unknown) => `${Number(v).toLocaleString("pt-BR")}d`}
+            formatter={(v: unknown) => `${num(v)}d`}
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/* ---------- Ciclo de venda × taxa de ganho ---------- */
+
+export function CicloDeVenda({
+  dados,
+}: {
+  dados: { faixa: string; negocios: number; ganhos: number; taxa_ganho: number | null }[];
+}) {
+  const reduzido = usePrefereMenosMovimento();
+  if (dados.length === 0) return <SemDados altura={260} texto="Sem desfechos no recorte." />;
+
+  const pontos = dados.map((d) => ({
+    faixa: d.faixa,
+    Desfechos: Number(d.negocios),
+    taxa: Number(d.taxa_ganho ?? 0),
+  }));
+  const melhor = Math.max(...pontos.map((p) => p.taxa));
+
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={pontos} margin={{ top: 24, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid {...GRADE} vertical={false} />
+        <XAxis dataKey="faixa" {...EIXO} tickLine={false} axisLine={false} interval={0} />
+        <YAxis {...EIXO} tickLine={false} axisLine={false} width={40} />
+        <Tooltip
+          {...DICA}
+          cursor={{ fill: "var(--color-surface-hover)", opacity: 0.45 }}
+          formatter={(v, nome, item) =>
+            nome === "Desfechos"
+              ? `${num(v)} desfechos · ${item?.payload?.taxa}% ganhos`
+              : num(v)
+          }
+        />
+        {/* A faixa com melhor taxa de ganho ganha o amarelo da marca —
+            é o que a tela existe para mostrar. Amarelo é fundo, o texto
+            do rótulo continua em tinta de texto. */}
+        <Bar
+          dataKey="Desfechos"
+          radius={[3, 3, 0, 0]}
+          isAnimationActive={!reduzido}
+          animationDuration={650}
+          maxBarSize={64}
+        >
+          {pontos.map((p, i) => (
+            <Cell key={i} fill={p.taxa === melhor ? ACENTO : MEDIO} />
+          ))}
+          <LabelList
+            dataKey="taxa"
+            position="top"
+            offset={8}
+            className="fill-text-secondary"
+            fontSize={12}
+            formatter={(v: unknown) => `${v}%`}
           />
         </Bar>
       </BarChart>

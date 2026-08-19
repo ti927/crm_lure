@@ -118,48 +118,35 @@
   --status-ganho:       #118937;  --status-ganho-ink:       #0e7530;
   --status-perdido:     #6f163a;  --status-perdido-ink:     #6f163a;
 
-  /* ---------- Series de grafico ---------- */
-  /* [Doc 08 §3.3] Sequencia categorica fixa. Acima de oito categorias,
-     repetir com luminosidade reduzida em 20%. Series de valor continuo
-     (barras mensais) usam UMA cor — --chart-1 — e nao uma por barra.
-     Recharts e fase 2; os tokens entram agora para nao divergirem depois. */
-  /* ---------- Series de grafico ---------- */
-  /* [Doc 08 §3.3] A sequencia categorica do manual da Lure, NESTA ordem.
-     Cor segue a entidade, nunca a posicao dela no ranking: filtrar uma
-     categoria nao pode repintar as que sobraram.
+  /* ---------- Cores de dado ---------- */
+  /* Uma matiz so — o azul-claro da marca — em tres intensidades, mais o
+     amarelo da marca como acento.
 
-     ⚠️ Os degraus foram validados (banda de luminosidade, croma, CVD e
-     contraste). Duas matizes precisaram encostar na borda da banda para
-     passar — roxo e vinho — e so no que estava fora; o resto e o hex do
-     manual, intacto. Trocar um valor sem revalidar quebra a garantia.
+     ⚠️ Por que nao uma cor por barra: numa lista de motivos de perda ou
+     de clientes, a categoria nao tem ordem nem significado de cor. Pintar
+     cada barra de um jeito nao informa nada e vira ruido; a hierarquia
+     vem da INTENSIDADE (o item que importa mais forte, o resto recuado) e
+     do rotulo escrito ao lado.
 
-     ⚠️ Sete slots, nao oito. O oitavo do manual (#118937) e quase o
-     mesmo verde do terceiro, e no escuro colide com o ambar sob
-     protanopia. Acima de sete categorias, dobrar o rabo em "Outros" —
-     e o que o metodo manda fazer, e melhora a leitura de todo jeito.
+     ⚠️ Contraste medido contra a superficie: forte 3.8:1 no claro e
+     6.1:1 no escuro. `fraco` e trilho de fundo, nunca marca sozinha. */
+  --dado-forte:    #188db3;
+  --dado-medio:    #5bb1d4;
+  --dado-fraco:    #b6d7e6;
+  --dado-trilho:   #eef4f7;
 
-     Serie de valor continuo (barras mensais) usa UMA cor, o azul-claro,
-     e nao uma por barra — tambem do manual. */
-  --chart-1: #0abaee;   /* azul-claro */
-  --chart-2: #e5007d;   /* magenta */
-  --chart-3: #00973a;   /* verde */
-  --chart-4: #702a9e;   /* roxo   — degrau ajustado */
-  --chart-5: #7aa42c;   /* oliva */
-  --chart-6: #90234e;   /* vinho  — degrau ajustado */
-  --chart-7: #d99000;   /* ambar */
+  /* Acento. #ffdd00 e fundo, nunca tinta (manual da Lure). */
+  --dado-acento:     #ffdd00;
+  --dado-acento-ink: #7a6600;
 
-  /* Rampa ORDINAL, do azul-claro da marca. So para o que tem ordem de
-     verdade: etapa de funil, lead time. Nunca para categoria nominal. */
-  --rampa-1: #063646;
-  --rampa-2: #0d4d63;
-  --rampa-3: #156682;
-  --rampa-4: #1d80a3;
-  --rampa-5: #269bc4;
-  --rampa-6: #2eb7e7;
-
-  /* Intensidade do brilho. No claro e discreto: neon sobre branco borra. */
-  --neon-halo: 0.30;
-  --neon-desfoque: 2.5px;
+  /* Rampa ORDINAL, mesma matiz. So para o que tem ordem de verdade:
+     etapa de funil, lead time por etapa. */
+  --rampa-1: #0d4d63;
+  --rampa-2: #156682;
+  --rampa-3: #1d80a3;
+  --rampa-4: #269bc4;
+  --rampa-5: #46b3d8;
+  --rampa-6: #7cc9e4;
 
   /* ---------- Densidade: altura de linha de tabela e de controle ---------- */
   --row-h-compact: 32px;
@@ -234,24 +221,21 @@
   --status-perdido:    #93314f;  --status-perdido-ink:    #d98aa6;
 
   /* [Doc 08 §3.3] Mesma sequencia, nas variantes -on-dark. */
-  /* [Doc 08 §3.3] Mesmas matizes, degrau proprio para o fundo escuro. */
-  --chart-1: #1d9ec9;
-  --chart-2: #e5007d;
-  --chart-3: #00973a;
-  --chart-4: #7e3bae;
-  --chart-5: #76a219;
-  --chart-6: #a1345c;
-  --chart-7: #c18219;
+  /* Mesma matiz, degraus para o fundo escuro. */
+  --dado-forte:    #1fa7d4;
+  --dado-medio:    #3e7d97;
+  --dado-fraco:    #385865;
+  --dado-trilho:   #242a2d;
 
-  --rampa-1: #115972;
-  --rampa-2: #197392;
-  --rampa-3: #218db3;
-  --rampa-4: #2aa9d5;
-  --rampa-5: #33c5f8;
-  --rampa-6: #91dbfb;
+  --dado-acento:     #ffdd00;
+  --dado-acento-ink: #ffdd00;
 
-  --neon-halo: 0.85;
-  --neon-desfoque: 4px;
+  --rampa-1: #17607a;
+  --rampa-2: #1d7897;
+  --rampa-3: #2490b5;
+  --rampa-4: #2ba8d3;
+  --rampa-5: #55bcdf;
+  --rampa-6: #86d0ea;
 
   --elev-xs:      0 1px 0 rgba(0,0,0,.5);
   --elev-sm:      0 1px 2px rgba(0,0,0,.6);

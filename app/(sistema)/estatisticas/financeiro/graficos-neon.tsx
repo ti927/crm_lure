@@ -17,23 +17,21 @@ import {
 } from "recharts";
 import { real, realCurto } from "@/lib/formato";
 import {
-  Brilho,
   DICA,
   EIXO,
+  FORTE,
+  GRADE,
+  MEDIO,
   RAMPA,
-  SERIE_1,
-  SERIE_2,
   SemDados,
-  slotDaCategoria,
   usePrefereMenosMovimento,
 } from "../grafico-base";
 
 /**
  * Gráficos do relatório financeiro (D-132, revisto pela D-133).
  *
- * ⚠️ As matizes saem do validador de paleta, não do gosto. O efeito neon
- * é o halo e o gradiente — cor mais clara reprova na banda de
- * luminosidade e passa a dar glare em vez de brilho.
+ * ⚠️ Uma matiz só, em duas intensidades, sem brilho. O neon saiu: só
+ * ficava razoável no tema escuro, e no claro virava borrão.
  *
  * ⚠️ Receita e valor perdido são a mesma unidade (real), então dividem um
  * eixo. Nunca dois eixos no mesmo gráfico: o alinhamento entre duas
@@ -63,12 +61,8 @@ export function ReceitaNoTempo({
   return (
     <ResponsiveContainer width="100%" height={320}>
       <ComposedChart data={pontos} margin={{ top: 12, right: 12, bottom: 0, left: 4 }}>
-        <defs>
-          <Brilho id="rec" cor={SERIE_1} />
-          <Brilho id="perd" cor={SERIE_2} />
-        </defs>
 
-        <CartesianGrid stroke="var(--color-border)" vertical={false} opacity={0.6} />
+        <CartesianGrid {...GRADE} vertical={false} />
         <XAxis dataKey="rotulo" {...EIXO} tickLine={false} minTickGap={24} />
         <YAxis
           {...EIXO}
@@ -88,7 +82,8 @@ export function ReceitaNoTempo({
           type="monotone"
           dataKey="Receita"
           stroke="none"
-          fill="url(#area-rec)"
+          fill="var(--color-dado-fraco)"
+          fillOpacity={0.35}
           isAnimationActive={!reduzido}
           animationDuration={900}
           legendType="none"
@@ -96,11 +91,10 @@ export function ReceitaNoTempo({
         <Line
           type="monotone"
           dataKey="Receita"
-          stroke={SERIE_1}
+          stroke={FORTE}
           strokeWidth={2.5}
           dot={false}
           activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-surface)" }}
-          filter="url(#halo-rec)"
           isAnimationActive={!reduzido}
           animationDuration={900}
           legendType="none"
@@ -108,11 +102,10 @@ export function ReceitaNoTempo({
         <Line
           type="monotone"
           dataKey="Perdido"
-          stroke={SERIE_2}
+          stroke={MEDIO}
           strokeWidth={1.75}
           dot={false}
           activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-surface)" }}
-          filter="url(#halo-perd)"
           isAnimationActive={!reduzido}
           animationDuration={1100}
         />
@@ -137,6 +130,7 @@ export function ReceitaPorCategoria({
     return <SemDados altura={altura} texto="Nenhum contrato fechado no recorte." />;
 
   const pontos = dados.map((d) => ({ ...d, Receita: Number(d.receita) }));
+  const maior = Math.max(...pontos.map((p) => p.Receita));
 
   return (
     <ResponsiveContainer width="100%" height={altura}>
@@ -145,11 +139,8 @@ export function ReceitaPorCategoria({
         layout="vertical"
         margin={{ top: 4, right: 76, bottom: 4, left: 4 }}
       >
-        <defs>
-          <Brilho id={chave} cor={SERIE_1} />
-        </defs>
 
-        <CartesianGrid stroke="var(--color-border)" horizontal={false} opacity={0.5} />
+        
         <XAxis type="number" hide />
         <YAxis
           type="category"
@@ -170,12 +161,11 @@ export function ReceitaPorCategoria({
           filter={`url(#halo-${chave})`}
           isAnimationActive={!reduzido}
           animationDuration={800}
-          barSize={18}
+          barSize={14}
         >
-          {/* Cor presa ao nome, não à posição: o mesmo vendedor tem a
-              mesma cor em qualquer recorte. */}
+          {/* Quem lidera vem forte; o resto recua. */}
           {pontos.map((p) => (
-            <Cell key={p.rotulo} fill={slotDaCategoria(p.rotulo)} />
+            <Cell key={p.rotulo} fill={p.Receita === maior ? FORTE : MEDIO} />
           ))}
           <LabelList
             dataKey="Receita"
@@ -206,11 +196,8 @@ export function PipelinePorEtapa({
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={pontos} margin={{ top: 20, right: 8, bottom: 0, left: 4 }}>
-        <defs>
-          <Brilho id="pipe" cor={SERIE_1} />
-        </defs>
 
-        <CartesianGrid stroke="var(--color-border)" vertical={false} opacity={0.6} />
+        <CartesianGrid {...GRADE} vertical={false} />
         <XAxis
           dataKey="etapa"
           {...EIXO}
@@ -236,7 +223,6 @@ export function PipelinePorEtapa({
         <Bar
           dataKey="Valor"
           radius={[4, 4, 0, 0]}
-          filter="url(#halo-pipe)"
           isAnimationActive={!reduzido}
           animationDuration={800}
         >
