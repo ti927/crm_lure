@@ -9,6 +9,11 @@ export type Busca = {
   produto?: string;
   area?: string;
   parados?: string;
+  etapa?: string;
+  status?: string;
+  valorMin?: string;
+  valorMax?: string;
+  motivo?: string;
 };
 
 export type Filtros = {
@@ -19,6 +24,11 @@ export type Filtros = {
   produto: string;
   area: string;
   incluirParados: boolean;
+  etapa: string;
+  status: string;
+  valorMin: string;
+  valorMax: string;
+  motivo: string;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -32,6 +42,12 @@ const DATA = /^\d{4}-\d{2}-\d{2}$/;
 export function parseFiltros(p: Busca): Filtros {
   const id = (v?: string) => (v && UUID.test(v) ? v : "");
   const dia = (v?: string) => (v && DATA.test(v) ? v : "");
+  // Valor chega como texto da URL; só número finito e não negativo entra.
+  const numero = (v?: string) => {
+    if (!v) return "";
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? String(n) : "";
+  };
   return {
     de: dia(p.de),
     ate: dia(p.ate),
@@ -41,6 +57,14 @@ export function parseFiltros(p: Busca): Filtros {
     area: id(p.area),
     // D-067: parado fica fora por padrão. Só entra se pedirem.
     incluirParados: p.parados === "1",
+    etapa: id(p.etapa),
+    // Status é lista fixa de quatro valores (D-042): nada fora dela passa.
+    status: ["parado", "negociacao", "ganho", "perdido"].includes(p.status ?? "")
+      ? p.status!
+      : "",
+    valorMin: numero(p.valorMin),
+    valorMax: numero(p.valorMax),
+    motivo: id(p.motivo),
   };
 }
 
@@ -54,12 +78,18 @@ export function comoArgumentos(f: Filtros): RecorteIndicador {
     p_produto: f.produto || null,
     p_area: f.area || null,
     p_incluir_parados: f.incluirParados,
+    p_etapa: f.etapa || null,
+    p_status: f.status || null,
+    p_valor_min: f.valorMin ? Number(f.valorMin) : null,
+    p_valor_max: f.valorMax ? Number(f.valorMax) : null,
+    p_motivo_perda: f.motivo || null,
   };
 }
 
 export function temFiltro(f: Filtros): boolean {
   return Boolean(
-    f.de || f.ate || f.responsavel || f.origem || f.produto || f.area || f.incluirParados
+    f.de || f.ate || f.responsavel || f.origem || f.produto || f.area ||
+    f.incluirParados || f.etapa || f.status || f.valorMin || f.valorMax || f.motivo
   );
 }
 
@@ -73,6 +103,11 @@ export function comoConsulta(f: Filtros): string {
   if (f.produto) q.set("produto", f.produto);
   if (f.area) q.set("area", f.area);
   if (f.incluirParados) q.set("parados", "1");
+  if (f.etapa) q.set("etapa", f.etapa);
+  if (f.status) q.set("status", f.status);
+  if (f.valorMin) q.set("valorMin", f.valorMin);
+  if (f.valorMax) q.set("valorMax", f.valorMax);
+  if (f.motivo) q.set("motivo", f.motivo);
   return q.toString();
 }
 
@@ -119,4 +154,48 @@ export function anoDoRecorte(f: Filtros): number | null {
   const a = Number(f.de.slice(0, 4));
   const r = recorteDoAno(a);
   return f.de === r.de && f.ate === r.ate ? a : null;
+}
+
+/**
+ * Períodos prontos, no padrão do Pipedrive.
+ *
+ * ⚠️ Calculados na hora da escolha, não guardados: "últimos 90 dias"
+ * guardado como par de datas envelhece — amanhã seria 91.
+ */
+export type Atalho = { chave: string; rotulo: string };
+
+export const ATALHOS: Atalho[] = [
+  { chave: "mes", rotulo: "Este mês" },
+  { chave: "30", rotulo: "Últimos 30 dias" },
+  { chave: "90", rotulo: "Últimos 90 dias" },
+  { chave: "trimestre", rotulo: "Este trimestre" },
+  { chave: "ano", rotulo: "Este ano" },
+  { chave: "anterior", rotulo: "Ano passado" },
+];
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+export function recorteDoAtalho(chave: string): { de: string; ate: string } | null {
+  const hoje = new Date();
+  const fim = iso(hoje);
+  switch (chave) {
+    case "mes":
+      return { de: iso(new Date(hoje.getFullYear(), hoje.getMonth(), 1)), ate: fim };
+    case "30":
+      return { de: iso(new Date(hoje.getTime() - 29 * 864e5)), ate: fim };
+    case "90":
+      return { de: iso(new Date(hoje.getTime() - 89 * 864e5)), ate: fim };
+    case "trimestre": {
+      const inicio = Math.floor(hoje.getMonth() / 3) * 3;
+      return { de: iso(new Date(hoje.getFullYear(), inicio, 1)), ate: fim };
+    }
+    case "ano":
+      return { de: `${hoje.getFullYear()}-01-01`, ate: fim };
+    case "anterior": {
+      const a = hoje.getFullYear() - 1;
+      return { de: `${a}-01-01`, ate: `${a}-12-31` };
+    }
+    default:
+      return null;
+  }
 }

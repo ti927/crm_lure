@@ -20,6 +20,11 @@ export type RecorteIndicador = {
   p_produto?: string | null
   p_area?: string | null
   p_incluir_parados?: boolean
+  p_etapa?: string | null
+  p_status?: string | null
+  p_valor_min?: number | null
+  p_valor_max?: number | null
+  p_motivo_perda?: string | null
 }
 
 /**

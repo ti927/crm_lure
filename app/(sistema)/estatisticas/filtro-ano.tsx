@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { ChevronDown } from "lucide-react";
-import { anoDoRecorte, recorteDoAno, type Filtros } from "./consulta";
+import {
+  ATALHOS,
+  anoDoRecorte,
+  recorteDoAno,
+  recorteDoAtalho,
+  type Filtros,
+} from "./consulta";
 
 /**
  * Atalho de ano — o recorte que se usa o tempo todo.
@@ -48,6 +54,12 @@ export function FiltroAno({
     if (filtros.produto) q.set("produto", filtros.produto);
     if (filtros.area) q.set("area", filtros.area);
     if (filtros.incluirParados) q.set("parados", "1");
+    // O resto do recorte sobrevive à troca de período.
+    if (filtros.etapa) q.set("etapa", filtros.etapa);
+    if (filtros.status) q.set("status", filtros.status);
+    if (filtros.valorMin) q.set("valorMin", filtros.valorMin);
+    if (filtros.valorMax) q.set("valorMax", filtros.valorMax);
+    if (filtros.motivo) q.set("motivo", filtros.motivo);
     const s = q.toString();
     comecar(() => router.push(s ? `${destino}?${s}` : destino));
   }
@@ -60,15 +72,32 @@ export function FiltroAno({
       <select
         id="recorte-ano"
         value={atual ?? ""}
-        onChange={(e) => ir(e.target.value ? recorteDoAno(Number(e.target.value)) : null)}
-        className="h-control-md border-border bg-surface text-text hover:bg-surface-hover w-32 rounded-md border pl-2.5 pr-7 text-sm font-medium tabular"
+        onChange={(e) => {
+          const v = e.target.value;
+          if (!v) return ir(null);
+          ir(v.startsWith("@") ? recorteDoAtalho(v.slice(1)) : recorteDoAno(Number(v)));
+        }}
+        /* `appearance-none` tira a seta nativa: sem isso ficam duas, a do
+           navegador e a desenhada aqui. */
+        className="h-control-md border-border bg-surface text-text hover:bg-surface-hover w-40 appearance-none rounded-md border pl-2.5 pr-7 text-sm font-medium"
       >
-        <option value="">Todos os anos</option>
-        {anos.map((a) => (
-          <option key={a} value={a}>
-            {a}
-          </option>
-        ))}
+        <option value="">Todo o período</option>
+        {/* Atalhos do Pipedrive: calculados na hora, nunca guardados —
+            "últimos 90 dias" guardado como par de datas envelhece. */}
+        <optgroup label="Períodos">
+          {ATALHOS.map((a) => (
+            <option key={a.chave} value={`@${a.chave}`}>
+              {a.rotulo}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="Ano">
+          {anos.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </optgroup>
       </select>
       <ChevronDown
         aria-hidden

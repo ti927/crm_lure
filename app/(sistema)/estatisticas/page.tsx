@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { real, realCurto } from "@/lib/formato";
+import { real } from "@/lib/formato";
 import { AbasEstatisticas } from "./abas";
 import { FiltrosIndicadores } from "./filtros-indicadores";
 import { InterruptorNeon } from "./interruptor-neon";
@@ -60,6 +60,8 @@ export default async function PaginaEstatisticas({
     { data: origens },
     { data: produtos },
     { data: areas },
+    { data: etapasLista },
+    { data: motivosLista },
     { data: primeiro },
     { data: ticket },
   ] = await Promise.all([
@@ -76,6 +78,8 @@ export default async function PaginaEstatisticas({
     supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("produto").select("id, nome").order("nome"),
     supabase.from("area_produto").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase.from("etapa").select("id, nome").order("ordem"),
+    supabase.from("motivo_perda").select("id, nome").eq("ativo", true).order("ordem"),
     // O ano mais antigo da base, para os atalhos de ano não serem lista fixa.
     supabase
       .from("negocio")
@@ -122,6 +126,8 @@ export default async function PaginaEstatisticas({
             origens={origens ?? []}
             produtos={produtos ?? []}
             areas={areas ?? []}
+            etapas={etapasLista ?? []}
+            motivos={motivosLista ?? []}
             consulta={consulta}
           />
         </div>

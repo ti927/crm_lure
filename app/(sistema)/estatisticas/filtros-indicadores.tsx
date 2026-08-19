@@ -7,6 +7,22 @@ import type { Filtros } from "./consulta";
 
 type Opcao = { id: string; nome: string };
 
+/** O recorte zerado. Um lugar só, para "Limpar" nunca esquecer um campo. */
+const VAZIO: Filtros = {
+  de: "",
+  ate: "",
+  responsavel: "",
+  origem: "",
+  produto: "",
+  area: "",
+  incluirParados: false,
+  etapa: "",
+  status: "",
+  valorMin: "",
+  valorMax: "",
+  motivo: "",
+};
+
 /**
  * Recorte dos indicadores (D-064): período · responsável · origem ·
  * produto · área — mais o interruptor de parados (D-067).
@@ -21,6 +37,8 @@ export function FiltrosIndicadores({
   origens,
   produtos,
   areas,
+  etapas,
+  motivos,
   consulta,
   destino = "/estatisticas",
   esconderParados = false,
@@ -30,6 +48,8 @@ export function FiltrosIndicadores({
   origens: Opcao[];
   produtos: Opcao[];
   areas: Opcao[];
+  etapas: Opcao[];
+  motivos: Opcao[];
   consulta: string;
   /** Para onde o recorte navega — a barra serve as duas abas. */
   destino?: string;
@@ -52,6 +72,11 @@ export function FiltrosIndicadores({
     filtros.origem ||
     filtros.produto ||
     filtros.area ||
+    filtros.etapa ||
+    filtros.status ||
+    filtros.valorMin ||
+    filtros.valorMax ||
+    filtros.motivo ||
     (!esconderParados && filtros.incluirParados);
 
   function aplicar(f: Filtros) {
@@ -63,6 +88,11 @@ export function FiltrosIndicadores({
     if (f.produto) q.set("produto", f.produto);
     if (f.area) q.set("area", f.area);
     if (f.incluirParados && !esconderParados) q.set("parados", "1");
+    if (f.etapa) q.set("etapa", f.etapa);
+    if (f.status) q.set("status", f.status);
+    if (f.valorMin) q.set("valorMin", f.valorMin);
+    if (f.valorMax) q.set("valorMax", f.valorMax);
+    if (f.motivo) q.set("motivo", f.motivo);
     const s = q.toString();
     setAberto(false);
     comecar(() => router.push(s ? `${destino}?${s}` : destino));
@@ -105,15 +135,7 @@ export function FiltrosIndicadores({
         <button
           type="button"
           onClick={() =>
-            aplicar({
-              de: "",
-              ate: "",
-              responsavel: "",
-              origem: "",
-              produto: "",
-              area: "",
-              incluirParados: false,
-            })
+            aplicar(VAZIO)
           }
           className="h-control-md text-text-secondary hover:bg-surface-hover hover:text-text inline-flex items-center gap-1 rounded-md px-2 text-sm font-medium"
         >
@@ -183,6 +205,76 @@ export function FiltrosIndicadores({
                 valor={rascunho.origem}
                 opcoes={origens}
                 aoMudar={(v) => setRascunho({ ...rascunho, origem: v })}
+              />
+              <Selecao
+                id="ind-etapa"
+                rotulo="Etapa"
+                todos="Todas"
+                valor={rascunho.etapa}
+                opcoes={etapas}
+                aoMudar={(v) => setRascunho({ ...rascunho, etapa: v })}
+              />
+              <div>
+                <label htmlFor="ind-status" className={rotulo}>
+                  Status
+                </label>
+                <select
+                  id="ind-status"
+                  value={rascunho.status}
+                  onChange={(e) => setRascunho({ ...rascunho, status: e.target.value })}
+                  className={campo}
+                >
+                  <option value="">Todos</option>
+                  <option value="negociacao">Negociação</option>
+                  <option value="ganho">Ganho</option>
+                  <option value="perdido">Perdido</option>
+                  <option value="parado">Parado</option>
+                </select>
+              </div>
+
+              {/* Faixa de valor. Numa base onde a mediana é R$ 10 mil e o
+                  maior contrato R$ 408 mil, "só acima de X" muda a
+                  leitura inteira. */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="ind-vmin" className={rotulo}>
+                    Valor mínimo
+                  </label>
+                  <input
+                    id="ind-vmin"
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    placeholder="R$"
+                    value={rascunho.valorMin}
+                    onChange={(e) => setRascunho({ ...rascunho, valorMin: e.target.value })}
+                    className={campo}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ind-vmax" className={rotulo}>
+                    Valor máximo
+                  </label>
+                  <input
+                    id="ind-vmax"
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    placeholder="R$"
+                    value={rascunho.valorMax}
+                    onChange={(e) => setRascunho({ ...rascunho, valorMax: e.target.value })}
+                    className={campo}
+                  />
+                </div>
+              </div>
+
+              <Selecao
+                id="ind-motivo"
+                rotulo="Motivo da perda"
+                todos="Todos"
+                valor={rascunho.motivo}
+                opcoes={motivos}
+                aoMudar={(v) => setRascunho({ ...rascunho, motivo: v })}
               />
               <Selecao
                 id="ind-produto"

@@ -64,6 +64,8 @@ export default async function PaginaFinanceiro({
     { data: origens },
     { data: produtos },
     { data: areas },
+    { data: etapasLista },
+    { data: motivosLista },
     { data: primeiro },
   ] = await Promise.all([
     supabase.rpc("financeiro_resumo", args),
@@ -83,6 +85,8 @@ export default async function PaginaFinanceiro({
     supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("produto").select("id, nome").order("nome"),
     supabase.from("area_produto").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase.from("etapa").select("id, nome").order("ordem"),
+    supabase.from("motivo_perda").select("id, nome").eq("ativo", true).order("ordem"),
     supabase
       .from("negocio")
       .select("fechado_em")
@@ -128,6 +132,8 @@ export default async function PaginaFinanceiro({
             origens={origens ?? []}
             produtos={produtos ?? []}
             areas={areas ?? []}
+            etapas={etapasLista ?? []}
+            motivos={motivosLista ?? []}
             consulta={consulta}
             destino="/estatisticas/financeiro"
             esconderParados
