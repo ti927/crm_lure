@@ -137,11 +137,14 @@
   --color-chart-6: var(--chart-6);
   --color-chart-7: var(--chart-7);
   --color-chart-8: var(--chart-8);
-  --color-neon-1: var(--neon-1);
-  --color-neon-2: var(--neon-2);
-  --color-neon-3: var(--neon-3);
-  --color-neon-4: var(--neon-4);
-  --color-neon-5: var(--neon-5);
+  --color-serie-1: var(--serie-1);
+  --color-serie-2: var(--serie-2);
+  --color-rampa-1: var(--rampa-1);
+  --color-rampa-2: var(--rampa-2);
+  --color-rampa-3: var(--rampa-3);
+  --color-rampa-4: var(--rampa-4);
+  --color-rampa-5: var(--rampa-5);
+  --color-rampa-6: var(--rampa-6);
 
   /* ---------- Sombra ---------- */
   --shadow-xs: var(--elev-xs);

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { real } from "@/lib/formato";
-import { parseFiltros, comoArgumentos, type Busca } from "../consulta";
+import { parseFiltros, comoArgumentos, rotulo, type Busca } from "../consulta";
 
 /**
  * Exportação dos indicadores (D-066): ponto-e-vírgula, UTF-8 com BOM, o
@@ -119,7 +119,11 @@ export async function GET(request: NextRequest) {
   dimensao("Perdas por motivo", porMotivo);
   dimensao("Negócios por origem", porOrigem);
   dimensao("Ranking por vendedor", porVendedor);
-  dimensao("Distribuição por status", porStatus);
+  // O banco devolve o valor do enum; a planilha precisa do texto de tela.
+  dimensao(
+    "Distribuição por status",
+    (porStatus ?? []).map((d) => ({ ...d, rotulo: rotulo(d.rotulo) }))
+  );
 
   const csv = linhas.map((l) => l.map(campoCsv).join(";")).join("\r\n");
 

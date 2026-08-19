@@ -75,3 +75,48 @@ export function comoConsulta(f: Filtros): string {
   if (f.incluirParados) q.set("parados", "1");
   return q.toString();
 }
+
+/**
+ * O banco devolve o status pelo valor do enum — `negociacao`, sem acento,
+ * porque nome de coluna e de tipo é `snake_case` sem acento por convenção
+ * (regra 2). Isso é identificador, não texto de tela: quem lê o painel
+ * precisa ver "Negociação".
+ */
+const ROTULO_STATUS: Record<string, string> = {
+  parado: "Parado",
+  negociacao: "Negociação",
+  ganho: "Ganho",
+  perdido: "Perdido",
+};
+
+export function rotulo(bruto: string): string {
+  return ROTULO_STATUS[bruto] ?? bruto;
+}
+
+/**
+ * Os anos que a tela oferece como atalho.
+ *
+ * ⚠️ Não é lista fixa em código: sai da própria base, do primeiro negócio
+ * até hoje. Uma lista escrita à mão envelhece calada — vira 1º de janeiro
+ * e o ano novo não aparece.
+ */
+export function anosDisponiveis(desde: string | null | undefined): number[] {
+  const hoje = new Date().getFullYear();
+  const inicio = desde ? new Date(desde).getFullYear() : hoje;
+  const anos: number[] = [];
+  for (let a = hoje; a >= inicio; a--) anos.push(a);
+  return anos;
+}
+
+/** O recorte de um ano inteiro, como a barra de filtros o representa. */
+export function recorteDoAno(ano: number): { de: string; ate: string } {
+  return { de: `${ano}-01-01`, ate: `${ano}-12-31` };
+}
+
+/** Qual ano o recorte atual representa, se representar algum. */
+export function anoDoRecorte(f: Filtros): number | null {
+  if (!f.de || !f.ate) return null;
+  const a = Number(f.de.slice(0, 4));
+  const r = recorteDoAno(a);
+  return f.de === r.de && f.ate === r.ate ? a : null;
+}

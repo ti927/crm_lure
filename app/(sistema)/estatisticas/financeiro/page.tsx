@@ -5,8 +5,14 @@ import { real, data as formatarData } from "@/lib/formato";
 import type { RecorteFinanceiro } from "@/lib/supabase/types";
 import { AbasEstatisticas } from "../abas";
 import { FiltrosIndicadores } from "../filtros-indicadores";
-import { parseFiltros, comoConsulta, type Busca } from "../consulta";
-import { ReceitaNoTempo, ReceitaPorCategoria, PipelinePorEtapa } from "./graficos-neon";
+import { FiltroAno } from "../filtro-ano";
+import { Painel, CartaoNumero } from "../painel";
+import { parseFiltros, comoConsulta, anosDisponiveis, type Busca } from "../consulta";
+import {
+  ReceitaNoTempo,
+  ReceitaPorCategoria,
+  PipelinePorEtapa,
+} from "../graficos-adiados";
 
 /**
  * Relatório financeiro (D-131), no padrão de leitura do Insights do
@@ -56,6 +62,7 @@ export default async function PaginaFinanceiro({
     { data: origens },
     { data: produtos },
     { data: areas },
+    { data: primeiro },
   ] = await Promise.all([
     supabase.rpc("financeiro_resumo", args),
     supabase.rpc("financeiro_mensal", args),
@@ -74,8 +81,16 @@ export default async function PaginaFinanceiro({
     supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("produto").select("id, nome").order("nome"),
     supabase.from("area_produto").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase
+      .from("negocio")
+      .select("fechado_em")
+      .not("fechado_em", "is", null)
+      .order("fechado_em", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
+  const anos = anosDisponiveis(primeiro?.fechado_em);
   const r = resumo?.[0];
   const receita = Number(r?.receita ?? 0);
   const anterior = Number(r?.receita_anterior ?? 0);
@@ -102,25 +117,28 @@ export default async function PaginaFinanceiro({
           </div>
           <AbasEstatisticas consulta={consulta} />
         </div>
-        <FiltrosIndicadores
-          filtros={filtros}
-          usuarios={usuarios ?? []}
-          origens={origens ?? []}
-          produtos={produtos ?? []}
-          areas={areas ?? []}
-          consulta={consulta}
-          destino="/estatisticas/financeiro"
-          esconderParados
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <FiltroAno filtros={filtros} anos={anos} destino="/estatisticas/financeiro" />
+          <FiltrosIndicadores
+            filtros={filtros}
+            usuarios={usuarios ?? []}
+            origens={origens ?? []}
+            produtos={produtos ?? []}
+            areas={areas ?? []}
+            consulta={consulta}
+            destino="/estatisticas/financeiro"
+            esconderParados
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 p-4">
         {/* ---------- Cartões de topo ---------- */}
         <section aria-label="Números do período" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <CartaoNeon
+          <CartaoNumero
             rotulo="Receita realizada"
+            realce
             valor={real(receita)}
-            cor="var(--color-neon-1)"
             apoio={
               temComparativo && variacao !== null ? (
                 <Variacao pct={variacao} anterior={real(anterior)} />
@@ -129,22 +147,20 @@ export default async function PaginaFinanceiro({
               )
             }
           />
-          <CartaoNeon
+          <CartaoNumero
             rotulo="Ticket médio"
             valor={real(r?.ticket_medio)}
-            cor="var(--color-neon-5)"
             apoio="por contrato ganho"
           />
-          <CartaoNeon
+          <CartaoNumero
             rotulo="Pipeline em aberto"
             valor={real(totalPipeline)}
-            cor="var(--color-neon-4)"
+            realce
             apoio={`${Number(r?.negocios_abertos ?? 0)} negócios em negociação`}
           />
-          <CartaoNeon
+          <CartaoNumero
             rotulo="Valor perdido"
             valor={real(perdido)}
-            cor="var(--color-neon-2)"
             apoio={
               taxaValor !== null
                 ? `${taxaValor.toFixed(1)}% do valor disputado foi ganho`
@@ -154,38 +170,36 @@ export default async function PaginaFinanceiro({
         </section>
 
         {/* ---------- Evolução ---------- */}
-        <PainelNeon
+        <Painel
           titulo="Receita ao longo do tempo"
           apoio="Linha cheia: receita fechada no mês. Tracejada: valor perdido no mesmo mês."
         >
           <ReceitaNoTempo dados={mensal ?? []} />
-        </PainelNeon>
+        </Painel>
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          <PainelNeon titulo="Receita por vendedor" apoio="Quem fechou quanto no recorte">
+          <Painel titulo="Receita por vendedor" apoio="Quem fechou quanto no recorte">
             <ReceitaPorCategoria
               dados={(porVendedor ?? []).slice(0, 8)}
               chave="vendedor"
-              cor="var(--color-neon-1)"
             />
-          </PainelNeon>
+          </Painel>
 
-          <PainelNeon
+          <Painel
             titulo="Pipeline em aberto por etapa"
             apoio="Valor que está na mesa hoje. Não é previsão — não existe data prevista de fechamento (D-024)."
           >
             <PipelinePorEtapa dados={pipeline ?? []} />
-          </PainelNeon>
+          </Painel>
 
-          <PainelNeon titulo="Receita por origem" apoio="De onde veio o dinheiro">
+          <Painel titulo="Receita por origem" apoio="De onde veio o dinheiro">
             <ReceitaPorCategoria
               dados={(porOrigem ?? []).slice(0, 8)}
               chave="origem"
-              cor="var(--color-neon-3)"
             />
-          </PainelNeon>
+          </Painel>
 
-          <PainelNeon
+          <Painel
             titulo="Receita por área do produto"
             apoio={
               (porArea ?? []).every((a) => a.rotulo === "(sem informação)")
@@ -196,23 +210,21 @@ export default async function PaginaFinanceiro({
             <ReceitaPorCategoria
               dados={(porArea ?? []).slice(0, 8)}
               chave="area"
-              cor="var(--color-neon-4)"
             />
-          </PainelNeon>
+          </Painel>
         </div>
 
         {/* ---------- Maiores clientes ---------- */}
-        <PainelNeon titulo="Maiores clientes por receita" apoio="Os dez que mais trouxeram">
+        <Painel titulo="Maiores clientes por receita" apoio="Os dez que mais trouxeram">
           <ReceitaPorCategoria
             dados={(porCliente ?? []).slice(0, 10)}
             chave="cliente"
-            cor="var(--color-neon-5)"
             altura={360}
           />
-        </PainelNeon>
+        </Painel>
 
         {/* ---------- Maiores contratos ---------- */}
-        <PainelNeon titulo="Maiores contratos fechados" apoio="Os dez de maior valor no recorte">
+        <Painel titulo="Maiores contratos fechados" apoio="Os dez de maior valor no recorte">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[40rem] text-md">
               <thead>
@@ -253,7 +265,7 @@ export default async function PaginaFinanceiro({
               </tbody>
             </table>
           </div>
-        </PainelNeon>
+        </Painel>
 
         <p className="text-text-muted px-1 pb-2 text-xs">
           Receita é a soma do <strong>valor total do contrato</strong> dos negócios
@@ -287,59 +299,3 @@ function Variacao({ pct, anterior }: { pct: number; anterior: string }) {
   );
 }
 
-function CartaoNeon({
-  rotulo,
-  valor,
-  apoio,
-  cor,
-}: {
-  rotulo: string;
-  valor: string;
-  apoio: React.ReactNode;
-  cor: string;
-}) {
-  return (
-    <div
-      className="border-border bg-surface relative overflow-hidden rounded-lg border p-4"
-      style={{ ["--cor" as string]: cor }}
-    >
-      {/* Faixa neon no topo. É decoração, e por isso não carrega
-          significado sozinha — o rótulo diz o que o número é. */}
-      <span
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-0.5"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${cor}, transparent)`,
-          filter: `drop-shadow(0 0 6px ${cor})`,
-          opacity: "var(--neon-halo)",
-        }}
-      />
-      <p className="text-text-muted text-xs font-semibold uppercase tracking-caps">{rotulo}</p>
-      <p
-        className="mt-1.5 text-xl font-semibold tabular"
-        style={{ color: cor, textShadow: `0 0 12px color-mix(in oklab, ${cor} 45%, transparent)` }}
-      >
-        {valor}
-      </p>
-      <p className="text-text-muted mt-1 text-xs">{apoio}</p>
-    </div>
-  );
-}
-
-function PainelNeon({
-  titulo,
-  apoio,
-  children,
-}: {
-  titulo: string;
-  apoio?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border-border bg-surface rounded-lg border p-4">
-      <h2 className="text-md font-semibold">{titulo}</h2>
-      {apoio && <p className="text-text-muted mb-3 text-sm">{apoio}</p>}
-      {children}
-    </section>
-  );
-}
