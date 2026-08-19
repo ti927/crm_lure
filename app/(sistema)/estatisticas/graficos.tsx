@@ -16,12 +16,14 @@ import {
 } from "recharts";
 import {
   Brilho,
+  COR_STATUS,
   DICA,
   EIXO,
   RAMPA,
   SERIE_1,
   SERIE_2,
   SemDados,
+  slotDaCategoria,
   usePrefereMenosMovimento,
 } from "./grafico-base";
 
@@ -109,10 +111,13 @@ export function BarrasCategoria({
   dados,
   altura = 300,
   chave,
+  status,
 }: {
   dados: { rotulo: string; negocios: number }[];
   altura?: number;
   chave: string;
+  /** Quando o eixo é status, a cor SIGNIFICA o estado (Doc 08 §4). */
+  status?: boolean;
 }) {
   const reduzido = usePrefereMenosMovimento();
   if (dados.length === 0) return <SemDados altura={altura} texto="Sem dados no recorte." />;
@@ -150,12 +155,18 @@ export function BarrasCategoria({
         <Bar
           dataKey="Negócios"
           radius={[0, 4, 4, 0]}
-          fill={`url(#horizontal-${chave})`}
           filter={`url(#halo-${chave})`}
           isAnimationActive={!reduzido}
           animationDuration={700}
           barSize={18}
         >
+          {/* Cor presa ao nome da categoria, nunca à ordem da lista. */}
+          {pontos.map((p) => (
+            <Cell
+              key={p.rotulo}
+              fill={status ? COR_STATUS[p.rotulo] ?? SERIE_1 : slotDaCategoria(p.rotulo)}
+            />
+          ))}
           <LabelList
             dataKey="Negócios"
             position="right"

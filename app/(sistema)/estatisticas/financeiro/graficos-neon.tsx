@@ -24,6 +24,7 @@ import {
   SERIE_1,
   SERIE_2,
   SemDados,
+  slotDaCategoria,
   usePrefereMenosMovimento,
 } from "../grafico-base";
 
@@ -163,18 +164,19 @@ export function ReceitaPorCategoria({
           cursor={{ fill: "var(--color-surface-hover)", opacity: 0.5 }}
           formatter={(v) => real(Number(v))}
         />
-        {/* Categoria nominal: uma cor para todas as barras. O comprimento
-            já mostra a magnitude — colorir por valor gastaria o canal de
-            identidade repetindo a mesma informação. */}
         <Bar
           dataKey="Receita"
           radius={[0, 4, 4, 0]}
-          fill={`url(#horizontal-${chave})`}
           filter={`url(#halo-${chave})`}
           isAnimationActive={!reduzido}
           animationDuration={800}
           barSize={18}
         >
+          {/* Cor presa ao nome, não à posição: o mesmo vendedor tem a
+              mesma cor em qualquer recorte. */}
+          {pontos.map((p) => (
+            <Cell key={p.rotulo} fill={slotDaCategoria(p.rotulo)} />
+          ))}
           <LabelList
             dataKey="Receita"
             position="right"

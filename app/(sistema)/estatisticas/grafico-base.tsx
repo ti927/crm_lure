@@ -11,9 +11,11 @@ import { Table2, ChartColumn } from "lucide-react";
  *
  *   · O brilho neon é HALO, não cor mais clara. As matizes ficam dentro
  *     da banda de luminosidade; o que reluz é o filtro.
- *   · Categoria nominal (vendedor, origem, cliente) usa UMA cor. Colorir
- *     cada barra de um jeito re-codifica em cor o que o comprimento já
- *     mostra, e faz a cor trocar de dono quando o filtro muda a ordem.
+ *   · Dimensão categórica (origem, produto, área) usa a sequência de
+ *     cores do manual, na ordem dele — e a cor fica presa à ENTIDADE,
+ *     nunca à posição no ranking, senão filtrar repinta quem sobrou.
+ *   · Série de valor contínuo (barras mensais) usa uma cor só, o
+ *     azul-claro. Também é o que o manual manda.
  *   · Só o que tem ordem de verdade — etapa de funil, lead time — usa a
  *     rampa ordinal.
  *   · Todo gráfico tem gêmeo em tabela. Dica de contexto não pode ser o
@@ -51,8 +53,58 @@ export const RAMPA = [
   "var(--color-rampa-6)",
 ];
 
-export const SERIE_1 = "var(--color-serie-1)";
-export const SERIE_2 = "var(--color-serie-2)";
+/**
+ * A sequência categórica do manual da Lure (Doc 08 §3.3), nesta ordem.
+ * Sete slots: acima disso o rabo vira "Outros".
+ */
+export const PALETA = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+  "var(--color-chart-6)",
+  "var(--color-chart-7)",
+];
+
+export const SERIE_1 = "var(--color-chart-1)";
+export const SERIE_2 = "var(--color-chart-2)";
+
+/** As cores de status do Doc 08 §4. Aqui a cor SIGNIFICA o estado. */
+export const COR_STATUS: Record<string, string> = {
+  Parado: "var(--color-status-parado)",
+  Negociação: "var(--color-status-negociacao)",
+  Ganho: "var(--color-status-ganho)",
+  Perdido: "var(--color-status-perdido)",
+};
+
+/**
+ * Slot de cor de uma categoria — **preso ao nome, não à posição**.
+ *
+ * ⚠️ Este é o ponto que mais errei antes. Colorir pelo índice do array
+ * faz a cor trocar de dono assim que um filtro muda a ordem: quem
+ * aprendeu "Indicação é magenta" passa a ver magenta em outra coisa. O
+ * índice sai de uma soma sobre as letras do nome, então a mesma origem
+ * tem a mesma cor em qualquer recorte, em qualquer tela, sempre.
+ */
+export function slotDaCategoria(nome: string): string {
+  let soma = 0;
+  for (let i = 0; i < nome.length; i++) soma = (soma * 31 + nome.charCodeAt(i)) % 100003;
+  return PALETA[soma % PALETA.length];
+}
+
+/** Acima de sete categorias, o rabo vira "Outros" — nunca uma cor gerada. */
+export function comOutros<T extends { rotulo: string }>(
+  itens: T[],
+  soma: (acumulado: T, item: T) => T,
+  teto = 7
+): T[] {
+  if (itens.length <= teto) return itens;
+  const cabeca = itens.slice(0, teto - 1);
+  const rabo = itens.slice(teto - 1);
+  const juntos = rabo.reduce((a, b) => soma(a, b));
+  return [...cabeca, { ...juntos, rotulo: `Outros (${rabo.length})` }];
+}
 
 /**
  * Halo neon + gradientes. `id` único por instância — `id` repetido no

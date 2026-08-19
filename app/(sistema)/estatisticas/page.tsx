@@ -262,7 +262,7 @@ export default async function PaginaEstatisticas({
             colunas={["Status", "Negócios", "Valor"]}
             linhas={status.map((s) => [s.rotulo, s.negocios, real(s.valor)])}
           >
-            <BarrasCategoria dados={status} chave="status" altura={200} />
+            <BarrasCategoria dados={status} chave="status" altura={200} status />
           </Painel>
 
           <Painel

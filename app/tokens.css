@@ -123,36 +123,39 @@
      repetir com luminosidade reduzida em 20%. Series de valor continuo
      (barras mensais) usam UMA cor — --chart-1 — e nao uma por barra.
      Recharts e fase 2; os tokens entram agora para nao divergirem depois. */
-  --chart-1: #0abaee;
-  --chart-2: #e5007d;
-  --chart-3: #00973a;
-  --chart-4: #5c2482;
-  --chart-5: #7aa42c;
-  --chart-6: #6f163a;
-  --chart-7: #d99000;
-  --chart-8: #118937;
+  /* ---------- Series de grafico ---------- */
+  /* [Doc 08 §3.3] A sequencia categorica do manual da Lure, NESTA ordem.
+     Cor segue a entidade, nunca a posicao dela no ranking: filtrar uma
+     categoria nao pode repintar as que sobraram.
 
-  /* ---------- Series de indicador (D-133) ----------
-     ⚠️ Estes valores NAO foram escolhidos a olho. Saem do validador de
-     paleta: banda de luminosidade, piso de croma, separacao sob
-     daltonismo (protanopia/deuteranopia, Machado 2009) e contraste
-     contra a superficie. Trocar um hex sem revalidar quebra a garantia.
+     ⚠️ Os degraus foram validados (banda de luminosidade, croma, CVD e
+     contraste). Duas matizes precisaram encostar na borda da banda para
+     passar — roxo e vinho — e so no que estava fora; o resto e o hex do
+     manual, intacto. Trocar um valor sem revalidar quebra a garantia.
 
-     ⚠️ O efeito NEON vem do halo e do gradiente (--neon-*), nao de uma
-     cor mais clara. Ciano, verde e amarelo "de neon" reprovam na banda
-     de luminosidade — glare, e perdem distincao entre si. */
-  --serie-1: #1788a3;   /* ciano  — a marca padrao de toda categoria nominal */
-  --serie-2: #eb6834;   /* laranja — 2a serie; par ciano/laranja passa em CVD */
+     ⚠️ Sete slots, nao oito. O oitavo do manual (#118937) e quase o
+     mesmo verde do terceiro, e no escuro colide com o ambar sob
+     protanopia. Acima de sete categorias, dobrar o rabo em "Outros" —
+     e o que o metodo manda fazer, e melhora a leitura de todo jeito.
 
-  /* Rampa ORDINAL, uma matiz, luminosidade monotona. So para o que tem
-     ordem de verdade: etapas do funil, lead time por etapa. Nunca para
-     categoria nominal — ali a cor repetiria o que o comprimento ja diz. */
-  --rampa-1: #063643;
-  --rampa-2: #0d4e5f;
-  --rampa-3: #15677c;
-  --rampa-4: #1d819b;
-  --rampa-5: #269dbb;
-  --rampa-6: #2fb9dd;
+     Serie de valor continuo (barras mensais) usa UMA cor, o azul-claro,
+     e nao uma por barra — tambem do manual. */
+  --chart-1: #0abaee;   /* azul-claro */
+  --chart-2: #e5007d;   /* magenta */
+  --chart-3: #00973a;   /* verde */
+  --chart-4: #702a9e;   /* roxo   — degrau ajustado */
+  --chart-5: #7aa42c;   /* oliva */
+  --chart-6: #90234e;   /* vinho  — degrau ajustado */
+  --chart-7: #d99000;   /* ambar */
+
+  /* Rampa ORDINAL, do azul-claro da marca. So para o que tem ordem de
+     verdade: etapa de funil, lead time. Nunca para categoria nominal. */
+  --rampa-1: #063646;
+  --rampa-2: #0d4d63;
+  --rampa-3: #156682;
+  --rampa-4: #1d80a3;
+  --rampa-5: #269bc4;
+  --rampa-6: #2eb7e7;
 
   /* Intensidade do brilho. No claro e discreto: neon sobre branco borra. */
   --neon-halo: 0.30;
@@ -231,26 +234,21 @@
   --status-perdido:    #93314f;  --status-perdido-ink:    #d98aa6;
 
   /* [Doc 08 §3.3] Mesma sequencia, nas variantes -on-dark. */
-  --chart-1: #5ad2f5;
-  --chart-2: #ff5aa8;
-  --chart-3: #4cc271;
-  --chart-4: #b98ad6;
-  --chart-5: #a9cb63;
-  --chart-6: #d98aa6;
-  --chart-7: #e8a52b;
-  --chart-8: #2ea85a;
+  /* [Doc 08 §3.3] Mesmas matizes, degrau proprio para o fundo escuro. */
+  --chart-1: #1d9ec9;
+  --chart-2: #e5007d;
+  --chart-3: #00973a;
+  --chart-4: #7e3bae;
+  --chart-5: #76a219;
+  --chart-6: #a1345c;
+  --chart-7: #c18219;
 
-  /* No escuro e onde o neon existe de verdade: mesmas matizes, degrau
-     proprio para o fundo escuro, e halo forte. Reposto do validador. */
-  --serie-1: #1ea2c2;
-  --serie-2: #d95926;
-
-  --rampa-1: #115a6d;
-  --rampa-2: #19748b;
-  --rampa-3: #228fab;
-  --rampa-4: #2aaacb;
-  --rampa-5: #33c7ed;
-  --rampa-6: #82dffb;
+  --rampa-1: #115972;
+  --rampa-2: #197392;
+  --rampa-3: #218db3;
+  --rampa-4: #2aa9d5;
+  --rampa-5: #33c5f8;
+  --rampa-6: #91dbfb;
 
   --neon-halo: 0.85;
   --neon-desfoque: 4px;
