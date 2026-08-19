@@ -5,6 +5,7 @@ import { real, data as formatarData } from "@/lib/formato";
 import type { RecorteFinanceiro } from "@/lib/supabase/types";
 import { AbasEstatisticas } from "../abas";
 import { FiltrosIndicadores } from "../filtros-indicadores";
+import { InterruptorNeon } from "../interruptor-neon";
 import { FiltroAno } from "../filtro-ano";
 import { Painel } from "../grafico-base";
 import { CartaoNumero } from "../painel";
@@ -119,6 +120,7 @@ export default async function PaginaFinanceiro({
           <AbasEstatisticas consulta={consulta} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <InterruptorNeon />
           <FiltroAno filtros={filtros} anos={anos} destino="/estatisticas/financeiro" />
           <FiltrosIndicadores
             filtros={filtros}

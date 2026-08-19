@@ -54,16 +54,30 @@ export const RAMPA = [
 ];
 
 /**
- * As três intensidades da matiz de dado.
+ * As quatro cores da logo da Lure, cada uma com um trabalho FIXO.
  *
- * ⚠️ Uma cor por categoria foi tentada e descartada — vira arco-íris sem
- * significado, porque motivo de perda e nome de cliente não têm ordem nem
- * sentido de cor. A hierarquia vem da INTENSIDADE e do rótulo escrito.
+ * ⚠️ Trabalho fixo, e não rodízio por categoria. Uma cor por categoria
+ * foi tentada e virou arco-íris: motivo de perda e nome de cliente não
+ * têm ordem nem sentido de cor, então a cor não informava nada e ainda
+ * trocava de dono quando o filtro mudava a ordem.
+ *
+ *   azul    — a série principal, o padrão
+ *   rosa    — o que se perdeu, ou o período anterior
+ *   verde   — o que se ganhou
+ *   amarelo — destaque, um item por vez. Fundo, nunca tinta
+ *   recuo   — contexto: o azul apagado, para o que não é o assunto
  */
-export const FORTE = "var(--color-dado-forte)";
-export const MEDIO = "var(--color-dado-medio)";
+export const AZUL = "var(--color-logo-azul)";
+export const ROSA = "var(--color-logo-rosa)";
+export const VERDE = "var(--color-logo-verde)";
+export const AMARELO = "var(--color-logo-amarelo)";
+export const RECUO = "var(--color-dado-recuo)";
 export const TRILHO = "var(--color-dado-trilho)";
-export const ACENTO = "var(--color-dado-acento)";
+
+/** Compatibilidade com o nome antigo enquanto as telas convergem. */
+export const FORTE = AZUL;
+export const MEDIO = RECUO;
+export const ACENTO = AMARELO;
 
 /** As cores de status do Doc 08 §4. Aqui a cor SIGNIFICA o estado. */
 export const COR_STATUS: Record<string, string> = {
@@ -72,6 +86,29 @@ export const COR_STATUS: Record<string, string> = {
   Ganho: "var(--color-status-ganho)",
   Perdido: "var(--color-status-perdido)",
 };
+
+/**
+ * Halo de brilho. `id` único por instância — `id` repetido no documento
+ * faz o navegador aplicar o primeiro que achar.
+ *
+ * ⚠️ Ele é inofensivo quando desligado: `--neon-halo` vale 0 fora do tema
+ * escuro com o interruptor ligado, então o filtro existe mas não pinta
+ * nada. Não há custo de decidir isto no React.
+ */
+export function Halo({ id }: { id: string }) {
+  return (
+    <filter id={`halo-${id}`} x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="var(--neon-desfoque)" result="borrado" />
+      <feComponentTransfer in="borrado" result="brilho">
+        <feFuncA type="linear" slope="var(--neon-halo)" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="brilho" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  );
+}
 
 /** Eixos recessivos: a grade fica uma sombra abaixo da superfície. */
 export const EIXO = { stroke: "var(--color-text-muted)", fontSize: 11.5 } as const;

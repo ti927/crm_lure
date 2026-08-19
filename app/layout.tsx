@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+import { SCRIPT_NEON } from "@/app/(sistema)/estatisticas/interruptor-neon";
 
 /* Archivo substitui a Flama do manual — grotesca livre de proporcoes
    proximas, com pesos suficientes para hierarquia densa (Doc 08 §5). */
@@ -31,6 +32,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${archivo.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Restaura o brilho antes da primeira pintura, senão os
+            gráficos acendem um quadro depois — piscar assim é pior
+            que não ter o recurso. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_NEON }} />
+      </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>

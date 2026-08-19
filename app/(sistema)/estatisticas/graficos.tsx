@@ -15,15 +15,17 @@ import {
   YAxis,
 } from "recharts";
 import {
-  ACENTO,
+  AMARELO,
+  AZUL,
   COR_STATUS,
   DICA,
   EIXO,
-  FORTE,
   GRADE,
-  MEDIO,
+  Halo,
+  RECUO,
   RAMPA,
   SemDados,
+  VERDE,
   usePrefereMenosMovimento,
 } from "./grafico-base";
 
@@ -62,6 +64,9 @@ export function SerieMensal({
   return (
     <ResponsiveContainer width="100%" height={280}>
       <LineChart data={pontos} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <defs>
+          <Halo id="serie" />
+        </defs>
         <CartesianGrid {...GRADE} vertical={false} />
         <XAxis dataKey="rotulo" {...EIXO} tickLine={false} axisLine={false} minTickGap={28} />
         {/* Um eixo só: as duas séries contam a mesma coisa — negócios. */}
@@ -78,7 +83,7 @@ export function SerieMensal({
         <Line
           type="monotone"
           dataKey="Iniciados"
-          stroke={MEDIO}
+          stroke={RECUO}
           strokeWidth={1.5}
           dot={false}
           activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
@@ -88,8 +93,9 @@ export function SerieMensal({
         <Line
           type="monotone"
           dataKey="Ganhos"
-          stroke={FORTE}
+          stroke={VERDE}
           strokeWidth={2.25}
+          filter="url(#halo-serie)"
           dot={false}
           activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
           isAnimationActive={!reduzido}
@@ -130,6 +136,9 @@ export function BarrasCategoria({
         margin={{ top: 0, right: 64, bottom: 0, left: 0 }}
         barCategoryGap="28%"
       >
+        <defs>
+          <Halo id={`cat-${larguraRotulo}`} />
+        </defs>
         {/* Sem grade e sem eixo de valor: o número está na ponta da barra. */}
         <XAxis type="number" hide />
         <YAxis
@@ -152,6 +161,7 @@ export function BarrasCategoria({
           isAnimationActive={!reduzido}
           animationDuration={650}
           barSize={14}
+          filter={`url(#halo-cat-${larguraRotulo})`}
         >
           {/* Quem lidera vem forte; o resto recua. É a hierarquia que
               carrega a leitura, não uma cor diferente por linha. */}
@@ -160,10 +170,10 @@ export function BarrasCategoria({
               key={p.rotulo}
               fill={
                 status
-                  ? COR_STATUS[p.rotulo] ?? FORTE
+                  ? COR_STATUS[p.rotulo] ?? AZUL
                   : p.Valor === maior
-                    ? FORTE
-                    : MEDIO
+                    ? AZUL
+                    : RECUO
               }
             />
           ))}
@@ -285,7 +295,7 @@ export function CicloDeVenda({
           maxBarSize={64}
         >
           {pontos.map((p, i) => (
-            <Cell key={i} fill={p.taxa === melhor ? ACENTO : MEDIO} />
+            <Cell key={i} fill={p.taxa === melhor ? AMARELO : RECUO} />
           ))}
           <LabelList
             dataKey="taxa"

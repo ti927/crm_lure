@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { real, realCurto } from "@/lib/formato";
 import { AbasEstatisticas } from "./abas";
 import { FiltrosIndicadores } from "./filtros-indicadores";
+import { InterruptorNeon } from "./interruptor-neon";
 import { FiltroAno } from "./filtro-ano";
 import { Painel } from "./grafico-base";
 import { CartaoNumero } from "./painel";
@@ -113,6 +114,7 @@ export default async function PaginaEstatisticas({
 
         {/* Uma fileira de filtros acima de tudo que eles recortam. */}
         <div className="flex flex-wrap items-center gap-2">
+          <InterruptorNeon />
           <FiltroAno filtros={filtros} anos={anos} destino="/estatisticas" />
           <FiltrosIndicadores
             filtros={filtros}

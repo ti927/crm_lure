@@ -17,12 +17,14 @@ import {
 } from "recharts";
 import { real, realCurto } from "@/lib/formato";
 import {
+  AZUL,
   DICA,
   EIXO,
-  FORTE,
   GRADE,
-  MEDIO,
+  Halo,
+  RECUO,
   RAMPA,
+  ROSA,
   SemDados,
   usePrefereMenosMovimento,
 } from "../grafico-base";
@@ -30,8 +32,9 @@ import {
 /**
  * Gráficos do relatório financeiro (D-132, revisto pela D-133).
  *
- * ⚠️ Uma matiz só, em duas intensidades, sem brilho. O neon saiu: só
- * ficava razoável no tema escuro, e no claro virava borrão.
+ * ⚠️ As cores da logo, cada uma com trabalho fixo: azul é a receita, rosa
+ * é o que se perdeu. O brilho existe mas só acende no tema escuro e com o
+ * interruptor ligado — no claro os tokens de halo valem zero.
  *
  * ⚠️ Receita e valor perdido são a mesma unidade (real), então dividem um
  * eixo. Nunca dois eixos no mesmo gráfico: o alinhamento entre duas
@@ -61,6 +64,9 @@ export function ReceitaNoTempo({
   return (
     <ResponsiveContainer width="100%" height={320}>
       <ComposedChart data={pontos} margin={{ top: 12, right: 12, bottom: 0, left: 4 }}>
+        <defs>
+          <Halo id="fin" />
+        </defs>
 
         <CartesianGrid {...GRADE} vertical={false} />
         <XAxis dataKey="rotulo" {...EIXO} tickLine={false} minTickGap={24} />
@@ -82,7 +88,7 @@ export function ReceitaNoTempo({
           type="monotone"
           dataKey="Receita"
           stroke="none"
-          fill="var(--color-dado-fraco)"
+          fill="var(--color-logo-azul)"
           fillOpacity={0.35}
           isAnimationActive={!reduzido}
           animationDuration={900}
@@ -91,8 +97,9 @@ export function ReceitaNoTempo({
         <Line
           type="monotone"
           dataKey="Receita"
-          stroke={FORTE}
+          stroke={AZUL}
           strokeWidth={2.5}
+          filter="url(#halo-fin)"
           dot={false}
           activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-surface)" }}
           isAnimationActive={!reduzido}
@@ -102,7 +109,7 @@ export function ReceitaNoTempo({
         <Line
           type="monotone"
           dataKey="Perdido"
-          stroke={MEDIO}
+          stroke={ROSA}
           strokeWidth={1.75}
           dot={false}
           activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-surface)" }}
@@ -138,7 +145,11 @@ export function ReceitaPorCategoria({
         data={pontos}
         layout="vertical"
         margin={{ top: 4, right: 76, bottom: 4, left: 4 }}
+        barCategoryGap="28%"
       >
+        <defs>
+          <Halo id={`fin-${chave}`} />
+        </defs>
 
         
         <XAxis type="number" hide />
@@ -158,14 +169,14 @@ export function ReceitaPorCategoria({
         <Bar
           dataKey="Receita"
           radius={[0, 4, 4, 0]}
-          filter={`url(#halo-${chave})`}
           isAnimationActive={!reduzido}
           animationDuration={800}
           barSize={14}
+          filter={`url(#halo-fin-${chave})`}
         >
           {/* Quem lidera vem forte; o resto recua. */}
           {pontos.map((p) => (
-            <Cell key={p.rotulo} fill={p.Receita === maior ? FORTE : MEDIO} />
+            <Cell key={p.rotulo} fill={p.Receita === maior ? AZUL : RECUO} />
           ))}
           <LabelList
             dataKey="Receita"

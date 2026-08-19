@@ -119,27 +119,27 @@
   --status-perdido:     #6f163a;  --status-perdido-ink:     #6f163a;
 
   /* ---------- Cores de dado ---------- */
-  /* Uma matiz so — o azul-claro da marca — em tres intensidades, mais o
-     amarelo da marca como acento.
+  /* As quatro cores da logo da Lure, cada uma com um trabalho fixo.
+     Trabalho fixo e o que impede a cor de trocar de dono quando o filtro
+     muda a ordem — quem aprendeu "rosa e o que se perdeu" continua certo.
 
-     ⚠️ Por que nao uma cor por barra: numa lista de motivos de perda ou
-     de clientes, a categoria nao tem ordem nem significado de cor. Pintar
-     cada barra de um jeito nao informa nada e vira ruido; a hierarquia
-     vem da INTENSIDADE (o item que importa mais forte, o resto recuado) e
-     do rotulo escrito ao lado.
+     ⚠️ O amarelo NAO entra no rodizio de categorias. O manual diz que
+     #ffdd00 funciona como FUNDO, e forcado a banda de luminosidade das
+     demais ele vira oliva sujo. Ele e o destaque: um item por vez.
 
-     ⚠️ Contraste medido contra a superficie: forte 3.8:1 no claro e
-     6.1:1 no escuro. `fraco` e trilho de fundo, nunca marca sozinha. */
-  --dado-forte:    #188db3;
-  --dado-medio:    #5bb1d4;
-  --dado-fraco:    #b6d7e6;
+     Contraste medido. O azul fica em 2.2:1 no claro — abaixo de 3 —, o
+     que exige a compensacao que a tela ja tem: rotulo escrito em cada
+     barra e visao em tabela. */
+  --logo-azul:     #0abaee;   /* padrao: a serie principal */
+  --logo-rosa:     #e5007d;   /* o que se perdeu, o periodo anterior */
+  --logo-verde:    #00973a;   /* o que se ganhou */
+  --logo-amarelo:  #ffdd00;   /* destaque, um por vez. Fundo, nunca tinta */
+
+  /* Recuo: a mesma matiz do azul, apagada, para o que e contexto. */
+  --dado-recuo:    #9fc9d9;
   --dado-trilho:   #eef4f7;
 
-  /* Acento. #ffdd00 e fundo, nunca tinta (manual da Lure). */
-  --dado-acento:     #ffdd00;
-  --dado-acento-ink: #7a6600;
-
-  /* Rampa ORDINAL, mesma matiz. So para o que tem ordem de verdade:
+  /* Rampa ORDINAL, do azul da logo. So para o que tem ordem de verdade:
      etapa de funil, lead time por etapa. */
   --rampa-1: #0d4d63;
   --rampa-2: #156682;
@@ -147,6 +147,11 @@
   --rampa-4: #269bc4;
   --rampa-5: #46b3d8;
   --rampa-6: #7cc9e4;
+
+  /* ⚠️ Brilho DESLIGADO no tema claro. Neon sobre branco vira borrao —
+     e a razao pela qual o efeito so vale no escuro. */
+  --neon-halo: 0;
+  --neon-desfoque: 0px;
 
   /* ---------- Densidade: altura de linha de tabela e de controle ---------- */
   --row-h-compact: 32px;
@@ -221,14 +226,14 @@
   --status-perdido:    #93314f;  --status-perdido-ink:    #d98aa6;
 
   /* [Doc 08 §3.3] Mesma sequencia, nas variantes -on-dark. */
-  /* Mesma matiz, degraus para o fundo escuro. */
-  --dado-forte:    #1fa7d4;
-  --dado-medio:    #3e7d97;
-  --dado-fraco:    #385865;
-  --dado-trilho:   #242a2d;
+  /* Mesmas cores da logo, degrau proprio para o fundo escuro. */
+  --logo-azul:     #199fca;
+  --logo-rosa:     #e5007d;
+  --logo-verde:    #00973a;
+  --logo-amarelo:  #ffdd00;
 
-  --dado-acento:     #ffdd00;
-  --dado-acento-ink: #ffdd00;
+  --dado-recuo:    #3e6472;
+  --dado-trilho:   #242a2d;
 
   --rampa-1: #17607a;
   --rampa-2: #1d7897;
@@ -237,8 +242,32 @@
   --rampa-5: #55bcdf;
   --rampa-6: #86d0ea;
 
+  /* Brilho disponivel no escuro — mas so acende com o interruptor
+     (`data-neon="1"` na raiz), senao fica desligado por padrao. */
+  --neon-halo: 0;
+  --neon-desfoque: 0px;
+
   --elev-xs:      0 1px 0 rgba(0,0,0,.5);
   --elev-sm:      0 1px 2px rgba(0,0,0,.6);
   --elev-md:      0 2px 6px rgba(0,0,0,.7);
   --elev-overlay: 0 8px 24px rgba(0,0,0,.8);
+}
+
+/* ---------- Brilho neon (D-135) ----------
+   Interruptor de comparacao, para o maestro ver com e sem.
+
+   ⚠️ Duas condicoes, as duas obrigatorias: tema ESCURO e interruptor
+   LIGADO. No claro o seletor nem existe — nao ha combinacao de
+   preferencias que acenda neon sobre fundo branco. */
+:root.dark[data-neon="1"],
+.dark[data-neon="1"],
+[data-neon="1"] .dark {
+  --neon-halo: 0.9;
+  --neon-desfoque: 3.5px;
+}
+
+/* ⚠️ Movimento e brilho pulsante saem junto para quem pediu menos
+   movimento. O halo estatico fica: ele nao se move. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-neon="1"] { --neon-desfoque: 2px; }
 }
