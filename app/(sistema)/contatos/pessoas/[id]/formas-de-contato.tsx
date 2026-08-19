@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Phone, Mail, X, Plus } from "lucide-react";
-import { paraWhatsApp } from "../../consulta";
 import { useAviso } from "@/components/dominio/avisos";
 import { adicionarFormaContato, removerFormaContato } from "../../acoes";
+import { linkWhatsApp } from "@/lib/formato";
 
 export type Contato = { id: string; tipo: string; valor: string };
 
-/** Formas de contato (B-092): telefone abre WhatsApp por wa.me, e-mail
+/** Formas de contato (B-092): telefone abre o WhatsApp pelo aplicativo, e-mail
  *  abre mailto. Lista simples com adicionar e remover. */
 export function FormasDeContato({
   pessoaId,
@@ -57,9 +57,7 @@ export function FormasDeContato({
             <li key={c.id} className="group flex items-center gap-2">
               {c.tipo === "telefone" ? (
                 <a
-                  href={`https://wa.me/${paraWhatsApp(c.valor)}`}
-                  target="_blank"
-                  rel="noreferrer"
+                  href={linkWhatsApp(c.valor)}
                   className="border-border hover:border-brand-ink inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-md"
                 >
                   <Phone className="size-3.5" aria-hidden />

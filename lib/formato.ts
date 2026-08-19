@@ -82,3 +82,23 @@ export function realCurto(valor: number | string | null | undefined): string {
   if (abs >= 1_000) return `${sinal}R$ ${Math.round(abs / 1_000)} mil`;
   return `${sinal}R$ ${Math.round(abs)}`;
 }
+
+/**
+ * Link do WhatsApp que abre o aplicativo DIRETO, sem passar pelo navegador.
+ *
+ * ⚠️ `wa.me` é link universal: ele sempre carrega uma página do WhatsApp
+ * primeiro, que então tenta abrir o aplicativo. Isso deixa uma aba órfã
+ * aberta a cada telefone clicado — e quem trabalha o dia inteiro no CRM
+ * termina com dezenas delas.
+ *
+ * O esquema `whatsapp://` entrega direto ao aplicativo: sem aba, sem
+ * página intermediária. O preço é que ele depende do WhatsApp instalado
+ * (aplicativo no celular, WhatsApp Desktop no computador) — se não
+ * estiver, o clique não faz nada. Para esta equipe é a troca certa: o
+ * WhatsApp é o canal de venda, está instalado em toda máquina.
+ */
+export function linkWhatsApp(numero: string): string {
+  const so = numero.replace(/\D/g, "");
+  const comPais = so.startsWith("55") ? so : `55${so}`;
+  return `whatsapp://send?phone=${comPais}`;
+}

@@ -65,10 +65,5 @@ export function limparIlike(termo: string): string {
   return termo.replace(/[%,()]/g, " ");
 }
 
-/** Só dígitos, com 55 na frente — é o que o link do WhatsApp aceita. */
-export function paraWhatsApp(numero: string): string {
-  const so = numero.replace(/\D/g, "");
-  return so.startsWith("55") ? so : `55${so}`;
-}
 
 export const CONTAGEM = (c: { count: number }[]): number => c?.[0]?.count ?? 0;

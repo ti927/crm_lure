@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Phone, Mail, X, UserPlus } from "lucide-react";
-import { paraWhatsApp } from "../../consulta";
+import { linkWhatsApp } from "@/lib/formato";
 import { SeletorAsync } from "../../seletor-async";
 import { useAviso } from "@/components/dominio/avisos";
 import {
@@ -126,9 +126,7 @@ export function PessoasDaOrganizacao({
                   c.tipo === "telefone" ? (
                     <a
                       key={i}
-                      href={`https://wa.me/${paraWhatsApp(c.valor)}`}
-                      target="_blank"
-                      rel="noreferrer"
+                      href={linkWhatsApp(c.valor)}
                       className="border-border hover:border-brand-ink inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
                     >
                       <Phone className="size-3" aria-hidden />

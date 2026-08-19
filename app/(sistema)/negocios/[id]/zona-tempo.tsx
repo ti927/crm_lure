@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRightLeft,
   CircleDollarSign,
@@ -8,10 +9,12 @@ import {
   Flag,
   MessageSquare,
   CalendarCheck,
+  CalendarPlus,
   Trash2,
 } from "lucide-react";
 import { real, dataHora } from "@/lib/formato";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
+import { DialogoAtividade } from "@/app/(sistema)/atividades/dialogo-atividade";
 import { criarAnotacao, excluirAnotacao } from "./acoes";
 
 export type ItemTempo = {
@@ -47,14 +50,22 @@ const ICONE: Record<string, typeof Flag> = {
 
 export function ZonaTempo({
   negocioId,
+  titulo,
   itens,
+  tipos,
+  usuarios,
 }: {
   negocioId: string;
+  titulo: string;
   itens: ItemTempo[];
+  tipos: { id: string; nome: string }[];
+  usuarios: { id: string; nome: string }[];
 }) {
+  const router = useRouter();
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]["chave"]>("tudo");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [agendando, setAgendando] = useState(false);
 
   const visiveis =
     filtro === "tudo" ? itens : itens.filter((i) => i.natureza === filtro);
@@ -100,6 +111,24 @@ export function ZonaTempo({
         </div>
       </div>
 
+      {/* ⚠️ Abas de registro, no padrão do Pipedrive: anotar e agendar
+          moram no próprio negócio. Ter de ir até a seção Atividades para
+          marcar um retorno é o tipo de desvio que faz o vendedor não
+          registrar — e o dado que não se registra não existe. */}
+      <div className="border-border flex shrink-0 items-center gap-1 border-b px-3 pt-2">
+        <span className="border-brand-ink text-text -mb-px border-b-2 px-2 pb-2 text-sm font-semibold">
+          Anotação
+        </span>
+        <button
+          type="button"
+          onClick={() => setAgendando(true)}
+          className="text-text-secondary hover:text-text -mb-px inline-flex items-center gap-1.5 border-b-2 border-transparent px-2 pb-2 text-sm font-medium"
+        >
+          <CalendarPlus className="size-3.5" aria-hidden />
+          Agendar atividade
+        </button>
+      </div>
+
       <form
         className="border-border shrink-0 border-b p-3"
         onSubmit={(e) => {
@@ -126,6 +155,20 @@ export function ZonaTempo({
           </button>
         </div>
       </form>
+
+      {agendando && (
+        <DialogoAtividade
+          tipos={tipos}
+          usuarios={usuarios}
+          // Já nasce amarrada a este negócio: o vínculo é o motivo de a
+          // aba existir aqui, e pedi-lo de novo seria trabalho repetido.
+          vinculoInicial={{ tipo: "negocio", id: negocioId, rotulo: titulo }}
+          aoFechar={(mudou) => {
+            setAgendando(false);
+            if (mudou) router.refresh();
+          }}
+        />
+      )}
 
       <ol className="min-h-0 flex-1 overflow-y-auto p-3">
         {visiveis.map((i, indice) => (

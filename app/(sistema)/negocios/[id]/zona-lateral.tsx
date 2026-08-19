@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Phone, Mail, Building2, Check, Plus, X, Pencil } from "lucide-react";
-import { data } from "@/lib/formato";
+import { data, linkWhatsApp } from "@/lib/formato";
 import { useAviso } from "@/components/dominio/avisos";
 import { SeletorAsync } from "@/app/(sistema)/contatos/seletor-async";
 import { buscarPessoas, buscarOrganizacoes } from "@/app/(sistema)/contatos/acoes";
@@ -30,12 +30,6 @@ type Atividade = {
   concluida: boolean;
   tipo_atividade: { nome: string } | null;
 };
-
-/** Só dígitos, com 55 na frente — é o que o link do WhatsApp aceita. */
-function paraWhatsApp(numero: string) {
-  const so = numero.replace(/\D/g, "");
-  return so.startsWith("55") ? so : `55${so}`;
-}
 
 export function ZonaLateral({
   negocioId,
@@ -194,9 +188,7 @@ export function ZonaLateral({
                       c.tipo === "telefone" ? (
                         <a
                           key={i}
-                          href={`https://wa.me/${paraWhatsApp(c.valor)}`}
-                          target="_blank"
-                          rel="noreferrer"
+                          href={linkWhatsApp(c.valor)}
                           className="border-border hover:bg-surface-hover hover:border-brand-ink inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-all hover:-translate-y-px"
                         >
                           <Phone className="size-3" aria-hidden />

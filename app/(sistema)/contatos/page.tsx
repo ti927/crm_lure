@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Phone, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { texto } from "@/lib/formato";
+import { texto, linkWhatsApp } from "@/lib/formato";
 import { TabelaVirtual } from "@/components/dominio/tabela-virtual";
 import { BarraContatos } from "./barra-contatos";
 import { CartoesPessoa } from "./cartoes-contato";
@@ -11,7 +11,6 @@ import {
   POR_PAGINA,
   parseFiltros,
   limparIlike,
-  paraWhatsApp,
   type Busca,
   type LinhaPessoa,
 } from "./consulta";
@@ -125,9 +124,7 @@ export default async function PaginaContatos({
                 c.tipo === "telefone" ? (
                   <a
                     key={j}
-                    href={`https://wa.me/${paraWhatsApp(c.valor)}`}
-                    target="_blank"
-                    rel="noreferrer"
+                    href={linkWhatsApp(c.valor)}
                     className="border-border hover:border-brand-ink inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
                   >
                     <Phone className="size-3" aria-hidden />

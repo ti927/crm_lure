@@ -52,6 +52,7 @@ export default async function PaginaNegocio({
     { data: motivos },
     { data: origens },
     { data: produtos },
+    { data: tipos },
     { data: eventos },
     { data: anotacoes },
     { data: atividades },
@@ -62,6 +63,7 @@ export default async function PaginaNegocio({
     supabase.from("motivo_perda").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("produto").select("id, nome").order("nome"),
+    supabase.from("tipo_atividade").select("id, nome").eq("ativo", true).order("ordem"),
     supabase
       .from("evento_negocio")
       .select("id, tipo, valor_anterior, valor_novo, ocorrido_em, origem_carga, usuario(nome, foto_url)")
@@ -162,7 +164,13 @@ export default async function PaginaNegocio({
           produtos={produtos ?? []}
         />
 
-        <ZonaTempo negocioId={negocio.id} itens={linha} />
+        <ZonaTempo
+          negocioId={negocio.id}
+          titulo={negocio.titulo}
+          itens={linha}
+          tipos={tipos ?? []}
+          usuarios={usuarios ?? []}
+        />
 
         <ZonaLateral
           negocioId={negocio.id}

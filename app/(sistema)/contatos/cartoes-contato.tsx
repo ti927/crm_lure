@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Phone, Mail } from "lucide-react";
-import { paraWhatsApp } from "./consulta";
 import type { LinhaPessoa } from "./consulta";
+import { linkWhatsApp } from "@/lib/formato";
 
 /**
  * Contatos em cartões, para o celular (D-097 + pedido do maestro: é a
@@ -36,9 +36,7 @@ export function CartoesPessoa({ pessoas }: { pessoas: LinhaPessoa[] }) {
             <span className="flex shrink-0 gap-1">
               {telefone && (
                 <a
-                  href={`https://wa.me/${paraWhatsApp(telefone.valor)}`}
-                  target="_blank"
-                  rel="noreferrer"
+                  href={linkWhatsApp(telefone.valor)}
                   aria-label={`WhatsApp de ${p.nome}`}
                   className="border-border text-success-ink inline-flex size-9 items-center justify-center rounded-md border"
                 >
