@@ -27,6 +27,7 @@ Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e 
 | 11 | [Backlog e Critérios de Aceite](docs/11-backlog-e-criterios-de-aceite-v0.3.md) | 133 itens com critério de pronto |
 | 12 | [CLAUDE.md](docs/12-claude-md-v0.8.md) | Fonte do `CLAUDE.md` da raiz |
 | 13 | [Glossário](docs/13-glossario-v0.1.md) | Vocabulário do projeto |
+| 15 | [Plano da Central de Notificações](docs/15-plano-central-de-notificacoes-v0.1.md) | A F8, desenhada — aguarda três definições |
 | 14 | [Migração do Pipedrive](docs/14-migracao-do-pipedrive-v0.2.md) | Mapeamento campo a campo |
 | 14* | [Referência da API Pipedrive](docs/14-referencia-api-pipedrive-v0.1.md) | Endpoints para a extração |
 
