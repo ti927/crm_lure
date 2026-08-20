@@ -46,13 +46,43 @@ export async function POST(requisicao: Request) {
     return NextResponse.json({ erro: "não autorizado" }, { status: 401 });
   }
 
-  const publica = process.env.NEXT_PUBLIC_VAPID_PUBLICA;
-  const privada = process.env.VAPID_PRIVADA;
-  const contato = process.env.VAPID_CONTATO ?? "mailto:ti@lureconsultoria.com.br";
-  if (!publica || !privada) {
-    return NextResponse.json({ erro: "chaves VAPID ausentes" }, { status: 500 });
+  // ⚠️ Confere TUDO de uma vez e diz o que falta pelo nome.
+  //
+  // A versão anterior checava só as VAPID, e a `SUPABASE_SERVICE_ROLE_KEY`
+  // — usada por este arquivo e por nenhum outro do sistema — passava
+  // direto até o cliente Supabase estourar na construção, fora de
+  // qualquer try. O resultado era 500 com corpo VAZIO, que não diz nada
+  // a quem está configurando. Nome de variável não é segredo; valor é.
+  const faltando = (
+    [
+      "NEXT_PUBLIC_VAPID_PUBLICA",
+      "VAPID_PRIVADA",
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+    ] as const
+  ).filter((nome) => !process.env[nome]);
+
+  if (faltando.length) {
+    return NextResponse.json(
+      { erro: "variáveis ausentes no servidor", faltando },
+      { status: 500 },
+    );
   }
-  webpush.setVapidDetails(contato, publica, privada);
+
+  const publica = process.env.NEXT_PUBLIC_VAPID_PUBLICA!;
+  const privada = process.env.VAPID_PRIVADA!;
+  const contato = process.env.VAPID_CONTATO ?? "mailto:ti@lureconsultoria.com.br";
+
+  try {
+    webpush.setVapidDetails(contato, publica, privada);
+  } catch (e) {
+    // Chave malformada (espaço colado, aspas, valor truncado) também
+    // derrubava a função sem explicação.
+    return NextResponse.json(
+      { erro: `chaves VAPID inválidas: ${e instanceof Error ? e.message : e}` },
+      { status: 500 },
+    );
+  }
 
   const forcar = new URL(requisicao.url).searchParams.get("forcar") === "1";
 
