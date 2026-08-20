@@ -24,5 +24,12 @@ export default async function PaginaNotificacoes() {
     .from("preferencia_notificacao")
     .select("tipo, ativo, dias");
 
-  return <PainelNotificacoes preferencias={(data ?? []) as Preferencia[]} />;
+  // A chave PUBLICA do VAPID vai para o navegador por desenho — e para
+  // isso que ela existe. A privada nunca sai do servidor.
+  return (
+    <PainelNotificacoes
+      preferencias={(data ?? []) as Preferencia[]}
+      chavePushPublica={process.env.NEXT_PUBLIC_VAPID_PUBLICA ?? ""}
+    />
+  );
 }

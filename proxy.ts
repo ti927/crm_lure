@@ -11,7 +11,18 @@ import { NextResponse, type NextRequest } from "next/server";
  * evita renderizar tela para quem nao entrou.
  */
 
-const PUBLICAS = ["/login", "/auth"];
+/**
+ * ⚠️ `/api/enviar-push` entra aqui de propósito, e não é buraco de
+ * segurança: ela é chamada pelo `pg_cron` do Supabase, que não tem
+ * sessão nem cookie, e se defende sozinha pelo segredo em cabeçalho
+ * (`x-lure-segredo`). Sem esta linha o cron levaria um redirecionamento
+ * para /login de hora em hora e o push nunca sairia — em silêncio,
+ * porque `pg_net` é assíncrono e ninguém lê a tabela de respostas.
+ *
+ * ⚠️ `/api/inscricao-push` NÃO entra: aquela precisa da sessão para
+ * saber de quem é o aparelho.
+ */
+const PUBLICAS = ["/login", "/auth", "/api/enviar-push"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -61,7 +72,14 @@ export const config = {
     /*
      * Tudo, menos arquivo estatico e imagem. O favicon e os assets nao
      * precisam de sessao renovada a cada carregamento.
+     *
+     * ⚠️ `sw.js` e `manifest.webmanifest` saem daqui por necessidade, nao
+     * por economia. O navegador busca os dois FORA do contexto da pagina
+     * — o service worker chega a ser buscado sem cookie nenhum —, e um
+     * redirecionamento para /login faria o registro falhar em silencio:
+     * sem service worker nao ha push, e sem manifesto nao ha atalho na
+     * tela de inicio. Nenhum dos dois carrega segredo.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2?)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2?)$).*)",
   ],
 };

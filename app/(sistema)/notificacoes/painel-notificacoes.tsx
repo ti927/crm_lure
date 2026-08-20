@@ -11,6 +11,7 @@ import {
   type TipoNotificacao,
 } from "@/lib/notificacoes";
 import { salvarPreferencia } from "./acoes";
+import { BlocoPush } from "./bloco-push";
 import { useAviso } from "@/components/dominio/avisos";
 
 /**
@@ -26,7 +27,13 @@ import { useAviso } from "@/components/dominio/avisos";
  * quis diferente" — senão, mudar o padrão um dia não alcançaria quem
  * nunca escolheu de verdade.
  */
-export function PainelNotificacoes({ preferencias }: { preferencias: Preferencia[] }) {
+export function PainelNotificacoes({
+  preferencias,
+  chavePushPublica,
+}: {
+  preferencias: Preferencia[];
+  chavePushPublica: string;
+}) {
   const router = useRouter();
   const avisar = useAviso();
   const [salvando, iniciar] = useTransition();
@@ -76,6 +83,10 @@ export function PainelNotificacoes({ preferencias }: { preferencias: Preferencia
           desaparece.
         </p>
       </header>
+
+      <div className="mb-3">
+        <BlocoPush chavePublica={chavePushPublica} />
+      </div>
 
       <div data-pendente={salvando ? "" : undefined} className="flex flex-col gap-3">
         {ORDEM_TIPOS.map((tipo) => (

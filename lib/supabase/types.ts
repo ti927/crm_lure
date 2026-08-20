@@ -349,6 +349,47 @@ export type Database = {
         }
         Relationships: []
       }
+      inscricao_push: {
+        Row: {
+          auth: string
+          aparelho: string | null
+          criado_em: string
+          endpoint: string
+          id: string
+          p256dh: string
+          ultimo_envio: string | null
+          usuario_id: string
+        }
+        Insert: {
+          auth: string
+          aparelho?: string | null
+          criado_em?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          ultimo_envio?: string | null
+          usuario_id: string
+        }
+        Update: {
+          auth?: string
+          aparelho?: string | null
+          criado_em?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          ultimo_envio?: string | null
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscricao_push_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       motivo_perda: {
         Row: {
           ativo: boolean
@@ -487,6 +528,32 @@ export type Database = {
             columns: ["pessoa_id"]
             isOneToOne: false
             referencedRelation: "pessoa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notificacao_enviada: {
+        Row: {
+          chave: string
+          enviado_em: string
+          usuario_id: string
+        }
+        Insert: {
+          chave: string
+          enviado_em?: string
+          usuario_id: string
+        }
+        Update: {
+          chave?: string
+          enviado_em?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacao_enviada_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
             referencedColumns: ["id"]
           },
         ]
@@ -815,6 +882,25 @@ export type Database = {
        * (D-124). Uma funcao so, porque a restricao e numero de idas ao
        * banco e nao custo de consulta (Doc 15 secao 2.1).
        */
+      /**
+       * D-144 — os mesmos alertas, para um usuario qualquer. Existe
+       * para o enviador de push, que precisa ler a caixa de todo
+       * mundo. `security definer` e revogada de `authenticated`: so
+       * o service_role executa.
+       */
+      notificacoes_de: {
+        Args: { p_usuario: string }
+        Returns: {
+          tipo: Database["public"]["Enums"]["tipo_notificacao"]
+          chave: string
+          titulo: string
+          detalhe: string
+          referencia: string
+          destino: string
+          conta: boolean
+          lida: boolean
+        }[]
+      }
       notificacoes: {
         Args: never
         Returns: {
