@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.11 · 20/08/2026
+> Documento 12 da biblioteca do projeto · v0.12 · 20/08/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 143 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 145 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
@@ -63,11 +63,17 @@ A regra acima segue valendo palavra por palavra: os indicadores filtram `origem_
 
 ⚠️ Ao ler `app.carga_migracao`, use `nullif(current_setting(...), '')` antes de converter para booleano. Depois que um `set local` sai de escopo, a variável fica valendo string vazia em vez de deixar de existir, e a conversão direta levanta erro — quebrando toda escrita em `negocio` na mesma conexão. Ver Doc 09, correção C-02.
 
-### 3. A trava de desfecho
+### 3. O motivo da perda
 
-Mover ou criar um negócio na etapa **Aguardando Contrato** abre diálogo obrigatório pedindo o desfecho: Ganho ou Perdido. Se Perdido, o motivo também é obrigatório — e isso está reforçado por restrição no banco.
+⛔ **A trava de desfecho FOI REVOGADA em 20/08 (D-145, revoga a D-047).** Nenhuma etapa exige declarar Ganho ou Perdido — nem no arrasto do Kanban, nem na troca de etapa da ficha, nem na criação. **Não existe mais trava de transição no sistema.**
 
-É a **única trava do sistema**. Todo o resto das transições entre etapas é livre, por decisão explícita.
+Ela caiu porque contrariava a realidade: *Aguardando Contrato* é uma espera legítima — contrato em assinatura não é negócio ganho nem perdido —, e forçar a escolha na entrada obrigava a mentir. Os 3 negócios que a D-128 registrou parados ali sem desfecho eram o sintoma disso.
+
+**O que sobrou, e este sim é inegociável:** perdido exige motivo, por `perdido_exige_motivo` no banco. Isso nunca foi a trava — é regra de dado, e é o que sustenta o indicador de perdas. São 1.121 negócios perdidos na base; sem motivo, nenhum deles explica coisa alguma.
+
+⚠️ **Declarar desfecho NÃO move mais a etapa.** Antes empurrava o negócio para a etapa final, consequência da D-047. Sem a trava isso passou a destruir informação: perdido em Cold Lead ia parar em Aguardando Contrato e ninguém mais saberia onde ele morreu. A base herdada tem perdas em todas as etapas — 147 em Cold Lead, 786 em Proposta Enviada. **Etapa diz até onde chegou; status diz como terminou.**
+
+⚠️ **O Kanban mostra só negócio aberto** (`parado` e `negociacao`). Ganho e perdido somem do funil ao serem marcados: são 2.153 dos 2.460, e com eles dentro o quadro deixa de ser funil e vira arquivo. **Eles não somem da Lista** — lá ficam todos, com filtro de status e de motivo de perda, e as Estatísticas dependem deles.
 
 ---
 
@@ -184,7 +190,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 1. ✅ Os **2.458** negócios estão migrados com organizações, pessoas, contatos, atividades e anotações — **contagens conferidas em 17/08**. Produtos não existiam no Pipedrive.
 2. ⭐ **Os dois sócios operam um dia inteiro sem abrir o Pipedrive.**
 3. O log de eventos está gravando desde o primeiro registro em produção. ✅ Nasceu limpo: a carga não gerou evento.
-4. A trava de desfecho funciona.
+4. ~~A trava de desfecho funciona.~~ ⛔ revogada pela D-145 — o critério vira: **perdido sempre tem motivo**.
 5. ✅ Lista e Kanban respondem com a base real.
 6. O celular abre e é utilizável para consulta.
 7. Login por Google funciona para as contas do domínio.
@@ -210,7 +216,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **143 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **145 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -221,6 +227,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.12** — 20/08/2026 — **A única trava do sistema caiu (D-145, revoga a D-047).** A seção 3 de "o que não pode dar errado" deixa de descrever a trava de desfecho e passa a descrever o que de fato é inegociável ali: **perdido exige motivo**. Registrado que declarar desfecho **não move mais a etapa** — fazia isso por causa da D-047 e passou a destruir a informação de onde o negócio morreu — e que o **Kanban mostra só negócio aberto**, enquanto a Lista continua com tudo. Entra também a **D-144**: o push revoga a parte da D-124 que dizia "sem agendador", com a assimetria que torna o risco aceitável — o sino não depende do cron. **145 decisões.**
 - **v0.11** — 20/08/2026 — **A F8 saiu do papel na mesma sessão que a destravou.** O bloco da F8 deixa de descrever um plano e passa a descrever o que existe. Entra o aviso que esta sessão pagou para aprender: a armadilha da C-05 apareceu por uma **terceira porta** — não na política nova, mas no e-mail falso do próprio script de ensaio, porque `usuario_atual()` lê `usuario` sob RLS e aquela política confere o domínio do e-mail. Zero alerta, zero erro. Fica a regra: **sino vazio não é prova de que não há alertas**. Reforçado que o sino mora no layout, onde um defeito derruba todas as telas de uma vez. **143 decisões.**
 - **v0.10** — 20/08/2026 — **A F8 deixou de depender de decisão.** O bloco que dizia "faltam definir o prazo do negócio parado e a antecedência do lembrete" foi substituído pelo que ficou decidido (**D-139** a **D-142**, Doc 15 v0.2): os dois prazos viraram **escolha do usuário em degraus**, o sino conta **só o que exige ação**, e a entidade Notificação **não vira tabela** — encerrando P-014 e P-027, abertas desde o Bloco 4. Entra o aviso de que as duas tabelas novas são as **primeiras com RLS por usuário** e por isso comparam com `usuario_atual()` e nunca com `auth.uid()` — a armadilha da C-05, escrita antes de morder desta vez. O Doc 15 entra na biblioteca de documentos. **142 decisões.**
 - **v0.9** — 19/08/2026 — **Fim da sessão 10.** O aviso da fronteira servidor→cliente foi reescrito e ampliado: ele já existia e ainda assim derrubou a rota de estatísticas **duas vezes no mesmo dia** — uma por formatador passado como propriedade, outra por reexportação de referência de cliente. Entra junto o método que encontrou o defeito, porque `tsc`, `eslint` e `next build` passam por ele. Acrescentadas as regras de gráfico (D-133) e o link do WhatsApp por aplicativo (D-138).
