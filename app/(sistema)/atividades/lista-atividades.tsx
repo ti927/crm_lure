@@ -108,6 +108,7 @@ export function ListaAtividades({
               key={a.id}
               atividade={a}
               indice={i}
+              volta={params.toString()}
               aoEditar={aoEditar}
               aoMudar={aoMudar}
             />
@@ -134,6 +135,8 @@ export function ListaVencidas({
   aoEditar: (a: LinhaAtividade) => void;
   aoMudar: () => void;
 }) {
+  const volta = useSearchParams().toString();
+
   if (vencidas.length === 0) {
     return (
       <div className="px-4 py-16 text-center">
@@ -162,6 +165,7 @@ export function ListaVencidas({
             indice={i}
             venceuEm={a.data}
             hoje={hoje}
+            volta={volta}
             aoEditar={aoEditar}
             aoMudar={aoMudar}
           />
@@ -191,6 +195,8 @@ export function ListaResultados({
   aoEditar: (a: LinhaAtividade) => void;
   aoMudar: () => void;
 }) {
+  const volta = useSearchParams().toString();
+
   if (resultados.length === 0) {
     return (
       <div className="px-4 py-16 text-center">
@@ -228,6 +234,7 @@ export function ListaResultados({
             indice={i}
             mostrarData
             hoje={hoje}
+            volta={volta}
             aoEditar={aoEditar}
             aoMudar={aoMudar}
           />
@@ -247,6 +254,7 @@ function diasDeAtraso(data: string, hoje: string): number {
 function ItemLista({
   atividade,
   indice,
+  volta,
   mostrarData,
   venceuEm,
   hoje,
@@ -255,6 +263,8 @@ function ItemLista({
 }: {
   atividade: LinhaAtividade;
   indice: number;
+  /** Query da tela de Atividades, para o retorno cair onde se estava. */
+  volta?: string;
   /** Vista de busca: a data vem à frente, porque o resultado não é de um dia só. */
   mostrarData?: boolean;
   /** Quando presente, mostra a data de vencimento à frente (aba Vencidas). */
@@ -276,22 +286,32 @@ function ItemLista({
     else aoMudar(); // reconcilia com o servidor
   }
 
-  const tipoVinculo = atividade.negocio
-    ? "negocio"
-    : atividade.organizacao
-      ? "organizacao"
-      : atividade.pessoa
-        ? "pessoa"
-        : null;
-  const IconeVinculo = tipoVinculo ? ICONE_VINCULO[tipoVinculo] : null;
-  const nomeVinculo =
-    atividade.negocio?.titulo ??
-    atividade.organizacao?.nome ??
-    atividade.pessoa?.nome ??
-    null;
+  /**
+   * ⚠️ Antes mostrava UM vínculo só, o mais específico — então uma
+   * atividade de negócio escondia a organização, e a linha dizia
+   * "Chamada · Gestão de Pessoas" sem revelar de qual cliente. Como
+   * "Gestão de Pessoas" é título de negócio que se repete entre
+   * clientes, a linha ficava ambígua justamente onde precisava ser
+   * clara.
+   *
+   * Agora mostra todos os que existirem. Não custa consulta nenhuma: o
+   * gatilho `encadeia_vinculo_atividade` já preenche a organização a
+   * partir do negócio, e por isso as 1.564 atividades com negócio têm
+   * organização também — zero exceções na base.
+   */
+  const vinculos: { tipo: keyof typeof ICONE_VINCULO; nome: string }[] = [];
+  if (atividade.negocio?.titulo) {
+    vinculos.push({ tipo: "negocio", nome: atividade.negocio.titulo });
+  }
+  if (atividade.organizacao?.nome) {
+    vinculos.push({ tipo: "organizacao", nome: atividade.organizacao.nome });
+  }
+  if (atividade.pessoa?.nome) {
+    vinculos.push({ tipo: "pessoa", nome: atividade.pessoa.nome });
+  }
 
   const atraso = venceuEm && hoje ? diasDeAtraso(venceuEm, hoje) : 0;
-  const destino = destinoDaAtividade(atividade);
+  const destino = destinoDaAtividade(atividade, volta);
 
   return (
     <li
@@ -379,12 +399,15 @@ function ItemLista({
                 {atividade.hora_fim && `–${atividade.hora_fim.slice(0, 5)}`}
               </span>
             )}
-            {nomeVinculo && IconeVinculo && (
-              <span className="inline-flex min-w-0 items-center gap-1">
-                <IconeVinculo className="size-3 shrink-0" aria-hidden />
-                <span className="truncate">{nomeVinculo}</span>
-              </span>
-            )}
+            {vinculos.map((v) => {
+              const Icone = ICONE_VINCULO[v.tipo];
+              return (
+                <span key={v.tipo} className="inline-flex min-w-0 items-center gap-1">
+                  <Icone className="size-3 shrink-0" aria-hidden />
+                  <span className="truncate">{v.nome}</span>
+                </span>
+              );
+            })}
           </span>
         </Alvo>
 

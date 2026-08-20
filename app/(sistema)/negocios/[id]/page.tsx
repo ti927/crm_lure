@@ -19,14 +19,31 @@ export default async function PaginaNegocio({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ de?: string }>;
+  searchParams: Promise<{ de?: string; volta?: string }>;
 }) {
   const { id } = await params;
-  const { de } = await searchParams;
-  // Quem abriu pelo Kanban volta para o Kanban; o padrao continua sendo
-  // a Lista, de onde a maioria dos cliques parte.
-  const voltarPara = de === "kanban" ? "/kanban" : "/negocios";
-  const voltarRotulo = de === "kanban" ? "Kanban" : "Negócios";
+  const { de, volta } = await searchParams;
+
+  // Quem abriu pelo Kanban volta para o Kanban, quem veio das Atividades
+  // volta para as Atividades; o padrao continua sendo a Lista, de onde a
+  // maioria dos cliques parte.
+  //
+  // ⚠️ `volta` carrega a query de onde se estava — o dia em foco, a
+  // busca, os filtros. Sem ela, quem abriu um negocio a partir das
+  // vencidas de 2022 voltava para "hoje" e perdia o lugar na pilha.
+  //
+  // ⚠️ A query e RECONSTRUIDA por URLSearchParams em vez de concatenada
+  // como veio. Assim o que vai para o href e sempre uma query bem
+  // formada, e nao um texto arbitrario vindo do endereco.
+  const queryVolta = volta ? new URLSearchParams(volta).toString() : "";
+  const voltarPara =
+    de === "kanban"
+      ? "/kanban"
+      : de === "atividades"
+        ? `/atividades${queryVolta ? `?${queryVolta}` : ""}`
+        : "/negocios";
+  const voltarRotulo =
+    de === "kanban" ? "Kanban" : de === "atividades" ? "Atividades" : "Negócios";
   const supabase = await createClient();
 
   const { data: negocio } = await supabase

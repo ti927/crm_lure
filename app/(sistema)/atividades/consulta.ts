@@ -102,8 +102,14 @@ export function temFiltro(f: FiltrosAtividade): boolean {
  * destino. Abre o que houver, na ordem em que a informação é mais
  * específica; as 29 sem vínculo nenhum devolvem null e caem na edição.
  */
-export function destinoDaAtividade(a: LinhaAtividade): string | null {
-  if (a.negocio) return `/negocios/${a.negocio.id}`;
+export function destinoDaAtividade(a: LinhaAtividade, volta?: string): string | null {
+  // ⚠️ `de=atividades` faz o link "voltar" da ficha do negócio apontar
+  // para cá, e não para a Lista. `volta` carrega a query da tela de
+  // Atividades — o dia em foco, a busca, os filtros —, para o retorno
+  // cair no lugar exato de onde se saiu. Sem isso, quem estava vendo as
+  // vencidas de 2022 voltava para "hoje" e perdia o lugar.
+  const retorno = volta ? `&volta=${encodeURIComponent(volta)}` : "";
+  if (a.negocio) return `/negocios/${a.negocio.id}?de=atividades${retorno}`;
   if (a.organizacao) return `/contatos/organizacoes/${a.organizacao.id}`;
   if (a.pessoa) return `/contatos/pessoas/${a.pessoa.id}`;
   return null;
