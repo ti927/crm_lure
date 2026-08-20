@@ -7,8 +7,10 @@ import { RodapeSistema } from "@/components/dominio/rodape-sistema";
 import { MenuMobile } from "@/components/dominio/menu-mobile";
 import { ProgressoNavegacao } from "@/components/dominio/progresso-navegacao";
 import { ProvedorAvisos } from "@/components/dominio/avisos";
+import { Sino } from "@/components/dominio/sino";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
+import type { Notificacao } from "@/lib/notificacoes";
 
 /**
  * Moldura das telas autenticadas.
@@ -27,9 +29,21 @@ export default async function LayoutSistema({
   children: ReactNode;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [{ data: sessao }, { data: alertas }] = await Promise.all([
+    supabase.auth.getUser(),
+    // F8 — os alertas são DERIVADOS na leitura (D-124), sem agendador:
+    // esta é a consulta que os calcula. Custa ~12 ms no banco, e sai numa
+    // ida só porque a latência do pooler (~150 ms por viagem) é a
+    // restrição real, não o custo da consulta (Doc 15 §2.1).
+    //
+    // ⚠️ Buscar aqui, e não dentro do sino, é o que evita o piscar: o
+    // número já chega junto com a tela. O preço é que o layout só volta a
+    // consultar numa navegação completa — coerente com a D-124, que diz
+    // que o alerta aparece quando alguém abre o sistema.
+    supabase.rpc("notificacoes"),
+  ]);
+  const user = sessao.user;
+  const notificacoes = (alertas ?? []) as Notificacao[];
 
   return (
     // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura, e o
@@ -59,6 +73,11 @@ export default async function LayoutSistema({
                   {user.email}
                 </span>
               )}
+              {/* ⚠️ Só DADOS atravessam para cá: `notificacoes` é um
+                  array de objetos simples. Nenhum manipulador, nenhum
+                  formatador — este é o layout, e um erro de serialização
+                  aqui derruba todas as telas de uma vez (C-06/C-09/C-10). */}
+              <Sino notificacoes={notificacoes} />
               <ThemeToggle />
               <BotaoSair />
             </header>

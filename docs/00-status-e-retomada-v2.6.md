@@ -1,11 +1,11 @@
-﻿# 00 — Status e Retomada (v2.4)
+﻿# 00 — Status e Retomada (v2.6)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v2.4 |
-| **Última atualização** | 19/08/2026 — Sessão 10 |
+| **Versão** | v2.6 |
+| **Última atualização** | 20/08/2026 — Sessão 11 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -32,10 +32,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v2.4.md` |
+| `00-status-e-retomada-v2.6.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.16.md` |
+| `03-log-de-decisoes-v0.18.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -43,10 +43,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `09-arquitetura-tecnica-v0.6.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.9.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.11.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
-| `15-plano-central-de-notificacoes-v0.1.md` |
+| `15-plano-central-de-notificacoes-v0.3.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
 | `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
@@ -97,7 +97,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ## 4. ONDE ESTAMOS
 
 **Fase:** **F10, a virada — em andamento.** F0 a F7 e F9 concluídas; **F8 adiada** (D-124). Falta o dia de operação real dos sócios.
-**Perguntas respondidas:** 80 · 12 blocos · **138 decisões** · 153 requisitos · 126 itens de backlog
+**Perguntas respondidas:** 80 · 12 blocos · **143 decisões** · 153 requisitos · 126 itens de backlog
 
 ✅ **Não há mais contagem regressiva** (D-125, 19/08/2026). Os dados estão no Supabase desde 17/08, conferidos — a virada é decidida por prontidão, não por data.
 
@@ -119,7 +119,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações, trava nos três caminhos** |
 | **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
 | **F9 — Mobile** | ✅ **construída 18/08.** Lista de negócios em cartões (B-110), filtros em gaveta própria (B-111), Kanban uma etapa por vez com seletor e **sem arrastar** (B-112), ficha empilhada (B-113), marcar concluída (B-114). Navegação lateral vira gaveta no celular |
-| **F8 — Automações** | ⏸️ **adiada por decisão do maestro (18/08)**, para vir depois com **painel de configuração de notificações**. Motor já decidido: alertas **derivados na leitura**, sem agendador |
+| **F8 — Automações** | ✅ **construída 20/08.** Sino no cabeçalho com contador, lista agrupada e marcar como lida; painel `/notificacoes` com os quatro blocos; follow-up ao ganhar nos quatro caminhos de Ganho. Alertas **derivados na leitura**, sem agendador — a entidade Notificação não virou tabela. Uma migração, duas tabelas, duas funções. Doc 15 v0.3 |
 | **Financeiro** | ✅ **construído 19/08** (D-131). Aba própria em `/estatisticas/financeiro`, no padrão do Insights do Pipedrive: receita realizada com comparativo de período, ticket médio, pipeline em aberto, valor perdido, evolução mês a mês, receita por vendedor/origem/cliente/área, dez maiores contratos e CSV. **Ancorado em `fechado_em`**, não em `criado_em`. Gráficos com neon e animação (D-132) |
 | **Estatísticas** | ✅ **construída e refeita 19/08.** Duas abas em `/estatisticas` — **Comercial** (por data de entrada) e **Financeiro** (por data de fechamento). Recorte com período pronto, ano, etapa, status, faixa de valor, motivo, responsável, origem, produto e área. Gráficos validados por medição (D-133), brilho opcional só no escuro (D-135), gêmeo em tabela em todo painel e CSV. **Indicadores que só o volume sustenta** (D-134): ciclo de venda × taxa de ganho, ticket típico com mediana, perdas em valor |
 | *(detalhe)* | ✅ **construída 19/08** (D-130, revoga a D-093). Os treze indicadores da D-063 em `/estatisticas`, calculados por sete funções versionadas no banco, com os recortes da D-064, interruptor de parados (D-067) e exportação CSV (D-066). **3.406 eventos históricos do Pipedrive carregados no log** (D-129) — sem eles os indicadores 7, 8 e 9 nasceriam cegos |
@@ -161,7 +161,16 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ⚠️ **A C-08 foi encontrada nesta sessão e é a razão de a F10 não ter começado antes:** o negócio era a única entidade do sistema sem caminho de criação. Ver 4.6.
 
-**Depois:** a **F8**. O desenho está pronto — **Doc 15, plano da central de notificações**, que encerra P-014 e P-027. Faltam três definições do maestro (seção 7 daquele documento) e elas bloqueiam o primeiro passo.
+✅ **A F8 está desbloqueada desde 20/08.** O **Doc 15 subiu a v0.2 e está validado**: as três definições que faltavam foram respondidas (**D-139**, **D-140**, **D-141**), mais uma quarta que a medição levantou (**D-142**). **P-014, P-027 e P-036 encerradas.** Não há definição pendente para o passo 1.
+
+**Duas frentes independentes, portanto:**
+
+| Frente | Situação |
+|---|---|
+| ⭐ **Critério 2 — um dia sem o Pipedrive** | ⏳ depende de ser marcado com os sócios. Nenhum impedimento técnico conhecido |
+| **F8 — central de notificações** | ✅ **construída em 20/08.** Falta ver nos dois temas |
+
+⚠️ **A medição de 20/08 confirmou o motor da F8 e inverteu a preocupação.** O Doc 15 v0.1 punha um teto de ~200 ms na consulta derivada; o real é **1,65 ms de execução** — os 151 ms observados de fora eram latência de rede do pooler. O risco não é custo de consulta, é **número de idas ao banco**: a ~150 ms por viagem, os quatro alertas têm de sair de uma função só.
 
 ### 4.8 O que a sessão 10 quebrou, e o que isso ensina
 
@@ -230,9 +239,22 @@ Também corrigidos nesta sessão: o link "voltar" do detalhe do negócio agora l
 
 ✅ **Pedido do maestro em 17/08 — atendido na sessão 09:** **acesso rápido a clientes pelo celular.** A Lista de contatos entrega cartões no celular (`app/(sistema)/contatos/cartoes-contato.tsx`), com busca, ampliando a D-097 que tinha deixado Contatos de fora do recorte mobile. *(Este parágrafo dizia "ainda não construído" até 19/08 — era erro de registro, não de código.)*
 
-**Depois:** **F10 (virada)** e, quando o maestro definir, a **F8 com painel de configuração de notificações**.
+**Depois:** **F10 (virada)** e a **F8**, que deixou de depender de definição em 20/08 — ver 4.2.
 
-⚠️ **A F8 foi adiada em 18/08, e com ela três definições que continuam em aberto:** (a) quantos dias sem movimento tornam um negócio "parado" — nunca foi definido em documento nenhum; (b) com quanta antecedência chega o lembrete de próxima atividade; (c) o desenho do painel de configuração que o maestro pediu. A decisão técnica já está tomada: os alertas serão **derivados na leitura**, calculados por consulta ao abrir o app, sem agendador nem tabela de fila — não há `pg_cron` nem Vercel Cron na stack, e acrescentar peça a duas semanas da virada seria risco desnecessário. **P-014 e P-027** (modelar a entidade Notificação, abertas desde o Bloco 4) seguem pendentes e são pré-requisito da F8.
+✅ **A F8 foi adiada em 18/08 e destravada em 20/08.** As três definições que faltavam foram respondidas pelo maestro:
+
+| O que faltava | Resposta |
+| **Quantos dias sem movimento tornam um negócio "parado"** | **Escolha do usuário**, em degraus de 30/45/60/90, padrão **60** (D-139) |
+| **Antecedência do lembrete de próxima atividade** | **Escolha do usuário**, em degraus de 1/2/3/7, padrão **1** (D-140) |
+| **O desenho do painel de configuração** | Doc 15 §5.2 — quatro blocos, um por tipo, interruptor e degraus |
+
+O motor continua o que a D-124 escolheu: alertas **derivados na leitura**, sem agendador nem tabela de fila — agora com medição que o sustenta (Doc 15 §2.1).
+
+⚠️ **P-014 e P-027 foram respondidas por negativa deliberada:** a entidade Notificação **não vira tabela**. O que se grava é preferência e leitura; a notificação é derivada a cada abertura. Foi essa inversão que permitiu dispensar o agendador.
+
+⚠️ **Duas descobertas da medição que quem for construir precisa saber.** (a) A curva do alerta de parado é **quase plana** — 30 dias acendem 79 negócios e 90 dias acendem 52, dos 164 abertos —, porque os negócios abertos desta base já estão parados há muito tempo; o limite regula o dia 30 em diante, não o dia 1. (b) A distribuição **não é parelha**: no padrão de 60 dias, 49 dos 63 alertas são de um único responsável.
+
+⚠️ **As duas tabelas novas serão as primeiras do sistema com RLS por usuário.** Todas as outras usam `pertence_ao_dominio()` (D-050). A política tem de comparar com `public.usuario_atual()` e **nunca com `auth.uid()`** — desde a D-109 os dois são diferentes, e a comparação errada deixaria o sino mudo exatamente para quem veio da carga, sem erro nenhum na tela. É a armadilha da C-05.
 
 ⚠️ **Desvio consciente do B-115:** o critério dizia que não haveria formulário de criação nem edição no celular. Os diálogos construídos nas F6 e F7 são responsivos e funcionam no celular — foram mantidos. É a favor do usuário, não contra; mas registro que o sistema hoje **excede** o recorte da D-097 nesse ponto.
 
@@ -298,10 +320,10 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v2.4 | vivo | — |
+| 00 | Status e Retomada | v2.6 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.15 | vivo — **128 decisões** | — |
+| 03 | Log de Decisões | v0.18 | vivo — **143 decisões** | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
@@ -310,17 +332,17 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 09 | Arquitetura Técnica | v0.6 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.9 | vivo — **na raiz do repositório** | atualizado 19/08, sessão 10 |
+| 12 | CLAUDE.md | v0.11 | vivo — **na raiz do repositório** | atualizado 20/08, sessão 11 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
-| 15 | Plano da Central de Notificações | v0.1 | **proposta — aguarda validação** | criado 19/08 |
+| 15 | Plano da Central de Notificações | v0.3 | ✅ **construído** — os sete passos de pé | atualizado 20/08 |
 | 14* | *Referência da API Pipedrive* | v0.1 | **anexo do Doc 14** | endpoints e limites de uso |
 
 ---
 
 ## 7. DECISÕES JÁ TOMADAS
 
-Registro completo no documento **03 — Log de Decisões**: **128 decisões (D-001 a D-128)**, 13 extras (E-001 a E-013) e 9 restrições de arquitetura (R-001 a R-009).
+Registro completo no documento **03 — Log de Decisões**: **143 decisões (D-001 a D-143)**, 13 extras (E-001 a E-013) e 9 restrições de arquitetura (R-001 a R-009).
 
 **As mais estruturais:**
 
@@ -358,7 +380,7 @@ Registro completo no documento **03 — Log de Decisões**: **128 decisões (D-0
 |---|---|---|---|
 | P-005 | Inventário funcional do que a equipe usa no Pipedrive | Doc 05 | Amplamente coberto pelos prints; revisar na Fase 2 |
 | P-006 | Estimar custo de manutenção contínua | Doc 09/10 | **Infraestrutura encerrada** (D-083 + D-101): planos Pro já existentes e **um projeto só**, sem os ~US$ 10/mês do projeto adicional. Sobra o custo do tempo do maestro conduzindo o Claude Code |
-| P-014 | Modelar a entidade Notificação | Doc 06 | A-07, ainda aberto — **pré-requisito da F8** (D-124) |
+| ~~P-014~~ | ~~Modelar a entidade Notificação~~ | — | ✅ **encerrada 20/08 por negativa deliberada** (Doc 15 §3): a entidade não vira tabela. Grava-se preferência e leitura; a notificação é derivada |
 | P-016 | Revisitar cartão do Kanban: responsável e indicador de atividade | Doc 07 | Revisar no Bloco 11 |
 | P-018 | Definir papéis e permissões granulares | Fase 2 | Adiado por decisão do maestro (D-049) |
 | ~~P-020~~ | ~~Extrair a base do Pipedrive~~ | — | ✅ **encerrada 17/08.** 13 entidades em `dados/pipedrive/` |
@@ -366,8 +388,9 @@ Registro completo no documento **03 — Log de Decisões**: **128 decisões (D-0
 | P-022 | Habilitar a Data API do Bubble e obter token | fase final | **Saiu do caminho crítico** por D-110 |
 | P-023 | Mapear os eixos admissíveis de cada um dos treze indicadores | Doc 05/07 | A-09 — trabalho de Fase 2 |
 | ~~P-024~~ | ~~Obter os vetores do logotipo, símbolo "+" e monograma~~ | — | ✅ **encerrada 18/08.** O maestro subiu o handoff de marca (BR/BAUEN). Símbolo, favicon e assinatura implementados; referência em `docs/marca/` |
-| P-027 | Modelar a entidade Notificação no schema | Doc 09 | A-07 — pendente desde o Bloco 4, **pré-requisito da F8** |
-| P-036 | **Definir o prazo do alerta de "negócio parado"** e a antecedência do lembrete | F8 | **Criada 18/08.** Nunca foi definido em documento nenhum. Bloqueia a F8 junto do desenho do painel (D-124) |
+| ~~P-027~~ | ~~Modelar a entidade Notificação no schema~~ | — | ✅ **encerrada 20/08.** Duas tabelas — `preferencia_notificacao` e `notificacao_lida` —, nenhuma delas guardando a notificação em si. SQL completo no Doc 15 §3 |
+| ~~P-036~~ | ~~Prazo do alerta de "negócio parado" e antecedência do lembrete~~ | — | ✅ **encerrada 20/08 por D-139 e D-140.** Os dois viraram **escolha do usuário em degraus** — 30/45/60/90 com padrão 60, e 1/2/3/7 com padrão 1 — em vez de constante do sistema. Era a pendência que bloqueava a F8 |
+| P-042 | **O prazo do follow-up ao ganhar (90 dias) deve ser editável no painel?** | F8 | **Criada 20/08.** A D-021 só diz "desativável". Não bloqueia: o `check` do schema já aceita 1 a 365, e é acrescentar o campo à tela |
 | P-037 | **Curar os 45 nomes com acento perdido** | qualidade | **Criada 18/08.** Listados em `acentos-pendentes.tsv`, fora do git porque o repositório é público. Conserto pela ficha, que agora é editável (C-07) |
 | ~~P-039~~ | ~~Os 3 negócios legados em Aguardando Contrato~~ | — | ✅ **encerrada 19/08 por D-128**: ficam como estão. O verificador passou a separar legado de violação por regra — quem entrou na etapa pelo sistema tem evento de `etapa` no log; quem não tem, veio da carga |
 | P-040 | **Validar a D-127** — organização criada de dentro do diálogo de negócio | escopo | **Criada 19/08.** Mesma natureza da P-038. Sem isso, registrar um lead novo exige ir a Contatos e voltar; com isso, cria-se organização fora da tela de Contatos |
@@ -422,11 +445,14 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 08 | 18/08/2026 | **F6 — Atividades.** Tela própria em dois modos: lista **um dia por vez (abre em Hoje, padrão do Pipedrive)** com navegação entre dias e vencidas fixas no topo, e calendário mensal, alternáveis. Criação em diálogo com tipo, título, data, horas, responsável, descrição e vínculo opcional a negócio/organização/pessoa (D-108) via busca única das três entidades; conclusão otimista pela lista; registro retroativo (data no passado, "já concluída"); filtros por situação, tipo e responsável; exportação CSV (B-085). O recorte "abre em Hoje" foi um ajuste pedido pelo maestro depois da primeira versão, que mostrava todas as pendentes de uma vez. Sem migração — o schema de 17/08 já tinha `organizacao_id`/`pessoa_id` e o gatilho que encadeia a organização. Verificado por `tsc`, `eslint` e `next build`. | **Verificação visual pendente** (Google OAuth barra o agente); F7 (contatos e produtos) é a próxima; acesso a clientes pelo celular continua sem construir |
 | 10 | 19/08/2026 | **O prazo caiu, a F10 começou e as Estatísticas nasceram.** **D-125** revoga a data de 3/9 e com ela a D-069 e a R-008: o prazo existia porque a API do Pipedrive fecharia com o contrato, e a extração de 17/08 desfez essa dependência — a biblioteca inteira foi varrida para não pressionar mais por calendário. **P-034 encerrada**: o maestro conferiu os dois temas, fechando a dívida aberta desde a sessão 05. **F10 iniciada** com `scripts/verifica-virada.mjs`, que mede os sete critérios da D-098 contra a base real em vez de contra o documento — e foi ele que encontrou a **C-08**: **o negócio era a única entidade do sistema sem caminho de criação**, omissão do backlog que tornava o critério 2 impossível. Corrigida com o pacote completo de paridade (**D-126**): criar, excluir, título, organização e pessoas, com a trava de desfecho valendo também na criação. Verificado em transação com `rollback` contra a base real. ⚠️ **Segunda metade da sessão:** o módulo de Estatísticas nasceu (D-130), com o histórico do Pipedrive carregado no log (D-129, 3.406 eventos) e a data de fechamento trazida para o banco (D-131, 2.152 desfechos). O relatório financeiro veio junto. Os gráficos foram refeitos **três vezes** até passarem por medição em vez de gosto (D-133), e ganharam indicadores que só o volume sustenta (D-134). Entraram filtros de paridade com o Pipedrive (D-136), agendar atividade na ficha (D-137) e o WhatsApp sem aba (D-138). **A rota de estatísticas foi ao ar quebrada duas vezes** — ver 4.8. | ⭐ **Falta marcar o dia de operação real dos sócios.** F8 desenhada no Doc 15, aguardando três definições. P-039 a P-042 abertas |
 | 09 | 18/08/2026 | **A maratona: F3, F6, F7 e F9 fechadas, marca implantada e dois defeitos de dado resolvidos.** F3 concluída (filtro por coluna, persistência por usuário, CSV, lista virtualizada). **F6** — atividades em lista por dia e calendário, com as vencidas em aba própria depois de duas rodadas de ajuste com o maestro. **Identidade visual** do handoff BR/BAUEN implantada, encerrando a **P-024**: símbolo, assinatura, favicon, login em split-screen e rodapé; a navegação fica na lateral por decisão explícita (**D-120**). **F7** — Contatos com CRUD completo e histórico derivado, mais o **agrupamento de duplicatas** (**D-121**: 1.195 dos 2.889 cadastros são repetição) com os negócios como referência (**D-122**); e Produtos. **F9** — celular com lista em cartões, filtros em gaveta e Kanban uma etapa por vez. **Dois defeitos de dado:** o crash da aba Pessoas (**C-06**) e **388 registros com acento destruído na origem** (**C-07**), dos quais 343 recuperados. Rodada de UI/UX: avisos de ação, busca instantânea, foco nos diálogos, esqueletos, barra de progresso e navegação no celular. **F8 adiada** (**D-124**). | **F10, a virada.** Nada foi conferido em tela pelo agente — o Google OAuth impede login automatizado. 45 nomes seguem com acento perdido, listados fora do git |
+| 11 | 20/08/2026 | **A F8 saiu do papel.** As três perguntas que bloqueavam a central de notificações desde 18/08 foram respondidas (**D-139** a **D-141**), mais uma quarta que a medição levantou (**D-142**). O limite de "negócio parado" e a antecedência do lembrete deixaram de ser constante do sistema e viraram **escolha do usuário em degraus** — o que mudou o modelo de dados, não só o número: o `check` da tabela passa a guardar os degraus e o padrão precisa morar no banco. **Medição contra a base real antes de decidir**, e não depois: a curva do alerta de parado é quase plana (79 negócios a 30 dias, 52 a 90), a distribuição é concentrada num só responsável, e há **139 atividades vencidas herdadas** — o sino de uma sócia nasce marcando 96, e o maestro decidiu mostrar (D-142). O teto de desempenho do plano foi verificado por `explain (analyze)`: **1,65 ms**, contra os ~200 ms temidos; os 151 ms observados eram rede. **E a F8 foi construída na mesma sessão**, os sete passos do Doc 15 §6: migração com as duas tabelas e a função de derivação, sino no cabeçalho, marcar como lida, painel `/notificacoes` e follow-up ao ganhar. Tudo verificado contra a base real em transação com `rollback`, sem gravar nada. **Doc 15 a v0.3.** **P-014, P-027, P-036 e P-043 encerradas; P-042 aberta.** | ⭐ **Falta marcar o dia de operação real dos sócios.** E ver o sino e o painel **nos dois temas** — o OAuth impede o agente |
 
 ---
 
 ## Changelog
 
+- **v2.6** — 20/08/2026 — **Fim da sessão 11: a F8 foi decidida e construída no mesmo dia.** A tabela da seção 4.1 tira a F8 de "adiada" e passa a descrever o que existe — sino, painel e follow-up. As duas frentes da 4.2 viram uma: só o dia de operação real dos sócios continua pendente, mais a conferência nos dois temas. Entra a **D-143** (**143 decisões**), que só apareceu quando o código encostou no problema: a preferência é por usuário e a RLS deixa cada um ler apenas a sua, então ganhar o negócio de outra pessoa precisava de regra. **P-043 encerrada.** Doc 03 a v0.18, Doc 12 e `CLAUDE.md` a v0.11, Doc 15 a v0.3.
+- **v2.5** — 20/08/2026 — **Fim da sessão 11. A F8 deixou de depender de decisão.** As três perguntas da seção 7 do Doc 15 foram respondidas (**D-139**, **D-140**, **D-141**) e uma quarta, levantada pela medição, também (**D-142**). A seção 4.2 deixa de dizer que faltam definições e passa a descrever **duas frentes independentes**: o dia de operação real dos sócios, que depende de gente, e a F8, que não depende de mais nada. **P-014 e P-027 encerradas por negativa deliberada** — a entidade Notificação não vira tabela —, **P-036 encerrada** por D-139/D-140, e **P-042 aberta**. Registrado o que a medição contra a base real mostrou antes de a interface existir: a curva do alerta de parado é quase plana, a distribuição é concentrada, há 139 vencidas herdadas, e a consulta derivada custa **1,65 ms** e não os ~200 ms que o plano temia — a restrição verdadeira é número de idas ao banco. Doc 03 a v0.17 (**142 decisões**), Doc 15 a v0.2 (validado).
 - **v2.4** — 19/08/2026 — **Fim da sessão 10.** Registra a segunda metade: Estatísticas e Financeiro de pé, com o histórico do Pipedrive no log e a data de fechamento no banco; gráficos refeitos até passarem por medição; filtros de paridade; atividade na ficha do negócio; WhatsApp sem aba. **Seção 4.8 nova** com as duas quebras da rota de estatísticas e o método de verificação que faltava — `tsc` e `next build` não pegam erro de serialização, só rodar a página pega. Doc 15 criado com o plano da central de notificações, encerrando o desenho da F8. Pendências novas: **P-041** (validar `whatsapp://`) e **P-042** (conferir a aba de atividade em tela).
 - **v2.3** — 19/08/2026 — **Sessão 10, parte 2: a F10 começou e encontrou o que faltava.** `scripts/verifica-virada.mjs` passa a medir os sete critérios da D-098 contra a base real; cinco técnicos deram verdadeiro. O inventário revelou a **C-08** — **o negócio era a única entidade do sistema sem caminho de criação** —, corrigida pelo pacote completo de paridade (**D-126**, B-127 a B-133): criar com a trava valendo na criação, excluir, título editável, organização trocável e vínculo de pessoas. **D-127** (organização criada de dentro do diálogo) fica 🟡 aguardando validação, junto da **P-040**. **P-039** criada para os 3 negócios legados em Aguardando Contrato. **P-034 encerrada** — o maestro conferiu os dois temas, fechando a dívida mais antiga do projeto.
 - **v2.2** — 19/08/2026 — **Sessão 10: o prazo saiu do projeto (D-125).** A data de 3/9 foi revogada a pedido do maestro, e com ela a **D-069** e a **R-008**. A razão é factual: o prazo existia porque a API do Pipedrive fecharia junto com o contrato e os dados ficariam presos lá — a extração e a carga de 17/08 desfizeram essa dependência, e a premissa da data caiu junto. A contagem regressiva saiu da seção 4, o risco "prazo × escopo" foi encerrado na seção 9, e a mesma varredura passou por `CLAUDE.md` (v0.7), `README.md` e os Docs 03 (v0.15), 04, 10, 11, 13 e 14. **Os sete critérios da D-098 continuam inteiros** — o que caiu foi o calendário, não o critério. Corrigido também um erro de registro: a seção 4.2 dava "acesso rápido a clientes pelo celular" como não construído, mas os cartões de contato existem desde a sessão 09.

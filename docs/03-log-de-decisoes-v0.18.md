@@ -1,11 +1,11 @@
-﻿# 03 — Log de Decisões (v0.16)
+﻿# 03 — Log de Decisões (v0.18)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.16 |
-| **Data** | 19/08/2026 |
+| **Versão** | v0.18 |
+| **Data** | 20/08/2026 |
 | **Status** | vivo |
 
 > Registro de toda decisão validada pelo maestro. Nada entra aqui sem confirmação explícita.
@@ -313,6 +313,32 @@ Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões
 
 ---
 
+### Sessão 11 — 20/08/2026
+
+> As quatro decisões que destravaram a **F8**. Todas fecham perguntas que estavam abertas no Doc 15 v0.1 — três nomeadas lá (P-036a, P-036b, P-037a) e uma que a medição contra a base real levantou. Detalhamento no **Doc 15 v0.2**.
+
+| # | Data | Decisão | Justificativa | Situação |
+|---|---|---|---|---|
+| D-139 | 20/08/2026 | **O limite do alerta de "negócio parado" é escolha do usuário**, em degraus de **30 / 45 / 60 / 90** dias, com padrão **60** para quem nunca abrir o painel. Os degraus são guardados por `check` na tabela, não só pela tela | Escolha do maestro: *"coloque diversos filtros de 30 até 90 dias para que o usuário escolha quando vai ser notificado"*. Encerra a **P-036a**, aberta desde 18/08 e nunca definida em documento nenhum. ⚠️ **A medição mudou o peso da pergunta:** dos 164 negócios em negociação, 30 dias acenderiam 79 e 90 dias acenderiam 52 — a curva é quase plana, porque os negócios abertos desta base já estão parados há muito tempo. O limite quase não muda o dia 1; ele regula o ritmo do dia 30 em diante. Degrau fechado em vez de campo livre porque ninguém precisa poder digitar 3 e transformar o sino em ruído. O padrão 60 fica acima do lead time de Proposta Enviada (45 dias), então não acusa negócio que só está seguindo o ciclo longo normal | ✅ |
+| D-140 | 20/08/2026 | **A antecedência do lembrete de próxima atividade também é escolha do usuário**, em degraus de **1 / 2 / 3 / 7** dias, padrão **1** | Encerra a **P-036b**. Mesma forma da D-139, por coerência de painel. Medido na base: 4 atividades pendentes para hoje, 5 até amanhã, 10 em cinco dias e **31 na semana** — o degrau de 7 dias multiplica por seis o que aparece no sino, e por isso não pode ser o padrão. Um dia avisa a tempo de preparar sem encher a lista de compromisso que ainda não é problema | ✅ |
+| D-141 | 20/08/2026 | **O número do sino conta só o que exige ação** — negócio parado e atividade vencida. O lembrete de atividade futura **aparece na lista sem entrar no contador**. A regra mora no banco (coluna `conta` da função de derivação), não no componente | Encerra a **P-037a**. Compromisso de amanhã não é pendência, e o número é o que faz alguém clicar: inflá-lo com o que não pede ação é o caminho mais curto para o sino ser ignorado. A regra sai do banco e não da tela porque é regra de produto — o componente soma, não decide | ✅ |
+| D-142 | 20/08/2026 | **As atividades vencidas herdadas do Pipedrive entram no sino normalmente**, sem corte por idade | Pergunta que o Doc 15 v0.1 não previu e a medição levantou: são **139 atividades vencidas** vivas na base, 96 delas de uma só pessoa, a mais antiga de **maio de 2022** — o sino da Daniela nasce marcando 96. O maestro escolheu mostrar. ⚠️ **A razão que decide:** a aba **Vencidas** de Atividades já exibe essa mesma pilha desde a F6. Filtrar no sino criaria dois números diferentes para o mesmo fato, e o usuário confiaria no menor. O número cai sozinho conforme forem concluídas ou reagendadas — nada precisa ser apagado | ✅ |
+| D-143 | 20/08/2026 | **No follow-up ao ganhar, a tarefa nasce para o RESPONSÁVEL pelo negócio, e a preferência consultada é a de QUEM DECLAROU o Ganho** | Pergunta que só apareceu ao construir, e que o Doc 15 v0.2 não previa. A preferência é por usuário (D-124) e a RLS deixa cada um ler somente a sua — então declarar Ganho num negócio de outra pessoa cria um descompasso entre quem decide e quem recebe a tarefa. A escolha do maestro separa os dois papéis: a tarefa vai para quem tem a relação com o cliente, e a regra de criar ou não sai de quem está agindo. ⚠️ **A alternativa foi recusada por preço:** consultar a preferência do responsável exigiria uma função `security definer`, abrindo entre usuários uma brecha de leitura que hoje não existe — caro demais para um caso que, na operação real, quase não acontece: os sócios fecham os próprios negócios | ✅ |
+
+⚠️ **São QUATRO os caminhos que levam um negócio ao Ganho, e a D-047 fala em três.** Mover no Kanban, declarar pelos botões da ficha e criar já na etapa final são os três conhecidos; o quarto é `editarCampo`, que ganha de duas formas — trocando a etapa com desfecho, ou editando o status direto. Os quatro passaram a chamar a mesma função de follow-up. Regra que vale só num caminho não é regra, e foi assim que a trava de desfecho já precisou ser reforçada antes.
+
+⚠️ **O que a medição desta sessão mudou no plano, e não só nas respostas.** O Doc 15 v0.1 punha um teto de ~200 ms na consulta derivada e dizia que, acima disso, o modelo de derivar na leitura teria de ser revisto antes de a interface existir. Medido com `explain (analyze, buffers)` contra a base real: **1,65 ms de execução**. Os 151 ms observados de fora eram **latência de rede do pooler**, não trabalho de banco.
+
+⚠️ **A consequência inverte a preocupação.** Custo de consulta não é o risco; **número de idas ao banco** é. A ~150 ms de latência por viagem, quatro consultas separadas custariam 600 ms de espera para 6 ms de trabalho. Por isso os quatro alertas saem de **uma função só**, numa chamada só. Nenhum índice novo é necessário — os três existentes já sustentam o plano de execução, conferido em `pg_indexes`.
+
+⚠️ **A armadilha da C-05 volta a morder aqui, e está escrita antes de acontecer.** As duas tabelas novas são as **primeiras do sistema com RLS por usuário** — todas as outras usam `pertence_ao_dominio()`, papel único que vê tudo (D-050). A política tem de comparar `usuario_id` com `public.usuario_atual()`, **nunca com `auth.uid()`**: desde a D-109 a chave primária de `usuario` não é o id da conta de login, e a comparação errada devolveria vazio exatamente para quem veio da carga — os sócios —, deixando o sino mudo sem erro nenhum na tela.
+
+⚠️ **P-014 e P-027 (modelar a entidade Notificação, abertas desde o Bloco 4) foram respondidas por negativa deliberada:** a entidade **não existe como tabela**. O que se grava é preferência e leitura; a notificação é derivada. Foi a inversão que permitiu dispensar o agendador, e é o que o Doc 15 §3 descreve.
+
+⚠️ **Aberta a P-042:** se o prazo do follow-up ao ganhar (90 dias, D-021) deve virar campo editável no painel. Não bloqueia — o `check` do schema já aceita 1 a 365, e é só acrescentar o campo à tela quando o maestro decidir.
+
+---
+
 ## Critério de Pronto do MVP (D-098)
 
 Tudo isto precisa ser verdadeiro para o Pipedrive ser desligado. ⚠️ **A data saiu com a D-125** — os sete critérios continuam valendo integralmente; o que mudou é que eles não competem mais com um calendário:
@@ -398,6 +424,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.18** — 20/08/2026 — **Sessão 11, parte 2: a F8 foi construída.** Entra a **D-143**, que só existiu porque o código encostou no problema — a preferência de notificação é por usuário e a RLS deixa cada um ler apenas a sua, então ganhar o negócio de outra pessoa precisava de regra. Registrado também que os caminhos até o Ganho são **quatro e não três**, corrigindo a contagem da D-047. **143 decisões.**
 - **v0.13** — 17/08/2026 — **Sessão 06, parte 2.** D-115 a D-118: Kanban vira seção própria, movimento entra como parte do design com guarda de `prefers-reduced-motion`, a etapa deixa de ser editável na zona de dados para não haver caminho sem trava, e o Kanban ganha sensor de teclado. Registrada a **C-05**: a D-109 desta mesma sessão quebrou o gatilho do log, e o defeito foi encontrado com um usuário real afetado. **118 decisões.**
 - **v0.16** — 19/08/2026 — **Sessão 10, parte 2.** **D-133 a D-138.** Os gráficos passam a ser medidos por validador em vez de julgados a olho (D-133), depois de três rodadas em que o primeiro desenho violava eixo duplo, cor por índice e cor de status usada como categórica. Entram os indicadores que só o volume sustenta — ciclo de venda, ticket típico com mediana, perdas em valor (D-134) —, o brilho passa a exigir tema escuro **e** interruptor (D-135), o recorte ganha etapa, status, faixa de valor, motivo e períodos prontos (D-136), agendar atividade entra na ficha do negócio (D-137) e o telefone abre o WhatsApp pelo aplicativo (D-138). Correções **C-09** e **C-10** no Doc 09: duas quebras da rota de estatísticas em produção, ambas na fronteira servidor→cliente. **138 decisões.**
 - **v0.15** — 19/08/2026 — **Sessão 10, parte 1.** **D-125 revoga a D-069 e a R-008**: não há mais data de virada. O prazo de 3/9 existia porque a API do Pipedrive fecharia junto com o contrato — a extração e a carga de 17/08 tiraram os dados de lá, e com a premissa caiu a data. A biblioteca inteira foi varrida: `CLAUDE.md`, `README.md` e os Docs 00, 03, 10, 11, 13 e 14 não pressionam mais por calendário. Os sete critérios da D-098 e a lista de "nunca cortar" seguem intactos. **138 decisões.** Encontrada e corrigida a **C-08** — o negócio era a única entidade sem caminho de criação —, com **D-126** (pacote completo de paridade) e **D-127** (organização criada de dentro do diálogo, aguardando validação) e **D-128** (os 3 negócios legados em Aguardando Contrato ficam como estão). **D-129** carrega 3.406 eventos históricos do Pipedrive no log com coluna de procedência própria, e **D-130 revoga a D-093**: o módulo de Estatísticas volta ao escopo com os treze indicadores da D-063. **D-131** acrescenta `negocio.fechado_em` — o eixo do relatório financeiro, que responde "quando entrou dinheiro" e não "quando o lead entrou" — e **D-132** registra o desvio estético do manual da Lure nos gráficos do financeiro, com a guarda de `prefers-reduced-motion` preservada. Criado `scripts/verifica-virada.mjs`, que mede os sete critérios da D-098 contra a base real.

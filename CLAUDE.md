@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.9 · 19/08/2026
+> Documento 12 da biblioteca do projeto · v0.11 · 20/08/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 138 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 143 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
@@ -156,7 +156,18 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 
 **Entra:** Negócios (Kanban com arrastar-e-soltar, Lista de dez colunas com filtro e ordenação em todas, detalhe em três zonas com aba Linha do Tempo) · Atividades (lista e calendário) · Contatos · Produtos/Serviços · trava de desfecho · quatro automações com notificação interna · **log de eventos** · exportação CSV · dois temas · Google OAuth · migração completa · **celular em modo consulta e marcação** · **Estatísticas** (D-130: os treze indicadores da D-063, com recortes e CSV).
 
-⚠️ **A F8 (automações e notificações) foi adiada** (D-124): volta acompanhada de um painel de configuração, com os alertas **derivados na leitura** — sem agendador. Faltam definir o prazo do "negócio parado" e a antecedência do lembrete (P-036), e a entidade Notificação nunca foi modelada (P-014, P-027).
+✅ **A F8 (automações e notificações) está construída** desde 20/08 — **Doc 15 v0.3**. Sino no cabeçalho, painel em `/notificacoes`, follow-up ao ganhar. O que sustenta o desenho:
+
+- Os alertas são **derivados na leitura** (D-124) — não há agendador, e a consulta custa **1,65 ms** na base real. A restrição é **número de idas ao banco**, não custo de consulta: os quatro alertas saem de **uma função só**.
+- O limite de "negócio parado" e a antecedência do lembrete são **escolha do usuário em degraus** — 30/45/60/90 com padrão 60 (D-139) e 1/2/3/7 com padrão 1 (D-140).
+- O número do sino conta **só o que exige ação** (D-141). Lembrete de atividade futura aparece sem contar.
+- ⚠️ **A entidade Notificação não vira tabela** (encerra P-014 e P-027). Grava-se **preferência** e **o que foi lido**; a notificação em si é derivada. Guardar o lido em vez do gerado é o que permite dispensar o agendador — quando a causa some, o alerta some sozinho.
+
+⚠️ **`preferencia_notificacao` e `notificacao_lida` são as primeiras tabelas com RLS por usuário.** Todas as outras usam `pertence_ao_dominio()` (D-050). A política compara com `public.usuario_atual()` e **nunca com `auth.uid()`** — desde a D-109 os dois são diferentes, e a comparação errada deixaria o sino mudo exatamente para quem veio da carga, sem erro nenhum na tela. É a armadilha da C-05.
+
+⚠️ **Ela mordeu de novo, no lugar mais improvável: no próprio teste.** A primeira rodada de `scripts/ensaia-notificacoes.mjs` devolveu zero alerta para todo mundo. A causa não era a política — era o JWT falso do ensaio, com e-mail inventado: `usuario_atual()` não é `security definer`, então lê `usuario` sob RLS, e a política daquela tabela confere o **domínio do e-mail**. Domínio errado, consulta vazia, `usuario_atual()` nulo, sino mudo. **Nenhum erro em lugar nenhum.** É o mesmo sintoma da C-05 por uma terceira porta — e a lição é que o alerta vazio nunca deve ser lido como "não há alertas" sem antes conferir quem o banco acha que você é.
+
+⚠️ **O sino vive no LAYOUT, não numa rota.** Um erro de serialização ali derruba **todas as telas de uma vez**. O layout passa só dados; o sino é que é Client Component. Ver o método de verificação por `curl` acima — foi ele que confirmou as sete rotas respondendo 200.
 
 **Fora — não construa:** **seletor de cliente Bubble no Ganho** (D-110, foi para fase final) · **construtor genérico de relatórios** (E-008 — o catálogo de indicadores existe, o construtor não) · metas e seu acompanhamento · mesclagem de duplicados · transferência entre usuários · telas de configuração · criação e edição pelo celular · Google Agenda · API pública e webhooks · envio de e-mail (nenhum, em hipótese alguma) · múltiplas moedas · módulo de LGPD.
 
@@ -199,16 +210,19 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **138 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **143 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
 | 14 | Referência da API Pipedrive | Endpoints para a extração |
+| 15 | **Central de Notificações** | O plano da F8, validado — schema, alertas, telas e critérios de aceite |
 
 ---
 
 ## Changelog
 
+- **v0.11** — 20/08/2026 — **A F8 saiu do papel na mesma sessão que a destravou.** O bloco da F8 deixa de descrever um plano e passa a descrever o que existe. Entra o aviso que esta sessão pagou para aprender: a armadilha da C-05 apareceu por uma **terceira porta** — não na política nova, mas no e-mail falso do próprio script de ensaio, porque `usuario_atual()` lê `usuario` sob RLS e aquela política confere o domínio do e-mail. Zero alerta, zero erro. Fica a regra: **sino vazio não é prova de que não há alertas**. Reforçado que o sino mora no layout, onde um defeito derruba todas as telas de uma vez. **143 decisões.**
+- **v0.10** — 20/08/2026 — **A F8 deixou de depender de decisão.** O bloco que dizia "faltam definir o prazo do negócio parado e a antecedência do lembrete" foi substituído pelo que ficou decidido (**D-139** a **D-142**, Doc 15 v0.2): os dois prazos viraram **escolha do usuário em degraus**, o sino conta **só o que exige ação**, e a entidade Notificação **não vira tabela** — encerrando P-014 e P-027, abertas desde o Bloco 4. Entra o aviso de que as duas tabelas novas são as **primeiras com RLS por usuário** e por isso comparam com `usuario_atual()` e nunca com `auth.uid()` — a armadilha da C-05, escrita antes de morder desta vez. O Doc 15 entra na biblioteca de documentos. **142 decisões.**
 - **v0.9** — 19/08/2026 — **Fim da sessão 10.** O aviso da fronteira servidor→cliente foi reescrito e ampliado: ele já existia e ainda assim derrubou a rota de estatísticas **duas vezes no mesmo dia** — uma por formatador passado como propriedade, outra por reexportação de referência de cliente. Entra junto o método que encontrou o defeito, porque `tsc`, `eslint` e `next build` passam por ele. Acrescentadas as regras de gráfico (D-133) e o link do WhatsApp por aplicativo (D-138).
 - **v0.8** — 19/08/2026 — **Estatísticas voltam ao escopo (D-130) e a procedência do log ganha um terceiro estado (D-129).** A seção "o que não pode dar errado" passa a descrever os três estados de `evento_negocio`: sintético da carga, importado do Pipedrive, e nascido neste sistema — com a regra dos indicadores intacta. Recharts sai de "fase 2" e entra em uso. O recorte do MVP passa a incluir Estatísticas; sai da lista de proibidos o painel de indicadores e entra, no lugar, o **construtor genérico de relatórios** (E-008), que é o que de fato continua fora.
 - **v0.7** — 19/08/2026 — **O prazo saiu do documento (D-125).** A linha "prazo imutável: 3 de setembro" foi apagada daqui, do `README.md` e dos Docs 00, 03, 10 e 11: ela existia porque a API do Pipedrive fecharia com o contrato, e isso deixou de valer quando a extração e a carga rodaram em 17/08. **D-069 e R-008 revogadas.** A virada passa a ser decidida por prontidão, não por calendário — e prazo deixa de ser argumento admissível em qualquer decisão de escopo.

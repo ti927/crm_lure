@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import { ETAPA_DE_DESFECHO, type Desfecho } from "./constantes";
+import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
 
@@ -55,6 +56,14 @@ export async function moverNegocio(
     .eq("id", negocioId);
 
   if (error) return { erro: error.message };
+
+  // D-021: arrastar o cartao para Aguardando Contrato e declarar Ganho e
+  // um dos tres caminhos de desfecho da D-047, entao cria follow-up
+  // igual aos outros dois. Regra que so vale num caminho nao e regra.
+  if (mudanca.status === "ganho") {
+    await criarFollowUpDoGanho(supabase, negocioId);
+    revalidatePath("/atividades");
+  }
 
   revalidatePath("/kanban");
   revalidatePath("/negocios");

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import { ETAPA_DE_DESFECHO, type Desfecho } from "@/app/(sistema)/kanban/constantes";
+import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
 type MudancaNegocio = Database["public"]["Tables"]["negocio"]["Update"];
@@ -77,9 +78,18 @@ export async function editarCampo(
 
   if (error) return { erro: error.message };
 
+  // D-021. ⚠️ Este caminho ganha de DUAS formas: mudando a etapa para
+  // Aguardando Contrato com desfecho Ganho, ou editando o status
+  // direto. `mudanca.status` cobre as duas — foi por isso que a
+  // verificação ficou aqui e não em cada ramo acima.
+  if (mudanca.status === "ganho") {
+    await criarFollowUpDoGanho(supabase, negocioId);
+  }
+
   revalidatePath(`/negocios/${negocioId}`);
   revalidatePath("/negocios");
   revalidatePath("/kanban");
+  if (mudanca.status === "ganho") revalidatePath("/atividades");
   return { ok: true };
 }
 
@@ -109,9 +119,17 @@ export async function declararDesfecho(negocioId: string, desfecho: Desfecho) {
 
   if (error) return { erro: error.message };
 
+  // D-021: ganhar cria o follow-up. Depois do update e nunca antes — se
+  // a declaração falhar, não pode sobrar tarefa de um ganho que não
+  // aconteceu.
+  if (desfecho.status === "ganho") {
+    await criarFollowUpDoGanho(supabase, negocioId);
+  }
+
   revalidatePath(`/negocios/${negocioId}`);
   revalidatePath("/negocios");
   revalidatePath("/kanban");
+  revalidatePath("/atividades");
   return { ok: true };
 }
 

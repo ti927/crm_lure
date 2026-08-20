@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import { ETAPA_DE_DESFECHO, type Desfecho } from "@/app/(sistema)/kanban/constantes";
+import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
 
@@ -119,6 +120,16 @@ export async function criarNegocio(d: DadosNegocio, desfecho?: Desfecho) {
     .single();
 
   if (error) return { erro: error.message };
+
+  // D-021. ⚠️ Sim, um negocio pode NASCER ganho: a D-017 deixa criar em
+  // qualquer etapa, e a trava da D-047 pede o desfecho ali no
+  // formulario. Nascer ganho sem follow-up seria o unico caminho de
+  // desfecho sem a automacao — e o comprador que entra ja fechado e
+  // justamente o que mais merece retorno.
+  if (status === "ganho") {
+    await criarFollowUpDoGanho(supabase, data.id);
+    revalidatePath("/atividades");
+  }
 
   revalidatePath("/negocios");
   revalidatePath("/kanban");

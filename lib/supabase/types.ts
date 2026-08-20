@@ -491,6 +491,32 @@ export type Database = {
           },
         ]
       }
+      notificacao_lida: {
+        Row: {
+          chave: string
+          lido_em: string
+          usuario_id: string
+        }
+        Insert: {
+          chave: string
+          lido_em?: string
+          usuario_id: string
+        }
+        Update: {
+          chave?: string
+          lido_em?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacao_lida_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizacao: {
         Row: {
           bubble_id: string | null
@@ -650,6 +676,38 @@ export type Database = {
           },
         ]
       }
+      preferencia_notificacao: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          dias: number | null
+          tipo: Database["public"]["Enums"]["tipo_notificacao"]
+          usuario_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          dias?: number | null
+          tipo: Database["public"]["Enums"]["tipo_notificacao"]
+          usuario_id: string
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          dias?: number | null
+          tipo?: Database["public"]["Enums"]["tipo_notificacao"]
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preferencia_notificacao_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       produto: {
         Row: {
           area_id: string | null
@@ -747,6 +805,30 @@ export type Database = {
     }
     Functions: {
       dominio_empresa: { Args: never; Returns: string }
+      usuario_atual: { Args: never; Returns: string | null }
+      padrao_notificacao: {
+        Args: { p_tipo: Database["public"]["Enums"]["tipo_notificacao"] }
+        Returns: number | null
+      }
+      /**
+       * F8 — os quatro alertas do usuario da sessao, derivados na leitura
+       * (D-124). Uma funcao so, porque a restricao e numero de idas ao
+       * banco e nao custo de consulta (Doc 15 secao 2.1).
+       */
+      notificacoes: {
+        Args: never
+        Returns: {
+          tipo: Database["public"]["Enums"]["tipo_notificacao"]
+          chave: string
+          titulo: string
+          detalhe: string
+          referencia: string
+          destino: string
+          /** D-141: so negocio parado e atividade vencida entram no numero. */
+          conta: boolean
+          lida: boolean
+        }[]
+      }
       pertence_ao_dominio: { Args: never; Returns: boolean }
       chave_nome: { Args: { texto: string }; Returns: string }
       conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
@@ -909,6 +991,11 @@ export type Database = {
     Enums: {
       status_negocio: "parado" | "negociacao" | "ganho" | "perdido"
       tipo_evento: "etapa" | "valor" | "responsavel" | "status"
+      tipo_notificacao:
+        | "negocio_parado"
+        | "atividade_vencida"
+        | "lembrete_atividade"
+        | "follow_up_ganho"
     }
     CompositeTypes: {
       [_ in never]: never
