@@ -220,6 +220,49 @@
 }
 
 /* ============================================================
+   Rolagem lateral visivel
+   ============================================================
+   ⚠️ O Kanban tem seis colunas e a Lista tem dez, e nos dois casos a
+   barra horizontal existia mas era invisivel na pratica: o Windows
+   desenha barra fina que so aparece durante a rolagem, entao quem chega
+   na tela nao ve que ha mais coisa para o lado. O sintoma relatado foi
+   "tenho que mexer com o shift" — que e o atalho que se usa justamente
+   quando nao ha barra para arrastar.
+
+   Aqui ela fica sempre desenhada, mais grossa e com contraste suficiente
+   para ser agarrada com o mouse. Ocupa 12px do espaco util, e vale a
+   pena: coluna que ninguem sabe que existe e coluna que nao existe. */
+.rolagem-visivel {
+  scrollbar-width: auto;
+  scrollbar-color: var(--border-strong) var(--surface-sunken);
+}
+
+.rolagem-visivel::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+}
+
+.rolagem-visivel::-webkit-scrollbar-track {
+  background: var(--surface-sunken);
+}
+
+.rolagem-visivel::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  /* A borda da cor da trilha "afina" o polegar sem afinar a area
+     clicavel: o alvo continua com 12px de altura para o mouse. */
+  border: 3px solid var(--surface-sunken);
+}
+
+.rolagem-visivel::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.rolagem-visivel::-webkit-scrollbar-corner {
+  background: var(--surface-sunken);
+}
+
+/* ============================================================
    Feedback de ponteiro
    ============================================================
    ⚠️ O Preflight do Tailwind v4 DEIXOU DE POR `cursor: pointer` em

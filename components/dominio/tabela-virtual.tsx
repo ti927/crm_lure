@@ -48,7 +48,7 @@ export function TabelaVirtual({
   const fundo = alturaTotal - (itens[itens.length - 1]?.end ?? 0);
 
   return (
-    <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
+    <div ref={scrollRef} className="rolagem-visivel min-h-0 flex-1 overflow-auto">
       <table className="w-full border-collapse text-base">
         {cabecalho}
         <tbody>

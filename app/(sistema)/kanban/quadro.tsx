@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRolagemLateral } from "@/components/dominio/rolagem-lateral";
 import {
   DndContext,
   DragOverlay,
@@ -178,6 +179,9 @@ export function Quadro({
   motivos: { id: string; nome: string }[];
   responsavelId?: string;
 }) {
+  const quadroRef = useRef<HTMLDivElement>(null);
+  useRolagemLateral(quadroRef);
+
   const [colunas, setColunas] = useState(iniciais);
   const [arrastando, setArrastando] = useState<Cartao | null>(null);
   const [carregando, setCarregando] = useState<string | null>(null);
@@ -296,7 +300,14 @@ export function Quadro({
         onDragEnd={aoSoltar}
         onDragCancel={() => setArrastando(null)}
       >
-        <div className="flex flex-1 gap-4 overflow-x-auto px-4 py-3">
+        {/* ⚠️ A barra horizontal fica sempre desenhada (rolagem-visivel):
+            seis colunas nao cabem na tela e, com a barra fina do Windows,
+            ninguem descobre que ha mais para o lado. A roda do mouse
+            tambem rola de lado aqui, sem precisar de Shift. */}
+        <div
+          ref={quadroRef}
+          className="rolagem-visivel flex flex-1 gap-4 overflow-x-auto px-4 py-3"
+        >
           {colunas.map((c) => (
             <Coluna
               key={c.id}
