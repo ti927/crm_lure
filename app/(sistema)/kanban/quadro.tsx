@@ -131,7 +131,7 @@ function Coluna({
   const faltam = coluna.total - coluna.cartoes.length;
 
   return (
-    <section className="flex w-72 shrink-0 flex-col">
+    <section className="flex min-h-0 w-72 shrink-0 flex-col">
       {/* O nome da etapa sempre escrito — a cor nunca e o unico sinal
           (Doc 08, B-076). */}
       <header className="border-border flex items-baseline justify-between gap-2 border-b px-1 pb-2">
@@ -143,7 +143,7 @@ function Coluna({
 
       <div
         ref={setNodeRef}
-        className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
+        className={`rolagem-visivel flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
           isOver ? "bg-surface-hover alvo-de-solta" : ""
         }`}
       >

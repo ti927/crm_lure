@@ -50,8 +50,19 @@ export default async function LayoutSistema({
     // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura, e o
     // rodapé fica fixo no pé. O `min-h-0` na linha é o que deixa as telas
     // com rolagem interna encolherem em vez de empurrar o rodapé para fora.
+    //
+    // ⚠️ `h-svh`, e não `min-h-svh`. A diferença não é estética: com
+    // `min-h`, esta coluna CRESCE com o conteúdo e nenhum descendente tem
+    // altura definida — então o `h-full` que todas as telas de lista usam
+    // não resolve contra nada, as colunas do Kanban esticam até caber
+    // tudo, a página fica mais alta que a janela e a barra de rolagem
+    // horizontal vai parar abaixo da dobra. Era preciso rolar para baixo
+    // para descobrir que havia mais coluna para o lado.
+    //
+    // Com `h-svh` a moldura passa a ser exatamente a janela, e cada tela
+    // rola por dentro — que é como elas já estavam escritas desde a F3.
     <ProvedorAvisos>
-      <div className="bg-background flex min-h-svh flex-col">
+      <div className="bg-background flex h-svh flex-col overflow-hidden">
         <ProgressoNavegacao />
         <div className="flex min-h-0 flex-1">
           <aside className="bg-surface border-border hidden w-56 shrink-0 flex-col border-r md:flex">
@@ -83,7 +94,14 @@ export default async function LayoutSistema({
               <BotaoSair />
             </header>
 
-            <main className="min-w-0 flex-1">{children}</main>
+            {/* ⚠️ `min-h-0` é o que permite este bloco ENCOLHER dentro do
+                flex: sem ele, um filho alto empurra o container e o
+                `overflow` nunca dispara. `rolagem-visivel` cobre as telas
+                que rolam aqui em vez de por dentro — Estatísticas e
+                Notificações. */}
+            <main className="rolagem-visivel min-h-0 min-w-0 flex-1 overflow-auto">
+              {children}
+            </main>
           </div>
         </div>
 
