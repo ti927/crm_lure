@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Popover } from "radix-ui";
 import { useState, useTransition } from "react";
 import { Download, SlidersHorizontal, X } from "lucide-react";
 import type { Filtros } from "./consulta";
@@ -112,54 +113,65 @@ export function FiltrosIndicadores({
         Exportar CSV
       </a>
 
-      <button
-        type="button"
-        onClick={() => {
-          setRascunho(filtros);
-          setAberto(true);
-        }}
-        className={`h-control-md inline-flex items-center gap-1.5 rounded-md border px-3 text-sm font-medium ${
-          ativo
-            ? "border-brand-ink text-text"
-            : "border-border text-text-secondary hover:bg-surface-hover hover:text-text"
-        }`}
-      >
-        <SlidersHorizontal className="size-3.5" aria-hidden />
-        Recorte
-        {/* Recorte ativo nunca depende só da borda: o ponto amarelo é
-            fundo com forma própria, e #ffdd00 aqui é fundo, não tinta. */}
-        {ativo && <span className="bg-brand size-1.5 rounded-pill" aria-hidden />}
-      </button>
-
       {ativo && (
         <button
           type="button"
           onClick={() =>
             aplicar(VAZIO)
           }
-          className="h-control-md text-text-secondary hover:bg-surface-hover hover:text-text inline-flex items-center gap-1 rounded-md px-2 text-sm font-medium"
+          className="h-control-md text-text-secondary hover:bg-surface-hover hover:text-text order-2 inline-flex items-center gap-1 rounded-md px-2 text-sm font-medium"
         >
           <X className="size-3.5" aria-hidden />
           Limpar
         </button>
       )}
 
-      {aberto && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-          onMouseDown={(e) => e.target === e.currentTarget && setAberto(false)}
+      {/* ⚠️ Popover ancorado no botão, e não mais diálogo em tela cheia.
+          Um modal com fundo escurecido esconde justamente o que se está
+          recortando: quem ajusta um filtro quer ver o número mudar, e
+          com a tela coberta perde a referência do que havia antes.
+
+          ⚠️ E o rótulo deixou de ser "Recorte". "Recorte" é o vocabulário
+          do projeto (D-064), não o de quem usa — ninguém procura filtro
+          de vendedor num botão com esse nome, e o filtro por responsável
+          estava aqui dentro o tempo todo, funcionando. O documento
+          continua falando em recorte; a TELA fala em filtros. */}
+      <Popover.Root
+        open={aberto}
+        onOpenChange={(o) => {
+          if (o) setRascunho(filtros);
+          setAberto(o);
+        }}
+      >
+        <Popover.Trigger
+          className={`h-control-md inline-flex items-center gap-1.5 rounded-md border px-3 text-sm font-medium ${
+            ativo
+              ? "border-brand-ink text-text"
+              : "border-border text-text-secondary hover:bg-surface-hover hover:text-text"
+          }`}
         >
-          <div
-            role="dialog"
-            aria-modal="true"
+          <SlidersHorizontal className="size-3.5" aria-hidden />
+          Filtros
+          {/* Filtro ativo nunca depende só da borda: o ponto amarelo é
+              fundo com forma própria, e #ffdd00 aqui é fundo, não tinta. */}
+          {ativo && <span className="bg-brand size-1.5 rounded-pill" aria-hidden />}
+        </Popover.Trigger>
+
+        <Popover.Portal>
+          <Popover.Content
+            align="end"
+            sideOffset={6}
+            collisionPadding={8}
             aria-labelledby="titulo-recorte"
-            className="border-border bg-surface my-8 w-full max-w-md rounded-lg border p-5 shadow-xl"
+            // Teto de altura com rolagem própria: são doze campos, e numa
+            // tela baixa o painel passaria do rodapé sem isso.
+            className="border-border bg-surface rolagem-visivel z-50 max-h-[min(34rem,80svh)] w-[min(24rem,calc(100vw-1rem))] overflow-y-auto rounded-lg border p-5 shadow-xl"
           >
             <h2 id="titulo-recorte" className="text-lg font-semibold">
-              Recorte dos indicadores
+              Filtros dos indicadores
             </h2>
             <p className="text-text-muted mt-1 text-sm">
-              Vale para todos os números da tela ao mesmo tempo.
+              Valem para todos os números da tela ao mesmo tempo.
             </p>
 
             <div className="mt-4 flex flex-col gap-4">
@@ -316,7 +328,10 @@ export function FiltrosIndicadores({
               )}
             </div>
 
-            <div className="mt-5 flex justify-end gap-2">
+            {/* O rodapé fica grudado no pé do painel: com doze campos e
+                rolagem própria, um "Aplicar" que sai de cena junto com o
+                último campo é um botão que ninguém acha. */}
+            <div className="bg-surface sticky bottom-0 -mx-5 -mb-5 mt-5 flex justify-end gap-2 px-5 pb-5 pt-3">
               <button
                 type="button"
                 onClick={() => setAberto(false)}
@@ -332,9 +347,9 @@ export function FiltrosIndicadores({
                 Aplicar
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
     </div>
   );
 }

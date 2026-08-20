@@ -67,7 +67,7 @@ export function FiltroAno({
   return (
     <div className="relative" style={{ opacity: pendente ? 0.6 : 1, transition: "opacity 120ms" }}>
       <label htmlFor="recorte-ano" className="sr-only">
-        Recorte por ano
+        Filtrar por ano
       </label>
       <select
         id="recorte-ano"
