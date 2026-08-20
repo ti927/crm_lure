@@ -28,6 +28,13 @@ export function useRolagemLateral(ref: RefObject<HTMLElement | null>) {
       // navegador resolve sozinho.
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
 
+      // ⚠️ O PRÓPRIO container rola na vertical? Então a roda é dele, e
+      // este atalho não tem o que fazer. Foi o que aconteceu quando o
+      // quadro do Kanban passou a rolar nas duas direções: sem esta
+      // linha, o atalho sequestrava a roda e descer no quadro virava
+      // impossível — só dava para andar de lado.
+      if (caixa.scrollHeight > caixa.clientHeight) return;
+
       // O ponteiro está sobre algo que rola na vertical e ainda tem para
       // onde ir? Então a roda é daquilo, não do quadro.
       let no = e.target as HTMLElement | null;

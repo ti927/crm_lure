@@ -131,19 +131,33 @@ function Coluna({
   const faltam = coluna.total - coluna.cartoes.length;
 
   return (
-    <section className="flex min-h-0 w-72 shrink-0 flex-col">
+    <section className="flex w-72 shrink-0 flex-col">
       {/* O nome da etapa sempre escrito — a cor nunca e o unico sinal
-          (Doc 08, B-076). */}
-      <header className="border-border flex items-baseline justify-between gap-2 border-b px-1 pb-2">
+          (Doc 08, B-076).
+
+          ⚠️ `sticky top-0`: como agora quem rola na vertical e o QUADRO
+          inteiro, e nao cada coluna, sem isto o cabecalho sairia de cena
+          na primeira descida e ninguem saberia mais em que etapa esta
+          olhando. O fundo solido existe pelo mesmo motivo — sem ele os
+          cartoes apareceriam por tras do texto. */}
+      <header className="border-border bg-background sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b px-1 pb-2">
         <h2 className="text-md font-semibold">{coluna.nome}</h2>
         <span className="text-text-muted tabular text-sm">
           {coluna.total.toLocaleString("pt-BR")}
         </span>
       </header>
 
+      {/* ⚠️ SEM `overflow-y-auto` aqui, de proposito. Cada coluna tinha a
+          propria barra vertical, e seis barrinhas competindo na mesma
+          tela e ruido: para ver o fim de uma coluna era preciso achar a
+          barra dela. Agora a coluna cresce ate onde precisa e quem rola
+          e o quadro, com UMA barra a direita.
+
+          `min-h-24` volta porque, sem altura propria, a coluna vazia
+          nao teria area nenhuma para receber um cartao arrastado. */}
       <div
         ref={setNodeRef}
-        className={`rolagem-visivel flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
+        className={`flex min-h-24 flex-1 flex-col gap-2 rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
           isOver ? "bg-surface-hover alvo-de-solta" : ""
         }`}
       >
@@ -300,9 +314,17 @@ export function Quadro({
             seis colunas nao cabem na tela e, com a barra fina do Windows,
             ninguem descobre que ha mais para o lado. A roda do mouse
             tambem rola de lado aqui, sem precisar de Shift. */}
+        {/* ⚠️ `overflow-auto`, e não só `overflow-x-auto`: quem rola nas
+            DUAS direções agora é o quadro. São duas barras no total — uma
+            embaixo e uma à direita — no lugar de uma embaixo mais seis
+            verticais, uma por coluna.
+
+            `items-start` deixaria as colunas com alturas diferentes;
+            sem ele elas se esticam até a mais alta, e a coluna curta
+            continua sendo um alvo grande para soltar um cartão. */}
         <div
           ref={quadroRef}
-          className="rolagem-visivel flex flex-1 gap-4 overflow-x-auto px-4 py-3"
+          className="rolagem-visivel flex min-h-0 flex-1 gap-4 overflow-auto px-4 py-3"
         >
           {colunas.map((c) => (
             <Coluna
