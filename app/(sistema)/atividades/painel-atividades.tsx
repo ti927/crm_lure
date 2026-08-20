@@ -7,7 +7,8 @@ import {
   SeletorResponsavel,
   type Usuario as UsuarioFoto,
 } from "@/components/dominio/seletor-responsavel";
-import { ListaAtividades, ListaVencidas } from "./lista-atividades";
+import { ListaAtividades, ListaVencidas, ListaResultados } from "./lista-atividades";
+import { CampoBusca } from "@/components/dominio/campo-busca";
 import { Calendario } from "./calendario";
 import {
   DialogoAtividade,
@@ -53,6 +54,7 @@ function paraEdicao(a: LinhaAtividade): AtividadeEdicao {
 export function PainelAtividades({
   doDia,
   vencidas,
+  resultados,
   atividadesMes,
   totalVencidas,
   dia,
@@ -65,6 +67,7 @@ export function PainelAtividades({
 }: {
   doDia: LinhaAtividade[];
   vencidas: LinhaAtividade[];
+  resultados: LinhaAtividade[];
   atividadesMes: LinhaAtividade[];
   totalVencidas: number;
   dia: string;
@@ -106,7 +109,12 @@ export function PainelAtividades({
           <h1 className="text-xl font-semibold tracking-tight">Atividades</h1>
 
           {/* Três vistas (B-080): o dia em foco, a pilha de vencidas e o mês. */}
-          <div className="border-border ml-2 flex rounded-md border p-0.5">
+          <div
+            className={`border-border ml-2 flex rounded-md border p-0.5 ${
+              filtros.busca ? "opacity-50" : ""
+            }`}
+            title={filtros.busca ? "A busca cobre todos os dias" : undefined}
+          >
             <Aba
               atual={filtros.vista === "lista"}
               onClick={() => aplicar("vista", "")}
@@ -131,6 +139,17 @@ export function PainelAtividades({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* ⚠️ A busca atravessa TODA a base, e não o dia em foco: quem
+              procura um cliente não sabe (nem deveria saber) em que dia a
+              atividade dele caiu. Por isso ela sai das abas e assume a
+              tela enquanto houver termo. */}
+          <CampoBusca
+            valor={filtros.busca}
+            aoBuscar={(termo) => aplicar("busca", termo)}
+            placeholder="Buscar atividade, cliente, negócio"
+            className="w-full md:w-64"
+          />
+
           {/* Situação não se aplica às vencidas — lá é sempre pendente. */}
           {filtros.vista !== "vencidas" && (
             <select
@@ -194,7 +213,15 @@ export function PainelAtividades({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        {filtros.vista === "calendario" ? (
+        {filtros.busca ? (
+          <ListaResultados
+            resultados={resultados}
+            termo={filtros.busca}
+            hoje={hoje}
+            aoEditar={(a) => setDialogo({ modo: "editar", atividade: a })}
+            aoMudar={() => router.refresh()}
+          />
+        ) : filtros.vista === "calendario" ? (
           <Calendario
             mes={filtros.mes}
             atividades={atividadesMes}

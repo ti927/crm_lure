@@ -56,6 +56,13 @@ export type FiltrosAtividade = {
   dia: string;
   /** Mês visível no calendário, "YYYY-MM". Só usado quando vista=calendario. */
   mes: string;
+  /**
+   * Termo de busca. Quando presente, a tela deixa de ser "um dia por vez"
+   * e passa a mostrar resultados de TODA a base — que é o que se espera
+   * de uma busca. Sem isso, procurar por um cliente só encontraria algo
+   * se a atividade dele fosse justamente do dia em foco.
+   */
+  busca: string;
 };
 
 export type Busca = Record<string, string | string[] | undefined>;
@@ -78,11 +85,28 @@ export function parseFiltros(p: Busca): FiltrosAtividade {
     tipo: um(p.tipo) ?? "",
     dia: um(p.dia) ?? "",
     mes: um(p.mes) ?? "",
+    busca: (um(p.busca) ?? "").trim(),
   };
 }
 
 export function temFiltro(f: FiltrosAtividade): boolean {
-  return Boolean(f.responsavel || f.tipo || f.situacao !== "pendentes");
+  return Boolean(f.responsavel || f.tipo || f.situacao !== "pendentes" || f.busca);
+}
+
+/**
+ * Para onde o clique numa atividade leva.
+ *
+ * ⚠️ Só 24% das atividades têm negócio (1.564 de 6.522): 55% estão
+ * penduradas em organização e 20% em pessoa, por causa da D-108. Mandar
+ * sempre para o negócio deixaria três de cada quatro cliques sem
+ * destino. Abre o que houver, na ordem em que a informação é mais
+ * específica; as 29 sem vínculo nenhum devolvem null e caem na edição.
+ */
+export function destinoDaAtividade(a: LinhaAtividade): string | null {
+  if (a.negocio) return `/negocios/${a.negocio.id}`;
+  if (a.organizacao) return `/contatos/organizacoes/${a.organizacao.id}`;
+  if (a.pessoa) return `/contatos/pessoas/${a.pessoa.id}`;
+  return null;
 }
 
 /* ---------- datas ---------- */

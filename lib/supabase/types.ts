@@ -917,6 +917,22 @@ export type Database = {
       }
       pertence_ao_dominio: { Args: never; Returns: boolean }
       chave_nome: { Args: { texto: string }; Returns: string }
+      sem_acento: { Args: { t: string }; Returns: string }
+      /**
+       * Busca da tela de Atividades. Devolve so os IDS: a projecao
+       * completa continua sendo a SELECAO da tela, para nao haver duas
+       * descricoes da mesma linha. Mora no banco por causa da C-04.
+       */
+      atividades_busca: {
+        Args: {
+          p_termo: string
+          p_situacao?: string
+          p_responsavel?: string | null
+          p_tipo?: string | null
+          p_limite?: number
+        }
+        Returns: { id: string; data: string }[]
+      }
       conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
       organizacoes_agrupadas: {
         Args: { termo?: string | null; limite?: number; deslocamento?: number }

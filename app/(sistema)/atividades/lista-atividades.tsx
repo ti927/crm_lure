@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   Check,
   Briefcase,
@@ -11,10 +12,18 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  Pencil,
+  SearchX,
 } from "lucide-react";
 import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
 import { concluirAtividade } from "./acoes";
-import { somaDias, rotuloDia, formataData, type LinhaAtividade } from "./consulta";
+import {
+  somaDias,
+  rotuloDia,
+  formataData,
+  destinoDaAtividade,
+  type LinhaAtividade,
+} from "./consulta";
 
 const ICONE_VINCULO = {
   negocio: Briefcase,
@@ -162,6 +171,72 @@ export function ListaVencidas({
   );
 }
 
+/**
+ * Vista de busca: resultados de toda a base, e não de um dia.
+ *
+ * ⚠️ Cada linha mostra a DATA, coisa que a lista do dia não precisa
+ * mostrar. Sem ela o resultado fica ambíguo — "Chamada · Sicoob" não diz
+ * se foi ontem ou em 2023.
+ */
+export function ListaResultados({
+  resultados,
+  termo,
+  hoje,
+  aoEditar,
+  aoMudar,
+}: {
+  resultados: LinhaAtividade[];
+  termo: string;
+  hoje: string;
+  aoEditar: (a: LinhaAtividade) => void;
+  aoMudar: () => void;
+}) {
+  if (resultados.length === 0) {
+    return (
+      <div className="px-4 py-16 text-center">
+        <SearchX className="text-text-muted mx-auto size-6" aria-hidden />
+        <p className="text-text-secondary mt-3 text-md font-medium">
+          Nada encontrado para &ldquo;{termo}&rdquo;.
+        </p>
+        <p className="text-text-muted mt-1 text-sm">
+          A busca cobre o título da atividade, a descrição e o nome do negócio, da
+          organização e da pessoa.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      <h2 className="bg-surface-sunken border-border text-text-muted sticky top-0 z-10 flex items-center gap-2 border-b px-4 py-2 text-xs font-semibold uppercase tracking-caps">
+        Resultados
+        <span className="opacity-60">{resultados.length}</span>
+        {/* ⚠️ O teto é 100. Dizer isso evita a leitura de que "só existem
+            estes" — resultado truncado com cara de completo é pior que
+            resultado nenhum. */}
+        {resultados.length >= 100 && (
+          <span className="ml-auto normal-case tracking-normal opacity-70">
+            mostrando os 100 mais recentes
+          </span>
+        )}
+      </h2>
+      <ul>
+        {resultados.map((a, i) => (
+          <ItemLista
+            key={a.id}
+            atividade={a}
+            indice={i}
+            mostrarData
+            hoje={hoje}
+            aoEditar={aoEditar}
+            aoMudar={aoMudar}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** Quantos dias uma data está atrás de hoje. */
 function diasDeAtraso(data: string, hoje: string): number {
   const um = Date.parse(`${data}T00:00:00Z`);
@@ -172,6 +247,7 @@ function diasDeAtraso(data: string, hoje: string): number {
 function ItemLista({
   atividade,
   indice,
+  mostrarData,
   venceuEm,
   hoje,
   aoEditar,
@@ -179,6 +255,8 @@ function ItemLista({
 }: {
   atividade: LinhaAtividade;
   indice: number;
+  /** Vista de busca: a data vem à frente, porque o resultado não é de um dia só. */
+  mostrarData?: boolean;
   /** Quando presente, mostra a data de vencimento à frente (aba Vencidas). */
   venceuEm?: string;
   hoje?: string;
@@ -213,6 +291,7 @@ function ItemLista({
     null;
 
   const atraso = venceuEm && hoje ? diasDeAtraso(venceuEm, hoje) : 0;
+  const destino = destinoDaAtividade(atividade);
 
   return (
     <li
@@ -253,9 +332,32 @@ function ItemLista({
           </span>
         )}
 
-        <button
-          type="button"
-          onClick={() => aoEditar(atividade)}
+        {/* Na busca a data vem antes do título, e não depois: o resultado
+            vem de qualquer época, e "quando foi" é o que situa a linha. */}
+        {mostrarData && !venceuEm && (
+          <span
+            className={`tabular mt-0.5 w-[4.5rem] shrink-0 text-sm ${
+              hoje && atividade.data < hoje && !atividade.concluida
+                ? "text-danger-ink font-semibold"
+                : "text-text-muted"
+            }`}
+          >
+            {formataData(atividade.data)}
+          </span>
+        )}
+
+        {/* ⚠️ O clique abre O VÍNCULO, não a atividade — pedido do
+            maestro, no modelo do Pipedrive: quem olha a lista quer chegar
+            ao cliente, não ao cadastro da tarefa. Editar a atividade
+            continua possível pelo lápis à direita.
+
+            ⚠️ Vai para o negócio quando há um, mas só 24% das atividades
+            têm (D-108): 55% estão em organização e 20% em pessoa. Manda
+            para o que existir; as 29 sem vínculo nenhum não viram link e
+            abrem a edição, que é o único destino que resta. */}
+        <Alvo
+          destino={destino}
+          aoEditar={() => aoEditar(atividade)}
           className="hover:text-brand-ink min-w-0 flex-1 text-left"
         >
           <span
@@ -284,6 +386,19 @@ function ItemLista({
               </span>
             )}
           </span>
+        </Alvo>
+
+        {/* O lápis é o que sobrou de editar, agora que o clique na linha
+            leva ao cliente. Discreto: editar atividade é raro perto de
+            concluir e de abrir o negócio. */}
+        <button
+          type="button"
+          onClick={() => aoEditar(atividade)}
+          aria-label="Editar atividade"
+          title="Editar atividade"
+          className="hover:bg-surface-hover text-text-muted hover:text-text mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded"
+        >
+          <Pencil className="size-3.5" aria-hidden />
         </button>
 
         {atividade.usuario && (
@@ -297,5 +412,38 @@ function ItemLista({
         )}
       </div>
     </li>
+  );
+}
+
+/**
+ * O corpo clicável da linha: vira link quando há para onde ir, e botão de
+ * edição quando não há.
+ *
+ * ⚠️ `<Link>` e `<button>` e não uma `div` com `onClick`: o link precisa
+ * abrir em nova aba com o meio do mouse e aparecer na navegação por
+ * teclado, e nada disso vem de graça num elemento genérico.
+ */
+function Alvo({
+  destino,
+  aoEditar,
+  className,
+  children,
+}: {
+  destino: string | null;
+  aoEditar: () => void;
+  className: string;
+  children: React.ReactNode;
+}) {
+  if (destino) {
+    return (
+      <Link href={destino} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <button type="button" onClick={aoEditar} className={className}>
+      {children}
+    </button>
   );
 }

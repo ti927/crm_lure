@@ -51,9 +51,34 @@ export default async function PaginaAtividades({
 
   let doDia: LinhaAtividade[] = [];
   let vencidas: LinhaAtividade[] = [];
+  let resultados: LinhaAtividade[] = [];
   let atividadesMes: LinhaAtividade[] = [];
 
-  if (filtros.vista === "calendario") {
+  if (filtros.busca) {
+    // ⚠️ A busca sai de uma FUNÇÃO no banco, e não de um `or` do
+    // PostgREST: a C-04 registra que coluna de tabela vinculada não é
+    // aceita dentro de `or`, e esta busca precisa cobrir o nome do
+    // negócio, da organização e da pessoa. A função devolve só os ids;
+    // a projeção continua sendo a mesma `SELECAO` do resto da tela.
+    const { data: achados } = await supabase.rpc("atividades_busca", {
+      p_termo: filtros.busca,
+      p_situacao: filtros.situacao,
+      p_responsavel: filtros.responsavel || null,
+      p_tipo: filtros.tipo || null,
+      p_limite: 100,
+    });
+    const ids = (achados ?? []).map((r) => r.id);
+    if (ids.length) {
+      const { data } = await supabase
+        .from("atividade")
+        .select(SELECAO)
+        .in("id", ids)
+        .order("data", { ascending: false })
+        .order("hora_inicio", { nullsFirst: true })
+        .returns<LinhaAtividade[]>();
+      resultados = data ?? [];
+    }
+  } else if (filtros.vista === "calendario") {
     const { de, ate } = limitesDoMes(filtros.mes);
     let c = supabase.from("atividade").select(SELECAO);
     c = aplicaFiltros(c, filtros);
@@ -114,6 +139,7 @@ export default async function PaginaAtividades({
     <PainelAtividades
       doDia={doDia}
       vencidas={vencidas}
+      resultados={resultados}
       atividadesMes={atividadesMes}
       totalVencidas={totalVencidas ?? 0}
       dia={dia}
