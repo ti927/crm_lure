@@ -21,7 +21,7 @@ import { real } from "@/lib/formato";
 import { EtiquetaStatus, faixaDaEtapa } from "@/components/dominio/etiquetas";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { moverNegocio, maisDaEtapa } from "./acoes";
-import { ETAPA_DE_DESFECHO, type Desfecho } from "./constantes";
+import type { Desfecho } from "./constantes";
 import { DialogoDesfecho } from "./dialogo-desfecho";
 
 export type Cartao = {
@@ -250,14 +250,10 @@ export function Quadro({
     const atual = colunas.find((c) => c.cartoes.some((x) => x.id === cartao.id));
     if (!atual || atual.id === destinoId) return;
 
-    const destino = colunas.find((c) => c.id === destinoId);
-
-    // ⚠️ A trava: nao move enquanto o desfecho nao for declarado.
-    if (destino?.nome === ETAPA_DE_DESFECHO) {
-      setPendente({ cartao, etapaId: destinoId });
-      return;
-    }
-
+    // ⚠️ D-145 revogou a D-047: nenhuma etapa trava mais o arrasto.
+    // "Aguardando Contrato" e uma espera legitima — contrato em
+    // assinatura nao e ganho nem perdido. Declarar o desfecho continua
+    // existindo, pelos botoes do topo da ficha do negocio.
     void confirmar(cartao, destinoId);
   }
 

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
-import { ETAPA_DE_DESFECHO, type Desfecho } from "@/app/(sistema)/kanban/constantes";
+import type { Desfecho } from "@/app/(sistema)/kanban/constantes";
 import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
@@ -88,8 +88,10 @@ export async function criarNegocio(d: DadosNegocio, desfecho?: Desfecho) {
   let status: Status = etapa.status_inicial;
   let motivoPerdaId: string | null = null;
 
-  if (etapa.nome === ETAPA_DE_DESFECHO) {
-    if (!desfecho) return { erro: "Esta etapa exige declarar Ganho ou Perdido." };
+  // ⚠️ D-145: criar em qualquer etapa não exige mais desfecho. Quem já
+  // sabe o resultado pode declarar na criação; quem não sabe, cria e o
+  // status vem de `etapa.status_inicial` (D-045).
+  if (desfecho) {
     if (desfecho.status === "perdido" && !desfecho.motivoId) {
       return { erro: "Negócio perdido exige motivo." };
     }

@@ -41,7 +41,15 @@ export default async function PaginaKanban({
           "id, titulo, valor, status, organizacao(nome), usuario(nome, foto_url)",
           { count: "exact" }
         )
-        .eq("etapa_id", e.id);
+        .eq("etapa_id", e.id)
+    // ⚠️ D-145: o funil mostra so negocio ABERTO. Ganho e perdido saem
+    // do quadro no instante em que sao marcados — sao 2.153 dos 2.460, e
+    // com eles dentro o Kanban deixa de ser funil e vira arquivo.
+    //
+    // ⚠️ Eles NAO somem da Lista: la ficam todos, com filtro de status e
+    // de motivo de perda. O funil e para trabalhar, a Lista e para
+    // consultar — e as Estatisticas dependem dos encerrados.
+    .in("status", ["parado", "negociacao"]);
 
       if (responsavelId) consulta = consulta.eq("responsavel_id", responsavelId);
 

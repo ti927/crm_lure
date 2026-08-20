@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
-import { ETAPA_DE_DESFECHO, type Desfecho } from "./constantes";
+import type { Desfecho } from "./constantes";
 import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
@@ -11,14 +11,12 @@ type Status = Database["public"]["Enums"]["status_negocio"];
 /**
  * Move um negocio de etapa.
  *
- * ⚠️ D-047 — a unica trava do sistema. Entrar em "Aguardando Contrato"
- * exige declarar Ganho ou Perdido, e Perdido exige motivo. A verificacao
- * esta aqui, no servidor, e nao so no dialogo: o dialogo pode ser
- * contornado, uma server action nao. O banco ainda reforca o motivo pela
- * restricao `perdido_exige_motivo`.
+ * ⚠️ D-145 revogou a D-047: NENHUMA etapa exige desfecho. Toda transicao
+ * e livre, e mover so muda a etapa — o status fica como esta.
  *
- * Todas as demais transicoes sao livres, por decisao explicita — o
- * negocio so muda de etapa, o status fica como esta.
+ * O parametro `desfecho` continua aceito porque o mesmo caminho serve
+ * para mover E declarar de uma vez, quando quem arrasta ja sabe o
+ * resultado. So que agora e opcional de verdade.
  */
 export async function moverNegocio(
   negocioId: string,
@@ -34,17 +32,17 @@ export async function moverNegocio(
     .single();
 
   if (erroEtapa || !etapa) return { erro: "Etapa não encontrada." };
+  void etapa;
 
   const mudanca: { etapa_id: string; status?: Status; motivo_perda_id?: string | null } =
     { etapa_id: etapaId };
 
-  if (etapa.nome === ETAPA_DE_DESFECHO) {
-    if (!desfecho) return { erro: "Esta etapa exige declarar Ganho ou Perdido." };
-
+  if (desfecho) {
+    // O motivo continua obrigatorio na perda: isso e regra de dado, nao
+    // de fluxo, e o banco recusa de qualquer forma.
     if (desfecho.status === "perdido" && !desfecho.motivoId) {
       return { erro: "Negócio perdido exige motivo." };
     }
-
     mudanca.status = desfecho.status;
     mudanca.motivo_perda_id =
       desfecho.status === "perdido" ? desfecho.motivoId! : null;
@@ -89,7 +87,10 @@ export async function maisDaEtapa(
   let consulta = supabase
     .from("negocio")
     .select("id, titulo, valor, status, organizacao(nome), usuario(nome, foto_url)")
-    .eq("etapa_id", etapaId);
+    .eq("etapa_id", etapaId)
+    // D-145: o quadro so tem negocio aberto. Sem isto, "carregar mais"
+    // traria os encerrados de volta e o total nao bateria com a coluna.
+    .in("status", ["parado", "negociacao"]);
 
   // Sem isto, "carregar mais" traria negócios de fora do recorte e o
   // quadro passaria a mostrar mais do que o filtro promete.

@@ -6,7 +6,7 @@ import { Check, Pencil, Trash2, Trophy, XCircle } from "lucide-react";
 import { EtiquetaStatus } from "@/components/dominio/etiquetas";
 import { useAviso } from "@/components/dominio/avisos";
 import { DialogoDesfecho } from "@/app/(sistema)/kanban/dialogo-desfecho";
-import { ETAPA_DE_DESFECHO, type Desfecho } from "@/app/(sistema)/kanban/constantes";
+import type { Desfecho } from "@/app/(sistema)/kanban/constantes";
 import { excluirNegocio } from "@/app/(sistema)/negocios/acoes";
 import { editarCampo, declararDesfecho } from "./acoes";
 
@@ -91,9 +91,10 @@ export function Cabecalho({
     router.push("/negocios");
   }
 
+  // ⚠️ D-145: mudar de etapa é livre em todas as direções. O desfecho
+  // é declarado pelos botões Ganho/Perdido, que continuam ali ao lado.
   function clicarEtapa(e: Etapa) {
     if (e.id === negocio.etapaId) return;
-    if (e.nome === ETAPA_DE_DESFECHO) return setPendente({ tipo: "etapa", etapaId: e.id });
     void irPara(e.id);
   }
 

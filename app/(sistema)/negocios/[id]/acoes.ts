@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
-import { ETAPA_DE_DESFECHO, type Desfecho } from "@/app/(sistema)/kanban/constantes";
+import type { Desfecho } from "@/app/(sistema)/kanban/constantes";
 import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
@@ -35,8 +35,9 @@ type Campo = (typeof CAMPOS)[number];
  * começa a existir de verdade: até agora `evento_negocio` estava vazia,
  * porque a carga de migração não dispara o gatilho.
  *
- * ⚠️ D-047: mudar a etapa para "Aguardando Contrato" exige desfecho. A
- * checagem mora no servidor e não só no diálogo — diálogo se contorna.
+ * ⚠️ D-145 revogou a D-047: mudar de etapa não exige mais desfecho
+ * nenhum. O parâmetro segue aceito para quem quiser mover e declarar de
+ * uma vez.
  */
 export async function editarCampo(
   negocioId: string,
@@ -49,22 +50,13 @@ export async function editarCampo(
   const supabase = await createClient();
   const mudanca: MudancaNegocio = { [campo]: valor } as MudancaNegocio;
 
-  if (campo === "etapa_id" && valor) {
-    const { data: etapa } = await supabase
-      .from("etapa")
-      .select("nome")
-      .eq("id", String(valor))
-      .single();
-
-    if (etapa?.nome === ETAPA_DE_DESFECHO) {
-      if (!desfecho) return { erro: "Esta etapa exige declarar Ganho ou Perdido." };
-      if (desfecho.status === "perdido" && !desfecho.motivoId) {
-        return { erro: "Negócio perdido exige motivo." };
-      }
-      mudanca.status = desfecho.status as Status;
-      mudanca.motivo_perda_id =
-        desfecho.status === "perdido" ? desfecho.motivoId ?? null : null;
+  if (campo === "etapa_id" && valor && desfecho) {
+    if (desfecho.status === "perdido" && !desfecho.motivoId) {
+      return { erro: "Negócio perdido exige motivo." };
     }
+    mudanca.status = desfecho.status as Status;
+    mudanca.motivo_perda_id =
+      desfecho.status === "perdido" ? desfecho.motivoId ?? null : null;
   }
 
   // Sair de Perdido larga o motivo junto: motivo sem perda é lixo que
@@ -101,19 +93,22 @@ export async function declararDesfecho(negocioId: string, desfecho: Desfecho) {
 
   const supabase = await createClient();
 
-  const { data: etapa } = await supabase
-    .from("etapa")
-    .select("id")
-    .eq("nome", ETAPA_DE_DESFECHO)
-    .single();
-
+  // ⚠️ A ETAPA NÃO MUDA MAIS. Antes, declarar o desfecho empurrava o
+  // negócio para "Aguardando Contrato" — consequência da D-047, que
+  // exigia estar lá para ter desfecho. Com a D-145 isso deixou de fazer
+  // sentido e passou a destruir informação: um negócio perdido em Cold
+  // Lead ia parar na etapa final e ninguém mais saberia ONDE ele morreu.
+  // Os dados herdados mostram perdas em todas as etapas (147 em Cold
+  // Lead, 786 em Proposta Enviada) — é assim que se lê um funil.
+  //
+  // É também o princípio que o CLAUDE.md já enunciava: status e etapa
+  // são dimensões independentes. A etapa diz até onde chegou; o status
+  // diz como terminou.
   const { error } = await supabase
     .from("negocio")
     .update({
       status: desfecho.status as Status,
       motivo_perda_id: desfecho.status === "perdido" ? desfecho.motivoId : null,
-      // D-047: declarar o desfecho leva o negócio para a etapa final.
-      ...(etapa ? { etapa_id: etapa.id } : {}),
     })
     .eq("id", negocioId);
 

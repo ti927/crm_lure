@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Trophy, X, XCircle } from "lucide-react";
+import { Building2, X } from "lucide-react";
 import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { useAviso } from "@/components/dominio/avisos";
 import { SeletorAsync, type ItemBusca } from "@/app/(sistema)/contatos/seletor-async";
 import { buscarOrganizacoes, criarOrganizacao } from "@/app/(sistema)/contatos/acoes";
-import { ETAPA_DE_DESFECHO, type Desfecho } from "@/app/(sistema)/kanban/constantes";
 import { criarNegocio, type DadosNegocio } from "./acoes";
 
 type Opcao = { id: string; nome: string };
@@ -25,12 +24,11 @@ type Etapa = { id: string; nome: string; ordem: number };
  * server action recusa a criação sem desfecho de qualquer jeito, porque
  * formulário se contorna.
  */
-export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, responsavelPadrao, aoFechar }: {
+export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsavelPadrao, aoFechar }: {
   etapas: Etapa[];
   usuarios: Opcao[];
   origens: Opcao[];
   produtos: Opcao[];
-  motivos: Opcao[];
   responsavelPadrao?: string | null;
   aoFechar: () => void;
 }) {
@@ -48,8 +46,6 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, r
   const [origemId, setOrigemId] = useState("");
   const [produtoId, setProdutoId] = useState("");
 
-  const [escolha, setEscolha] = useState<"ganho" | "perdido" | null>(null);
-  const [motivoId, setMotivoId] = useState("");
 
   const [salvando, setSalvando] = useState(false);
   const [criandoOrg, setCriandoOrg] = useState(false);
@@ -61,14 +57,16 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, r
     return () => document.removeEventListener("keydown", naTecla);
   }, [aoFechar]);
 
-  const etapa = etapas.find((e) => e.id === etapaId);
-  const exigeDesfecho = etapa?.nome === ETAPA_DE_DESFECHO;
-
-  const desfechoResolvido =
-    !exigeDesfecho || escolha === "ganho" || (escolha === "perdido" && motivoId);
-
+  /**
+   * ⚠️ D-145 revogou a D-047: criar não exige desfecho em etapa nenhuma.
+   *
+   * O bloco de Ganho/Perdido que existia aqui saiu junto. Marcar o
+   * resultado passou a ser ato da ficha do negócio, pelos botões do topo
+   * — e faz sentido que seja: um negócio que nasce já fechado é caso
+   * raro, e o formulário de criação não precisa carregar a exceção.
+   */
   const podeSalvar =
-    titulo.trim() !== "" && organizacao !== null && etapaId !== "" && desfechoResolvido;
+    titulo.trim() !== "" && organizacao !== null && etapaId !== "";
 
   /**
    * Organização nova sem sair daqui. No Pipedrive é assim: digita-se o
@@ -101,13 +99,8 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, r
       produtoId,
     };
 
-    const desfecho: Desfecho | undefined = !exigeDesfecho
-      ? undefined
-      : escolha === "perdido"
-        ? { status: "perdido", motivoId }
-        : { status: "ganho" };
-
-    const r = await criarNegocio(dados, desfecho);
+    // Sem desfecho: o status vem de `etapa.status_inicial` (D-045).
+    const r = await criarNegocio(dados);
     setSalvando(false);
 
     if (r?.erro) return setErro(r.erro);
@@ -123,8 +116,6 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, r
   const rotulo = "text-text-secondary mb-1 block text-sm font-medium";
   const campo =
     "h-control-md bg-surface border-border text-md w-full rounded-md border px-2.5";
-  const botaoDesfecho =
-    "flex flex-1 items-center justify-center gap-2 rounded-md border py-2 text-md font-medium";
 
   return (
     <div
@@ -290,71 +281,6 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, r
             </div>
           </div>
 
-          {/* ⚠️ A trava (D-047). Nascer na etapa final exige desfecho —
-              a mesma obrigação de mover para ela. */}
-          {exigeDesfecho && (
-            <div className="border-border bg-surface-sunken rounded-md border p-3">
-              <p className="text-md font-medium">
-                {ETAPA_DE_DESFECHO} exige declarar o desfecho
-              </p>
-              <p className="text-text-muted mt-0.5 text-sm">
-                O negócio não é criado sem isto.
-              </p>
-
-              <div className="mt-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEscolha("ganho")}
-                  aria-pressed={escolha === "ganho"}
-                  className={`${botaoDesfecho} ${
-                    escolha === "ganho"
-                      ? "border-success bg-success-bg text-success-ink"
-                      : "border-border bg-surface hover:bg-surface-hover"
-                  }`}
-                >
-                  <Trophy className="size-4" aria-hidden />
-                  Ganho
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEscolha("perdido")}
-                  aria-pressed={escolha === "perdido"}
-                  className={`${botaoDesfecho} ${
-                    escolha === "perdido"
-                      ? "border-danger bg-danger-bg text-danger-ink"
-                      : "border-border bg-surface hover:bg-surface-hover"
-                  }`}
-                >
-                  <XCircle className="size-4" aria-hidden />
-                  Perdido
-                </button>
-              </div>
-
-              {escolha === "perdido" && (
-                <div className="mt-3">
-                  <label htmlFor="neg-motivo" className={rotulo}>
-                    Motivo da perda <span className="text-danger-ink">*</span>
-                  </label>
-                  <select
-                    id="neg-motivo"
-                    value={motivoId}
-                    onChange={(e) => setMotivoId(e.target.value)}
-                    className={campo}
-                  >
-                    <option value="">Escolha um motivo…</option>
-                    {motivos.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.nome}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-text-muted mt-1 text-sm">
-                    Obrigatório — é a informação que não dá para recuperar depois.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {erro && (

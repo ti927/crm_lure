@@ -21,7 +21,6 @@ export function BotaoNovoNegocio({
   usuarios,
   origens,
   produtos,
-  motivos,
   responsavelPadrao,
 }: {
   etapas: Etapa[];
@@ -50,7 +49,6 @@ export function BotaoNovoNegocio({
           usuarios={usuarios}
           origens={origens}
           produtos={produtos}
-          motivos={motivos}
           responsavelPadrao={responsavelPadrao}
           aoFechar={() => setAberto(false)}
         />
