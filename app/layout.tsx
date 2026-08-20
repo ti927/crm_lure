@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -23,6 +23,24 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Lure CRM",
   description: "CRM da Lure Consultoria",
+  // ⚠️ O manifesto sozinho não basta no iPhone: sem isto o atalho da
+  // tela de início abre no Safari com barra de endereço, em vez de em
+  // tela cheia. O Android obedece ao manifesto; o iOS ainda depende
+  // destas meta tags antigas.
+  appleWebApp: {
+    capable: true,
+    title: "Lure",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+/* A barra de status do celular acompanha o tema, em vez de ficar branca
+   sobre um aplicativo escuro. */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#171717" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

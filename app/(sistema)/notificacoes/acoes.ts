@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { degrauValido, type TipoNotificacao } from "@/lib/notificacoes";
 
@@ -15,6 +14,16 @@ import { degrauValido, type TipoNotificacao } from "@/lib/notificacoes";
  * conta de login e o id do usuário são coisas diferentes, e confiar num
  * id enviado pelo cliente seria deixar alguém escrever na caixa alheia.
  * A RLS recusaria de qualquer forma; isto evita o erro antes dele.
+ *
+ * ⚠️ Nenhuma acao aqui chama revalidatePath, e e de proposito. O sino
+ * vive no LAYOUT, entao a unica revalidacao que o alcanca e
+ * revalidatePath("/", "layout") — que invalida o cache de rota INTEIRO
+ * e faz a pagina aberta refazer a propria consulta. Marcar uma
+ * notificacao como lida dispararia uma releitura dos 2.458 negocios da
+ * Lista para esconder um item que o estado otimista do sino ja
+ * escondeu. Quem precisa de dado novo pede: o painel chama
+ * router.refresh(), e o sino se corrige sozinho na proxima navegacao
+ * completa — que e exatamente o que a D-124 descreve.
  */
 
 async function eu() {
@@ -45,7 +54,6 @@ export async function marcarLida(chave: string) {
     .upsert({ usuario_id: id, chave }, { onConflict: "usuario_id,chave" });
 
   if (error) return { erro: error.message };
-  revalidatePath("/", "layout");
   return {};
 }
 
@@ -63,7 +71,6 @@ export async function marcarLidas(chaves: string[]) {
     );
 
   if (error) return { erro: error.message };
-  revalidatePath("/", "layout");
   return {};
 }
 
@@ -79,7 +86,6 @@ export async function desmarcarLida(chave: string) {
     .eq("chave", chave);
 
   if (error) return { erro: error.message };
-  revalidatePath("/", "layout");
   return {};
 }
 
@@ -121,7 +127,6 @@ export async function salvarPreferencia(
       .eq("usuario_id", id)
       .eq("tipo", tipo);
     if (error) return { erro: error.message };
-    revalidatePath("/", "layout");
     return {};
   }
 
@@ -138,6 +143,5 @@ export async function salvarPreferencia(
   );
 
   if (error) return { erro: error.message };
-  revalidatePath("/", "layout");
   return {};
 }

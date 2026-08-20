@@ -187,8 +187,15 @@ function GrupoSino({
         {TIPOS[tipo].grupo}
         <span className="tabular font-normal">
           {/* D-141: o grupo que não conta diz isso por escrito, para o
-              usuário não achar que o número do sino está errado. */}
-          {itens[0]?.conta ? naoLidas : `${itens.length} · não contam`}
+              usuário não achar que o número do sino está errado.
+              ⚠️ E quando tudo já foi lido, o cabeçalho mostra o total em
+              vez de "0" — um "0" ao lado de 96 linhas visíveis parece
+              defeito, não estado. */}
+          {!itens[0]?.conta
+            ? `${itens.length} · não contam`
+            : naoLidas > 0
+              ? naoLidas
+              : `${itens.length} · lidas`}
         </span>
       </h3>
 
@@ -224,11 +231,17 @@ function ItemSino({
       // limite vira espera, não elegância. `prefers-reduced-motion`
       // desliga tudo por guarda global no globals.css.
       style={{ animationDelay: `${Math.min(indice, 14) * 18}ms` }}
-      className="border-border animate-in fade-in fill-mode-backwards border-b duration-300 last:border-b-0"
+      className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 last:border-b-0"
     >
       <div className={`flex items-start gap-2 px-3 py-2 ${lida ? "opacity-55" : ""}`}>
         <Popover.Close asChild>
-          <Link href={n.destino} className="hover:text-brand-ink min-w-0 flex-1">
+          {/* `title` porque o texto é truncado: passar o mouse é a única
+              forma de ler um título de negócio longo por inteiro. */}
+          <Link
+            href={n.destino}
+            title={`${n.titulo} — ${n.detalhe}`}
+            className="hover:text-brand-ink min-w-0 flex-1"
+          >
             <span className="text-md block truncate font-medium">{n.titulo}</span>
             <span className="text-text-muted block truncate text-sm">{n.detalhe}</span>
           </Link>

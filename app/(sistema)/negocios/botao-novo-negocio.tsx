@@ -38,7 +38,7 @@ export function BotaoNovoNegocio({
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="h-control-md bg-brand text-brand-on inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold transition-transform hover:-translate-y-px"
+        className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold transition-transform hover:-translate-y-px"
       >
         <Plus className="size-3.5" aria-hidden />
         Novo negócio

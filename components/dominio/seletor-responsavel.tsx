@@ -38,7 +38,7 @@ export function SeletorResponsavel({
         aria-label="Filtrar por responsável"
         className={`${classe} ${
           escolhido ? "border-brand-ink font-medium" : ""
-        } flex items-center gap-2`}
+        } hover:bg-surface-hover flex items-center gap-2`}
       >
         {atual ? (
           <UsuarioComFoto nome={atual.nome} foto={atual.foto_url} tamanho="sm" />

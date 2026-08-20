@@ -112,7 +112,7 @@ export function Calendario({
                 title="Nova atividade neste dia"
                 className={`mb-1 flex size-6 items-center justify-center rounded-full text-xs ${
                   eHoje
-                    ? "bg-brand text-brand-on font-bold"
+                    ? "bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active font-bold"
                     : doMes
                       ? "text-text hover:bg-surface-hover"
                       : "text-text-muted hover:bg-surface-hover"

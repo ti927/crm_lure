@@ -375,7 +375,7 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, motivos, r
             type="button"
             onClick={() => void salvar()}
             disabled={salvando || !podeSalvar}
-            className="h-control-md bg-brand text-brand-on rounded-md px-4 text-md font-semibold disabled:opacity-40"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-md px-4 text-md font-semibold disabled:opacity-40"
           >
             {salvando ? "Criando…" : "Criar negócio"}
           </button>

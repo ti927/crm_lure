@@ -327,7 +327,7 @@ export function FiltrosIndicadores({
               <button
                 type="button"
                 onClick={() => aplicar(rascunho)}
-                className="h-control-md bg-brand text-brand-on rounded-md px-4 text-md font-semibold"
+                className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-md px-4 text-md font-semibold"
               >
                 Aplicar
               </button>

@@ -106,7 +106,7 @@ export function BarraContatos({
             type="button"
             onClick={() => setDialogo(aba === "organizacoes" ? "organizacao" : "pessoa")}
             aria-label={aba === "organizacoes" ? "Nova organização" : "Nova pessoa"}
-            className="h-control-md bg-brand text-brand-on inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold md:px-3"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold md:px-3"
           >
             <Plus className="size-4" aria-hidden />
             {/* No celular o rótulo sai e fica só o "+": a linha já está

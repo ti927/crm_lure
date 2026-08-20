@@ -72,7 +72,7 @@ export function ListaProdutos({
             type="button"
             onClick={() => setDialogo({ modo: "novo" })}
             aria-label="Novo produto"
-            className="h-control-md bg-brand text-brand-on inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold md:px-3"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold md:px-3"
           >
             <Plus className="size-4" aria-hidden />
             <span className="hidden md:inline">Novo produto</span>
@@ -109,7 +109,7 @@ export function ListaProdutos({
                       produto: { id: p.id, nome: p.nome, areaId: p.area_id },
                     })
                   }
-                  className="min-w-0 flex-1 text-left"
+                  className="hover:text-brand-ink min-w-0 flex-1 text-left"
                 >
                   <span className="text-md block truncate font-medium">{p.nome}</span>
                   {p.area_produto?.nome && (

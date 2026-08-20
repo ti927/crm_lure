@@ -206,7 +206,7 @@ export function Cabecalho({
                 title={aqui ? "Etapa atual" : `Mover para ${e.nome}`}
                 className={`h-control-md rounded-md border px-2.5 text-sm font-medium transition-colors disabled:cursor-default ${
                   aqui
-                    ? "border-brand-ink bg-brand text-brand-on"
+                    ? "border-brand-ink bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active"
                     : passou && !concluido
                       ? "border-border bg-surface-hover text-text"
                       : "border-border text-text-secondary hover:bg-surface-hover"

@@ -220,6 +220,41 @@
 }
 
 /* ============================================================
+   Feedback de ponteiro
+   ============================================================
+   ⚠️ O Preflight do Tailwind v4 DEIXOU DE POR `cursor: pointer` em
+   <button>. No v3 vinha de graca; no v4 o botao herda a seta do
+   sistema, igual a texto morto. Sem esta regra, TODO botao do CRM
+   parece nao ser clicavel — e como o defeito e do reset, ele apareceu
+   em varias telas ao mesmo tempo, o que faz parecer descuido de
+   componente quando na verdade e uma linha faltando aqui.
+
+   `:where()` mantem especificidade zero: qualquer utilitario
+   `cursor-*` escrito num componente continua ganhando. */
+:where(button, [role="button"], [role="switch"], [role="option"], [role="tab"], summary, label[for]) {
+  cursor: pointer;
+}
+
+/* Desabilitado tambem e resposta: a seta cortada diz "nao adianta
+   clicar" antes de a pessoa tentar. */
+:where(button, [role="button"]):disabled,
+:where([aria-disabled="true"]) {
+  cursor: not-allowed;
+}
+
+/* O que muda de cor ao passar o mouse muda SUAVE. Sem transicao a cor
+   pula e o olho le como falha de renderizacao, nao como resposta.
+   Fica sob `motion-safe` porque quem pediu menos movimento tambem nao
+   quer 120ms de fade em cada linha de uma tabela de 2.458. */
+@media (prefers-reduced-motion: no-preference) {
+  :where(button, a, [role="button"], [role="switch"], [role="option"], [role="tab"], summary, tr, li) {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: 120ms;
+    transition-timing-function: ease-out;
+  }
+}
+
+/* ============================================================
    Movimento
    ============================================================
    Curvas nomeadas para que animacao de lugares diferentes tenha o mesmo

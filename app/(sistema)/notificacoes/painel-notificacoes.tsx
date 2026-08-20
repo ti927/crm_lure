@@ -190,7 +190,9 @@ function Interruptor({
       aria-label={rotulo}
       onClick={aoAlternar}
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-pill border transition-colors ${
-        ligado ? "bg-brand border-brand-ink" : "bg-surface-sunken border-border"
+        ligado
+          ? "bg-brand border-brand-ink hover:bg-brand-hover"
+          : "bg-surface-sunken border-border hover:bg-surface-hover hover:border-border-strong"
       }`}
     >
       <span

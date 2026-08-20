@@ -185,7 +185,7 @@ export function PainelAtividades({
                 data: filtros.vista === "lista" ? dia : undefined,
               })
             }
-            className="h-control-md bg-brand text-brand-on inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold"
           >
             <Plus className="size-4" aria-hidden />
             Nova atividade
@@ -255,7 +255,7 @@ function Aba({
       onClick={onClick}
       aria-pressed={atual}
       className={`inline-flex h-7 items-center gap-1.5 rounded px-2.5 text-sm font-medium ${
-        atual ? "bg-surface-hover text-text" : "text-text-muted"
+        atual ? "bg-surface-hover text-text" : "text-text-muted hover:bg-surface-hover hover:text-text"
       }`}
     >
       <Icone className="size-3.5" aria-hidden />

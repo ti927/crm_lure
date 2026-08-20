@@ -8,6 +8,7 @@ import { MenuMobile } from "@/components/dominio/menu-mobile";
 import { ProgressoNavegacao } from "@/components/dominio/progresso-navegacao";
 import { ProvedorAvisos } from "@/components/dominio/avisos";
 import { Sino } from "@/components/dominio/sino";
+import { ConviteInstalar } from "@/components/dominio/convite-instalar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
 import type { Notificacao } from "@/lib/notificacoes";
@@ -87,6 +88,9 @@ export default async function LayoutSistema({
         </div>
 
         <RodapeSistema />
+        {/* Convite para a tela de inicio. So no celular, so fora do modo
+            aplicativo, e so uma vez — ver o componente. */}
+        <ConviteInstalar />
       </div>
     </ProvedorAvisos>
   );

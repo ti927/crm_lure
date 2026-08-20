@@ -113,7 +113,7 @@ export function PainelFiltrosMobile({
         <SlidersHorizontal className="size-3.5" aria-hidden />
         Filtros
         {ativos > 0 && (
-          <span className="bg-brand text-brand-on rounded-full px-1.5 text-xs font-bold">
+          <span className="bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-full px-1.5 text-xs font-bold">
             {ativos}
           </span>
         )}
@@ -305,14 +305,14 @@ export function PainelFiltrosMobile({
               <button
                 type="button"
                 onClick={limpar}
-                className="h-control-lg border-border text-text-secondary flex-1 rounded-md border text-md font-medium"
+                className="h-control-lg border-border text-text-secondary hover:bg-surface-hover hover:text-text flex-1 rounded-md border text-md font-medium"
               >
                 Limpar
               </button>
               <button
                 type="button"
                 onClick={aplicar}
-                className="h-control-lg bg-brand text-brand-on flex-[2] rounded-md text-md font-semibold"
+                className="h-control-lg bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active flex-[2] rounded-md text-md font-semibold"
               >
                 Ver resultados
               </button>

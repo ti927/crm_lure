@@ -97,7 +97,7 @@ export function DialogoPessoa({
             type="button"
             onClick={() => void salvar()}
             disabled={salvando || !nome.trim()}
-            className="h-control-md bg-brand text-brand-on rounded-md px-4 text-md font-semibold disabled:opacity-40"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-md px-4 text-md font-semibold disabled:opacity-40"
           >
             {salvando ? "Salvando…" : "Salvar"}
           </button>

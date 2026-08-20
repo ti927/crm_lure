@@ -138,7 +138,7 @@ export function DialogoDesfecho({
                   : { status: "ganho" }
               )
             }
-            className="h-control-md bg-brand text-brand-on rounded-md px-4 text-md font-semibold disabled:opacity-40"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-md px-4 text-md font-semibold disabled:opacity-40"
           >
             Concluir
           </button>

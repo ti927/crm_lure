@@ -225,7 +225,7 @@ function ItemLista({
           disabled={salvando}
           onClick={() => void alternar()}
           aria-label={concluida ? "Reabrir atividade" : "Concluir atividade"}
-          className="mt-0.5 shrink-0 disabled:opacity-60"
+          className="hover:bg-surface-hover mt-0.5 -m-1 shrink-0 rounded p-1 disabled:opacity-60"
         >
           <span
             aria-hidden
@@ -256,7 +256,7 @@ function ItemLista({
         <button
           type="button"
           onClick={() => aoEditar(atividade)}
-          className="min-w-0 flex-1 text-left"
+          className="hover:text-brand-ink min-w-0 flex-1 text-left"
         >
           <span
             className={`text-md block font-medium ${

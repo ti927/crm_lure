@@ -149,7 +149,7 @@ export function ZonaTempo({
           <button
             type="submit"
             disabled={enviando}
-            className="h-control-md bg-brand text-brand-on rounded-md px-3 text-md font-semibold transition-transform active:scale-95 disabled:opacity-50"
+            className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-md px-3 text-md font-semibold transition-transform active:scale-95 disabled:opacity-50"
           >
             {enviando ? "Salvando…" : "Anotar"}
           </button>

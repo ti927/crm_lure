@@ -21,7 +21,7 @@ export function CartoesPessoa({ pessoas }: { pessoas: LinhaPessoa[] }) {
         const email = p.forma_contato?.find((c) => c.tipo === "email");
         return (
           <li key={p.id} className="border-border flex items-center gap-1 border-b pr-2">
-            <Link href={`/contatos/pessoas/${p.id}`} className="min-w-0 flex-1 px-4 py-3">
+            <Link href={`/contatos/pessoas/${p.id}`} className="hover:text-brand-ink min-w-0 flex-1 px-4 py-3">
               <span className="text-md block truncate font-medium">{p.nome}</span>
               {vinculo?.organizacao && (
                 <span className="text-text-muted mt-0.5 block truncate text-sm">
@@ -38,7 +38,7 @@ export function CartoesPessoa({ pessoas }: { pessoas: LinhaPessoa[] }) {
                 <a
                   href={linkWhatsApp(telefone.valor)}
                   aria-label={`WhatsApp de ${p.nome}`}
-                  className="border-border text-success-ink inline-flex size-9 items-center justify-center rounded-md border"
+                  className="border-border text-success-ink hover:bg-success-bg hover:border-success-ink inline-flex size-9 items-center justify-center rounded-md border"
                 >
                   <Phone className="size-4" aria-hidden />
                 </a>
@@ -47,7 +47,7 @@ export function CartoesPessoa({ pessoas }: { pessoas: LinhaPessoa[] }) {
                 <a
                   href={`mailto:${email.valor}`}
                   aria-label={`E-mail de ${p.nome}`}
-                  className="border-border text-info-ink inline-flex size-9 items-center justify-center rounded-md border"
+                  className="border-border text-info-ink hover:bg-info-bg hover:border-info-ink inline-flex size-9 items-center justify-center rounded-md border"
                 >
                   <Mail className="size-4" aria-hidden />
                 </a>
