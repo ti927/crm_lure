@@ -1,12 +1,12 @@
-﻿# 09 — Arquitetura Técnica (v0.6)
+﻿# 09 — Arquitetura Técnica (v0.7)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.6 |
+| **Versão** | v0.7 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-05 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-11 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -406,6 +406,16 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 |---|---|---|---|
 | **C-10** | Mesma tela, mesmo sintoma. Encontrada antes da C-09 e corrigida primeiro, mas **não era a causa daquela queda** | Um módulo de servidor fazia `import { Painel } from "./grafico-base"` (módulo `"use client"`) e reexportava por atribuição: `export const Painel = PainelCliente`. Num módulo de servidor, importar de um `"use client"` devolve uma **referência de cliente**, não o componente; reatribuí-la a um `const` e reexportar quebra o vínculo com o módulo | As páginas importam o componente direto do módulo `"use client"`. Sem indireção |
 
+#### C-11 — o campo de cargo era invisível (21/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-11** | Um usuário real não conseguiu encontrar onde se preenche o **cargo** de uma pessoa. O campo existia, funcionava e gravava | Duas coisas somadas. (a) **O cargo pertence ao vínculo pessoa↔organização (D-036)**, não à pessoa — então ele não está no diálogo de criar/editar pessoa, que é o primeiro lugar onde alguém procura. (b) Nas duas fichas ele era um `<input>` com `border-transparent bg-transparent`, texto `text-text-muted text-sm` e rótulo só em `aria-label`: **só ganhava contorno no hover**. Lia-se como texto exibido, não como campo editável. O `placeholder` "Cargo" reforçava o engano — parecia rótulo | Rótulo escrito (`Cargo em <organização>` na ficha da pessoa, `Cargo` na da organização), input com borda permanente e fundo `surface-sunken`, que afunda contra o `surface` do painel nos dois temas, mais um `placeholder` de exemplo em vez do nome do campo |
+
+⚠️ **É o quarto caso do mesmo padrão em duas sessões.** Os outros três estão no Doc 00 §4.9: criar atividade dentro do negócio, filtro de motivo de perda na Lista, filtrar por usuário nas Estatísticas. Em nenhum dos quatro o problema era ausência — era **descoberta**. A regra que sai daí: **quando alguém disser que algo "não existe" neste sistema, a primeira hipótese é que existe e está invisível**, e a correção é de apresentação, não de função.
+
+⚠️ **Affordance não é enfeite.** Um campo que só se revela no hover não existe para quem não passa o mouse por cima dele — e não existe de jeito nenhum no celular, onde não há hover. Campo editável carrega borda.
+
 ⚠️ **Duas quebras no mesmo dia, ambas na fronteira servidor→cliente.** O padrão de montar JSX no servidor e entregá-lo ao cliente é útil e usado aqui, mas **tudo que for função — ou referência a componente — morre na travessia**.
 
 ⚠️ **C-02 é o mais grave dos quatro** e o mais silencioso: só aparece depois da carga, que é exatamente o momento em que menos se quer descobrir um defeito. Com D-101 a carga roda em produção, então este era o defeito com maior chance de estragar a virada.
@@ -567,6 +577,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.7** — 21/08/2026 — **Sessão 12.** Correção **C-11** acrescentada à seção 3.11: o campo de cargo existia e gravava, mas era um input transparente sem rótulo escrito — um usuário real não o encontrou. É o quarto caso do mesmo padrão em duas sessões, e o registro fixa a regra que sai dele: quando alguém disser que algo "não existe" aqui, a primeira hipótese é que existe e está invisível. Registrado também que **campo editável carrega borda** — affordance só no hover não existe no celular.
 - **v0.6** — 19/08/2026 — **Sessão 10.** Sete migrações novas: procedência do log (`importado_do_pipedrive`), data de fechamento do negócio (`fechado_em`, com gatilho de carimbo), e as funções de indicador — comerciais, financeiras, de volume — mais a ampliação do recorte. Correções **C-08** (o negócio era a única entidade sem caminho de criação), **C-09** (função atravessando a fronteira servidor→cliente, que derrubou `/estatisticas` em produção) e **C-10** (reexportação de referência de cliente). ⚠️ Registrado o **método que encontrou a C-09**, já que o OAuth impede o agente de logar: desligar a barreira localmente, rodar o build de produção, pedir a rota e ler a pilha — `tsc`, `eslint` e `next build` não pegam erro de serialização.
 - **v0.5** — 18/08/2026 — **Sessão 09.** Seção **3.12** criada com as quatro migrações da sessão: a preferência de filtro por usuário, a chave de agrupamento de organizações (coluna gerada e indexada, com o cuidado do `unaccent` imutável), as funções que paginam por grupo — o PostgREST não expõe `group by` — e os títulos de negócio como referência. Correções **C-06** (manipulador de evento cruzando a fronteira servidor→cliente, que derrubava a aba Pessoas) e **C-07** (388 registros com acento destruído **na origem**, no dado do próprio Pipedrive, com 343 recuperados por cruzamento com a própria extração) acrescentadas à seção 3.11.
 - **v0.4** — 14/08/2026 — **O schema saiu do papel: as três migrações e a semente foram aplicadas na base de produção.** Seção 4 ganha os dados concretos do projeto (referência, região, URL) e passa a descrever **um ambiente só**: D-106 revoga a D-102, não haverá banco de ensaio e a carga roda uma única vez na base definitiva. Registrado também que o host de conexão direta resolve só em IPv6, tornando o *Session pooler* o único caminho gratuito para aplicar migração. **C-04 acrescentada à seção 3.11** — o PostgREST não aceita coluna de tabela vinculada dentro de um `or`, o que quebrava a busca da Lista — junto do método que permite validar a forma de uma consulta contra a base real usando só a chave anônima.

@@ -1,11 +1,11 @@
-﻿# 00 — Status e Retomada (v2.6)
+﻿# 00 — Status e Retomada (v2.8)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v2.6 |
-| **Última atualização** | 20/08/2026 — Sessão 11 |
+| **Versão** | v2.8 |
+| **Última atualização** | 21/08/2026 — Sessão 12 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -32,18 +32,18 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v2.6.md` |
+| `00-status-e-retomada-v2.8.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.18.md` |
+| `03-log-de-decisoes-v0.19.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.6.md` |
+| `09-arquitetura-tecnica-v0.7.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.11.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.12.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
@@ -96,8 +96,8 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ## 4. ONDE ESTAMOS
 
-**Fase:** **F10, a virada — em andamento.** F0 a F7 e F9 concluídas; **F8 adiada** (D-124). Falta o dia de operação real dos sócios.
-**Perguntas respondidas:** 80 · 12 blocos · **143 decisões** · 153 requisitos · 126 itens de backlog
+**Fase:** **F10, a virada — em andamento.** **F0 a F9 concluídas** — a F8 saiu de "adiada" (D-124) e foi construída em 20/08. Falta o dia de operação real dos sócios.
+**Perguntas respondidas:** 80 · 12 blocos · **145 decisões** · 153 requisitos · 126 itens de backlog
 
 ✅ **Não há mais contagem regressiva** (D-125, 19/08/2026). Os dados estão no Supabase desde 17/08, conferidos — a virada é decidida por prontidão, não por data.
 
@@ -152,12 +152,12 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | 1 | Migração completa | ✅ contagens batendo, ganhos ao centavo, vínculos migrados |
 | 2 | ⭐ Um dia sem o Pipedrive | ⏳ **depende de ser marcado com os sócios** |
 | 3 | Log gravando | ✅ 9 eventos reais, gatilho ativo, `update`/`delete` revogados |
-| 4 | Trava de desfecho | ✅ **fecha com exceção registrada** (D-128): nenhum negócio entrou na etapa sem desfecho; os 3 que estão lá vieram da carga e ficam |
+| 4 | ~~Trava de desfecho~~ → **perdido sempre tem motivo** | ⛔ **o critério mudou em 20/08 (D-145, revoga a D-047).** Nenhuma etapa exige desfecho, então não há trava a medir. O que resta é regra de dado: `perdido_exige_motivo` no banco. ✅ `scripts/verifica-virada.mjs` foi realinhado em 21/08: mede a restrição, os perdidos sem motivo e a dispersão das perdas por etapa |
 | 5 | Lista e Kanban | ✅ nenhuma consulta acima de 160 ms |
 | 6 | Celular | ⏳ depende de uso no aparelho |
-| 7 | Login por Google | ✅ 4 dos 6 usuários já entraram; RLS em todas as tabelas |
+| 7 | Login por Google | ✅ **5 dos 6 usuários já entraram** (medido em 21/08); RLS em todas as tabelas. Falta a Patrícia |
 
-⚠️ **Três negócios em Aguardando Contrato sem desfecho declarado** — *Plano de Carreira*, *Melhoria de Processos 2* e *Vaga Ger Planejamento*. **A trava não está furada:** os três têm `atualizado_em` no instante exato da carga e zero eventos, ou seja, vieram assim do Pipedrive, que não tinha essa trava. São negócios genuinamente em aberto parados na etapa final, e o sistema novo nunca deixaria esse estado nascer. **P-039**: decidir se são declarados (Ganho/Perdido) ou devolvidos a Proposta Enviada.
+⚠️ *(histórico — a D-145 dissolveu a questão)* **Três negócios em Aguardando Contrato sem desfecho declarado** — *Plano de Carreira*, *Melhoria de Processos 2* e *Vaga Ger Planejamento*. **A trava não está furada:** os três têm `atualizado_em` no instante exato da carga e zero eventos, ou seja, vieram assim do Pipedrive, que não tinha essa trava. São negócios genuinamente em aberto parados na etapa final, e o sistema novo nunca deixaria esse estado nascer. **P-039**: decidir se são declarados (Ganho/Perdido) ou devolvidos a Proposta Enviada.
 
 ⚠️ **A C-08 foi encontrada nesta sessão e é a razão de a F10 não ter começado antes:** o negócio era a única entidade do sistema sem caminho de criação. Ver 4.6.
 
@@ -168,9 +168,77 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | Frente | Situação |
 |---|---|
 | ⭐ **Critério 2 — um dia sem o Pipedrive** | ⏳ depende de ser marcado com os sócios. Nenhum impedimento técnico conhecido |
+| 🔴 **Push no celular** | ⛔ **bloqueado numa variável.** Falta `SUPABASE_SERVICE_ROLE_KEY` na Vercel — ver 4.9 |
+| ⚠️ **Conferência nos dois temas** | nada do que entrou em 20/08 foi visto por olho humano |
 | **F8 — central de notificações** | ✅ **construída em 20/08.** Falta ver nos dois temas |
 
 ⚠️ **A medição de 20/08 confirmou o motor da F8 e inverteu a preocupação.** O Doc 15 v0.1 punha um teto de ~200 ms na consulta derivada; o real é **1,65 ms de execução** — os 151 ms observados de fora eram latência de rede do pooler. O risco não é custo de consulta, é **número de idas ao banco**: a ~150 ms por viagem, os quatro alertas têm de sair de uma função só.
+
+### 4.9 O que a sessão 11 deixou pronto, e o que ficou preso
+
+✅ **A F8 inteira, mais o push.** Sino, painel `/notificacoes`, marcar como lida, follow-up ao ganhar (D-139 a D-143), e depois o push no celular (D-144): service worker, tela de aceitar, rota de envio e agendamento por `pg_cron`.
+
+🔴 **O push está preso numa variável, e só o maestro destrava.** A rota responde `{"faltando":["SUPABASE_SERVICE_ROLE_KEY"]}` em produção.
+
+⚠️ **Essa chave é usada por UM arquivo do sistema e por mais nenhum** — `app/api/enviar-push/route.ts`. Todo o resto do CRM funciona com a chave anônima + RLS (D-050), e é por isso que ela nunca precisou existir na Vercel antes. **A pergunta em aberto: ela aparece na aba *Project* ou na aba *Shared* da Vercel?** Se for Shared sem estar vinculada, é a armadilha da sessão 06 outra vez.
+
+⚠️ **O `pg_cron` está ATIVO** (`lure-push`, `5 * * * *`) e vai bater na rota de hora em hora até a variável entrar, recebendo 500 e sem gravar nada. Foi aplicado sem querer: `supabase db push` leva **todas** as migrações pendentes.
+
+✅ **Dados atualizados parcialmente.** A API do Pipedrive **continua viva** — o contrato não fechou. Nova extração feita, snapshot de 17/08 preservado em `dados/pipedrive-snapshot-17-08/`. Dos 216 registros que divergiram em três dias, **os 66 novos entraram** por `scripts/sincroniza-novos.mjs` (idempotente, ensaia por padrão).
+
+⚠️ **Os 144 alterados e as 6 atividades apagadas no Pipedrive continuam fora**, por decisão do maestro. **Não há como alcançá-los:** o schema não guarda o id do Pipedrive, então não há como dizer que "aquela linha de lá" é "esta daqui". A divergência cresce a cada dia até a virada.
+
+⛔ **A D-145 revogou a D-047 — a única trava do sistema.** Nenhuma etapa exige desfecho. O Kanban passou a mostrar só os **307 abertos**; ganho e perdido somem do funil e ficam na Lista. E declarar desfecho **não move mais a etapa**, porque fazer isso destruía a informação de onde o negócio morreu.
+
+⚠️ **A lição que se repetiu TRÊS vezes nesta sessão: quando algo "não existe" neste sistema, a primeira hipótese é que existe e está invisível.**
+
+| O pedido | O que se descobriu |
+|---|---|
+| "criar atividade dentro do negócio" | já existia desde a D-137, aba ao lado de Anotação |
+| "filtro de motivo de perda na Lista" | coluna e filtro existiam, mas com `esconde: "xl"` — só acima de 1280px |
+| "filtrar por usuário nas Estatísticas" | existia e funcionava, atrás de um botão chamado **Recorte** |
+
+Em nenhum dos três o problema era ausência: era **descoberta**. O terceiro virou correção de vocabulário — a tela passou a dizer *Filtros*, enquanto o documento continua dizendo recorte (D-064).
+
+✅ **Passada de interface**, toda vinda de defeito estrutural e não de descuido:
+
+- **Nenhum botão do sistema tinha `cursor: pointer`** — o Preflight do Tailwind v4 deixou de pô-lo em `<button>`, e o projeto nasceu no v4. Uma linha faltando no `globals.css` aparecia como "falta feedback em vários lugares".
+- O botão primário amarelo **não tinha hover em nenhum dos 16 lugares**; os tokens `--accent-hover`/`--accent-active` existiam sem uso desde o início.
+- `--surface-hover` era `#f5f5f5` sobre branco: **3% de diferença**, invisível na prática.
+- **A corrente de altura estava solta desde a F3**: `min-h-svh` no layout fazia o `h-full` de todas as telas de lista não resolver contra nada. Era isso que empurrava a barra de rolagem horizontal para fora da tela. Virou `h-svh`, e **nenhuma tela precisou mudar** — elas já estavam escritas para um pai com altura definida que nunca existiu.
+
+✅ **Atalho na tela de início (PWA)**, com `start_url` em `/contatos` — pedido do maestro. ⚠️ No iPhone o push **só funciona depois** de o app estar na tela de início, então o convite não é acessório: é pré-requisito.
+
+✅ **Busca na tela de Atividades**, sem acento ("reuniao" achava 5 e "reunião" achava 300), cobrindo negócio, organização, pessoa e tipo. Mora numa função no banco por causa da C-04.
+
+---
+
+### 4.10 O que a medição de 21/08 mostrou
+
+`scripts/verifica-virada.mjs` rodou em 21/08 contra a base real: **21 verificações passaram, 1 aviso, 0 falhas.** O aviso é bom notícia disfarçada.
+
+⭐ **Os sócios já estão trabalhando no sistema.** A base cresceu além do que o Pipedrive tinha, e o crescimento não veio de carga nenhuma:
+
+| | Pipedrive (17/08) | Base (21/08) |
+|---|---|---|
+| Negócios | 2.458 | **2.461** |
+| Organizações | 2.889 | **2.897** |
+| Pessoas | 4.589 | **4.604** |
+| Atividades | 6.483 | **6.524** |
+| Anotações | 922 | **929** |
+| Produtos | 0 | **7** |
+
+⚠️ **Produtos saíram de zero.** O `CLAUDE.md` diz que "a base nasce vazia aqui e o cadastro passa a ser feito neste sistema" — passou a ser. Receita por produto e por área deixam de nascer vazias nas Estatísticas.
+
+✅ **5 dos 6 usuários já entraram pelo Google** (era 4 em 19/08). Falta apenas a Patrícia.
+
+⚠️ **O log não recebeu evento novo desde 18/08 16:41** — 3.415 eventos, nenhum de carga. Não é defeito: criar não gera evento (o gatilho é `after update`), e os cadastros novos são criações. Significa que ninguém moveu etapa, valor, responsável ou status pelo sistema ainda. **O critério 2 não aconteceu.**
+
+✅ **A D-145 está de pé no dado.** As perdas seguem espalhadas pelas seis etapas — Cold Lead 147, Proposta Enviada 786, Aguardando Contrato 21 —, ou seja, a etapa preserva onde o negócio morreu. O verificador passou a medir isso: se as perdas se concentrarem numa etapa só, alguém religou o empurrão que a D-145 tirou.
+
+✅ **Os 3 negócios em Aguardando Contrato sem desfecho deixaram de ser exceção.** Sob a D-047 eram violação tolerada (D-128); sob a D-145 são o estado legítimo que motivou a revogação. O verificador os reporta como informação, não como falha.
+
+⚠️ **Desempenho no teto do confortável:** nenhuma consulta passa de **164 ms**, mas nenhuma desce de 158 ms — é o piso da rede do pooler, não o custo da consulta. Mesmo padrão que a F8 encontrou (1,65 ms de execução, 151 ms de viagem).
 
 ### 4.8 O que a sessão 10 quebrou, e o que isso ensina
 
@@ -320,10 +388,10 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v2.6 | vivo | — |
+| 00 | Status e Retomada | v2.7 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.18 | vivo — **143 decisões** | — |
+| 03 | Log de Decisões | v0.19 | vivo — **145 decisões** | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
@@ -332,7 +400,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 09 | Arquitetura Técnica | v0.6 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.11 | vivo — **na raiz do repositório** | atualizado 20/08, sessão 11 |
+| 12 | CLAUDE.md | v0.12 | vivo — **na raiz do repositório** | atualizado 20/08, sessão 11 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 15 | Plano da Central de Notificações | v0.3 | ✅ **construído** — os sete passos de pé | atualizado 20/08 |
@@ -342,7 +410,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 ## 7. DECISÕES JÁ TOMADAS
 
-Registro completo no documento **03 — Log de Decisões**: **143 decisões (D-001 a D-143)**, 13 extras (E-001 a E-013) e 9 restrições de arquitetura (R-001 a R-009).
+Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-001 a D-145)**, 13 extras (E-001 a E-013) e 9 restrições de arquitetura (R-001 a R-009).
 
 **As mais estruturais:**
 
@@ -390,6 +458,9 @@ Registro completo no documento **03 — Log de Decisões**: **143 decisões (D-0
 | ~~P-024~~ | ~~Obter os vetores do logotipo, símbolo "+" e monograma~~ | — | ✅ **encerrada 18/08.** O maestro subiu o handoff de marca (BR/BAUEN). Símbolo, favicon e assinatura implementados; referência em `docs/marca/` |
 | ~~P-027~~ | ~~Modelar a entidade Notificação no schema~~ | — | ✅ **encerrada 20/08.** Duas tabelas — `preferencia_notificacao` e `notificacao_lida` —, nenhuma delas guardando a notificação em si. SQL completo no Doc 15 §3 |
 | ~~P-036~~ | ~~Prazo do alerta de "negócio parado" e antecedência do lembrete~~ | — | ✅ **encerrada 20/08 por D-139 e D-140.** Os dois viraram **escolha do usuário em degraus** — 30/45/60/90 com padrão 60, e 1/2/3/7 com padrão 1 — em vez de constante do sistema. Era a pendência que bloqueava a F8 |
+| P-046 | 🔴 **`SUPABASE_SERVICE_ROLE_KEY` na Vercel: aba Project ou Shared?** | push | **Criada 20/08.** É a única coisa entre o push e funcionar. Se estiver em Shared sem vínculo, é a armadilha da sessão 06 |
+| P-047 | **A aba "Agendar atividade" da ficha deve virar formulário embutido**, como no Pipedrive, ou o diálogo atual serve? | UX | **Criada 20/08.** Existe e funciona; a dúvida é de forma |
+| P-048 | **Como alcançar os 144 registros alterados no Pipedrive?** | dados | **Criada 20/08.** Exige `pipedrive_id` no schema. A divergência cresce a cada dia |
 | P-042 | **O prazo do follow-up ao ganhar (90 dias) deve ser editável no painel?** | F8 | **Criada 20/08.** A D-021 só diz "desativável". Não bloqueia: o `check` do schema já aceita 1 a 365, e é acrescentar o campo à tela |
 | P-037 | **Curar os 45 nomes com acento perdido** | qualidade | **Criada 18/08.** Listados em `acentos-pendentes.tsv`, fora do git porque o repositório é público. Conserto pela ficha, que agora é editável (C-07) |
 | ~~P-039~~ | ~~Os 3 negócios legados em Aguardando Contrato~~ | — | ✅ **encerrada 19/08 por D-128**: ficam como estão. O verificador passou a separar legado de violação por regra — quem entrou na etapa pelo sistema tem evento de `etapa` no log; quem não tem, veio da carga |
@@ -446,11 +517,14 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 10 | 19/08/2026 | **O prazo caiu, a F10 começou e as Estatísticas nasceram.** **D-125** revoga a data de 3/9 e com ela a D-069 e a R-008: o prazo existia porque a API do Pipedrive fecharia com o contrato, e a extração de 17/08 desfez essa dependência — a biblioteca inteira foi varrida para não pressionar mais por calendário. **P-034 encerrada**: o maestro conferiu os dois temas, fechando a dívida aberta desde a sessão 05. **F10 iniciada** com `scripts/verifica-virada.mjs`, que mede os sete critérios da D-098 contra a base real em vez de contra o documento — e foi ele que encontrou a **C-08**: **o negócio era a única entidade do sistema sem caminho de criação**, omissão do backlog que tornava o critério 2 impossível. Corrigida com o pacote completo de paridade (**D-126**): criar, excluir, título, organização e pessoas, com a trava de desfecho valendo também na criação. Verificado em transação com `rollback` contra a base real. ⚠️ **Segunda metade da sessão:** o módulo de Estatísticas nasceu (D-130), com o histórico do Pipedrive carregado no log (D-129, 3.406 eventos) e a data de fechamento trazida para o banco (D-131, 2.152 desfechos). O relatório financeiro veio junto. Os gráficos foram refeitos **três vezes** até passarem por medição em vez de gosto (D-133), e ganharam indicadores que só o volume sustenta (D-134). Entraram filtros de paridade com o Pipedrive (D-136), agendar atividade na ficha (D-137) e o WhatsApp sem aba (D-138). **A rota de estatísticas foi ao ar quebrada duas vezes** — ver 4.8. | ⭐ **Falta marcar o dia de operação real dos sócios.** F8 desenhada no Doc 15, aguardando três definições. P-039 a P-042 abertas |
 | 09 | 18/08/2026 | **A maratona: F3, F6, F7 e F9 fechadas, marca implantada e dois defeitos de dado resolvidos.** F3 concluída (filtro por coluna, persistência por usuário, CSV, lista virtualizada). **F6** — atividades em lista por dia e calendário, com as vencidas em aba própria depois de duas rodadas de ajuste com o maestro. **Identidade visual** do handoff BR/BAUEN implantada, encerrando a **P-024**: símbolo, assinatura, favicon, login em split-screen e rodapé; a navegação fica na lateral por decisão explícita (**D-120**). **F7** — Contatos com CRUD completo e histórico derivado, mais o **agrupamento de duplicatas** (**D-121**: 1.195 dos 2.889 cadastros são repetição) com os negócios como referência (**D-122**); e Produtos. **F9** — celular com lista em cartões, filtros em gaveta e Kanban uma etapa por vez. **Dois defeitos de dado:** o crash da aba Pessoas (**C-06**) e **388 registros com acento destruído na origem** (**C-07**), dos quais 343 recuperados. Rodada de UI/UX: avisos de ação, busca instantânea, foco nos diálogos, esqueletos, barra de progresso e navegação no celular. **F8 adiada** (**D-124**). | **F10, a virada.** Nada foi conferido em tela pelo agente — o Google OAuth impede login automatizado. 45 nomes seguem com acento perdido, listados fora do git |
 | 11 | 20/08/2026 | **A F8 saiu do papel.** As três perguntas que bloqueavam a central de notificações desde 18/08 foram respondidas (**D-139** a **D-141**), mais uma quarta que a medição levantou (**D-142**). O limite de "negócio parado" e a antecedência do lembrete deixaram de ser constante do sistema e viraram **escolha do usuário em degraus** — o que mudou o modelo de dados, não só o número: o `check` da tabela passa a guardar os degraus e o padrão precisa morar no banco. **Medição contra a base real antes de decidir**, e não depois: a curva do alerta de parado é quase plana (79 negócios a 30 dias, 52 a 90), a distribuição é concentrada num só responsável, e há **139 atividades vencidas herdadas** — o sino de uma sócia nasce marcando 96, e o maestro decidiu mostrar (D-142). O teto de desempenho do plano foi verificado por `explain (analyze)`: **1,65 ms**, contra os ~200 ms temidos; os 151 ms observados eram rede. **E a F8 foi construída na mesma sessão**, os sete passos do Doc 15 §6: migração com as duas tabelas e a função de derivação, sino no cabeçalho, marcar como lida, painel `/notificacoes` e follow-up ao ganhar. Tudo verificado contra a base real em transação com `rollback`, sem gravar nada. **Doc 15 a v0.3.** **P-014, P-027, P-036 e P-043 encerradas; P-042 aberta.** | ⭐ **Falta marcar o dia de operação real dos sócios.** E ver o sino e o painel **nos dois temas** — o OAuth impede o agente |
+| 12 | 21/08/2026 | **A biblioteca voltou a bater com o repositório, e um campo invisível apareceu.** A sessão 11 terminou sem commitar: o Doc 00 v2.7 inteiro e o `git mv` estavam só na árvore de trabalho, e o `README.md` apontava para um arquivo que já não existia — **link quebrado num repositório público**. Três contradições internas corrigidas, todas herdadas da **D-145**: a seção 4 ainda dizia "F8 adiada", o critério 4 ainda era "trava de desfecho", e o parágrafo dos 3 negócios legados falava da trava como regra viva. ⚠️ **O verificador oficial da virada media uma regra revogada** — `scripts/verifica-virada.mjs` procurava negócios em Aguardando Contrato sem desfecho e chamava aquilo de "A TRAVA FUROU", quando desde a D-145 esse estado é legítimo. Reescrito para medir o que existe: a restrição `perdido_exige_motivo`, os perdidos sem motivo, e a **dispersão das perdas por etapa** — que é como se detecta, pelo dado, se alguém religou o empurrão que a D-145 tirou. O Kanban tinha **código morto** da trava: `pendente` nunca mais era preenchido, então aquele `DialogoDesfecho` não renderizava jamais; saiu junto com a consulta de motivos que ficou sem destinatário. Cinco comentários que descreviam a trava como viva foram reescritos. **C-11**: o campo de **cargo** era um input transparente sem rótulo escrito — existia, gravava, e um usuário real não o achou; ganhou rótulo, borda e fundo afundado nas duas fichas. Verificado por `tsc`, `eslint`, `next build` e pelas cinco rotas por `curl`. | ⭐ **O critério 2 continua sendo o que falta.** O push segue preso na variável da Vercel (P-046) e o `pg_cron` segue batendo de hora em hora |
 
 ---
 
 ## Changelog
 
+- **v2.8** — 21/08/2026 — **Sessão 12: a biblioteca voltou a bater com o repositório.** A v2.7 nunca chegou a ser commitada — estava inteira na árvore de trabalho, com o `git mv` apenas *staged* e o `README.md` apontando para o nome antigo. Corrigidas três contradições que a **D-145** deixou para trás: a seção 4 dizia "F8 adiada", o critério 4 dizia "trava de desfecho" e o parágrafo dos 3 negócios legados tratava a trava como viva. ⚠️ **O `verifica-virada.mjs` media a trava revogada** e foi reescrito para medir a regra que existe — mais a dispersão das perdas por etapa, que é o sinal, no dado, de que ninguém religou o empurrão. Seção **4.10** nova com a medição de 21/08: **21 verificações, 0 falhas**, e a notícia que o aviso escondia — **os sócios já estão cadastrando no sistema** (2.461 negócios, e produtos saíram de zero para 7), com 5 dos 6 usuários já dentro. **C-11** registrada no Doc 09 (v0.7): o campo de cargo era invisível por não ter borda nem rótulo escrito. **145 decisões** — nenhuma nova.
+- **v2.7** — 20/08/2026 — **Fim da sessão 11.** A F8 foi decidida, construída e ganhou push no celular (D-139 a D-144); a **D-145 revogou a D-047**, a única trava do sistema, e o Kanban passou a mostrar só os 307 abertos. Dados sincronizados em parte: os 66 registros novos do Pipedrive entraram, os 144 alterados **não têm como entrar** sem id de procedência no schema (P-048). Seção **4.9** nova, com o que ficou pronto e o que ficou preso — e com a lição que se repetiu três vezes: **quando algo "não existe" aqui, a primeira hipótese é que existe e está invisível**. 🔴 O push está bloqueado numa única variável da Vercel (P-046). **145 decisões.**
 - **v2.6** — 20/08/2026 — **Fim da sessão 11: a F8 foi decidida e construída no mesmo dia.** A tabela da seção 4.1 tira a F8 de "adiada" e passa a descrever o que existe — sino, painel e follow-up. As duas frentes da 4.2 viram uma: só o dia de operação real dos sócios continua pendente, mais a conferência nos dois temas. Entra a **D-143** (**143 decisões**), que só apareceu quando o código encostou no problema: a preferência é por usuário e a RLS deixa cada um ler apenas a sua, então ganhar o negócio de outra pessoa precisava de regra. **P-043 encerrada.** Doc 03 a v0.18, Doc 12 e `CLAUDE.md` a v0.11, Doc 15 a v0.3.
 - **v2.5** — 20/08/2026 — **Fim da sessão 11. A F8 deixou de depender de decisão.** As três perguntas da seção 7 do Doc 15 foram respondidas (**D-139**, **D-140**, **D-141**) e uma quarta, levantada pela medição, também (**D-142**). A seção 4.2 deixa de dizer que faltam definições e passa a descrever **duas frentes independentes**: o dia de operação real dos sócios, que depende de gente, e a F8, que não depende de mais nada. **P-014 e P-027 encerradas por negativa deliberada** — a entidade Notificação não vira tabela —, **P-036 encerrada** por D-139/D-140, e **P-042 aberta**. Registrado o que a medição contra a base real mostrou antes de a interface existir: a curva do alerta de parado é quase plana, a distribuição é concentrada, há 139 vencidas herdadas, e a consulta derivada custa **1,65 ms** e não os ~200 ms que o plano temia — a restrição verdadeira é número de idas ao banco. Doc 03 a v0.17 (**142 decisões**), Doc 15 a v0.2 (validado).
 - **v2.4** — 19/08/2026 — **Fim da sessão 10.** Registra a segunda metade: Estatísticas e Financeiro de pé, com o histórico do Pipedrive no log e a data de fechamento no banco; gráficos refeitos até passarem por medição; filtros de paridade; atividade na ficha do negócio; WhatsApp sem aba. **Seção 4.8 nova** com as duas quebras da rota de estatísticas e o método de verificação que faltava — `tsc` e `next build` não pegam erro de serialização, só rodar a página pega. Doc 15 criado com o plano da central de notificações, encerrando o desenho da F8. Pendências novas: **P-041** (validar `whatsapp://`) e **P-042** (conferir a aba de atividade em tela).
