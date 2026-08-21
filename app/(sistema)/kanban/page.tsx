@@ -62,15 +62,6 @@ export default async function PaginaKanban({
     })
   );
 
-  // Só os motivos ativos entram no diálogo: a carga trouxe 107 do
-  // Pipedrive e deixou inativa a cauda de texto livre usada uma ou duas
-  // vezes, que polui a escolha sem ajudar ninguém.
-  const { data: motivos } = await supabase
-    .from("motivo_perda")
-    .select("id, nome")
-    .eq("ativo", true)
-    .order("ordem");
-
   const { data: usuarios } = await supabase
     .from("usuario")
     .select("id, nome, foto_url")
@@ -108,7 +99,6 @@ export default async function PaginaKanban({
             usuarios={usuarios ?? []}
             origens={origens ?? []}
             produtos={produtos ?? []}
-            motivos={motivos ?? []}
             responsavelPadrao={eu?.id ?? null}
           />
         </div>
@@ -128,7 +118,6 @@ export default async function PaginaKanban({
         <Quadro
           key={responsavelId || "todos"}
           colunas={colunas}
-          motivos={motivos ?? []}
           responsavelId={responsavelId}
         />
       </div>

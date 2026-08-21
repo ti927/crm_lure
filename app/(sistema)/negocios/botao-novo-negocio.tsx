@@ -27,7 +27,6 @@ export function BotaoNovoNegocio({
   usuarios: Opcao[];
   origens: Opcao[];
   produtos: Opcao[];
-  motivos: Opcao[];
   responsavelPadrao?: string | null;
 }) {
   const [aberto, setAberto] = useState(false);

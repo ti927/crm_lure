@@ -105,21 +105,31 @@ export function PessoasDaOrganizacao({
                 </button>
               </div>
 
-              <input
-                key={p.cargo ?? ""}
-                type="text"
-                defaultValue={p.cargo ?? ""}
-                placeholder="Cargo"
-                aria-label={`Cargo de ${p.nome}`}
-                onBlur={async (e) => {
-                  const novo = e.target.value.trim();
-                  if (novo !== (p.cargo ?? "")) {
-                    await editarCargo(organizacaoId, p.id, novo);
-                    router.refresh();
-                  }
-                }}
-                className="text-text-muted placeholder:text-text-muted/60 mt-0.5 w-full rounded border border-transparent bg-transparent px-0 text-sm hover:border-border focus:border-border focus:px-1.5"
-              />
+              {/* ⚠️ Ver a nota gemea em organizacoes-da-pessoa.tsx: o campo
+                  era um input transparente e ninguém o achava. */}
+              <div className="mt-1.5">
+                <label
+                  htmlFor={`cargo-p-${p.id}`}
+                  className="text-text-secondary mb-1 block text-xs font-medium"
+                >
+                  Cargo
+                </label>
+                <input
+                  id={`cargo-p-${p.id}`}
+                  key={p.cargo ?? ""}
+                  type="text"
+                  defaultValue={p.cargo ?? ""}
+                  placeholder="Ex.: Diretor Comercial"
+                  onBlur={async (e) => {
+                    const novo = e.target.value.trim();
+                    if (novo !== (p.cargo ?? "")) {
+                      await editarCargo(organizacaoId, p.id, novo);
+                      router.refresh();
+                    }
+                  }}
+                  className="h-control-sm border-border bg-surface-sunken placeholder:text-text-muted/70 focus:border-brand-ink w-full rounded-md border px-2 text-sm"
+                />
+              </div>
 
               <div className="mt-1 flex flex-wrap gap-1.5">
                 {p.contatos.map((c, i) =>

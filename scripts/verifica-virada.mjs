@@ -244,81 +244,29 @@ anota(
 );
 
 /* ==================================================================
- * CRITERIO 4 — a trava de desfecho funciona
+ * CRITERIO 4 — perdido sempre tem motivo
+ *
+ * ⛔ Este criterio MUDOU em 20/08/2026. A D-145 revogou a D-047, e com
+ * ela a trava de desfecho — a unica trava que o sistema tinha. Nenhuma
+ * etapa exige declarar Ganho ou Perdido, em caminho nenhum: nem no
+ * arrasto do Kanban, nem na troca de etapa da ficha, nem na criacao.
+ *
+ * Logo NAO HA MAIS TRAVA A MEDIR. A versao anterior deste bloco
+ * procurava negocios em "Aguardando Contrato" sem desfecho e chamava
+ * isso de "A TRAVA FUROU". Hoje esse estado e LEGITIMO — e foi
+ * exatamente o argumento da D-145: contrato em assinatura nao e negocio
+ * ganho nem perdido, e forcar a escolha obrigava a mentir.
+ *
+ * O que sobrou, e este sim e inegociavel: perdido exige motivo. Nunca
+ * foi a trava — e regra de dado, mora no banco por `perdido_exige_motivo`
+ * e e o que sustenta o indicador de perdas. Sao 1.121 negocios perdidos
+ * na base; sem motivo, nenhum deles explica coisa alguma.
  * ================================================================== */
-console.log("\n--- 4. Trava de desfecho ---");
+console.log("\n--- 4. Perdido sempre tem motivo ---");
 
-const etapaFinal = await uma(
-  `select id, nome from etapa where lower(nome) like '%aguardando%contrato%' limit 1`,
-);
-
-if (!etapaFinal) {
-  anota(4, "falha", "Etapa 'Aguardando Contrato' nao encontrada", "A trava nao tem onde valer.");
-} else {
-  /*
-   * A trava e da aplicacao (server action). O banco guarda a consequencia:
-   * nenhum negocio DEVERIA estar la sem desfecho declarado.
-   *
-   * ⚠️ Menos os que ja chegaram assim. O Pipedrive nao tinha esta trava e
-   * deixou negocios em aberto parados na etapa final; a carga os trouxe
-   * como estavam. O maestro decidiu em 19/08 deixa-los intactos (D-128).
-   *
-   * A separacao NAO e uma lista fixa de ids, que envelheceria mal. E uma
-   * regra que se mantem sozinha: um negocio que ENTROU nesta etapa pelo
-   * sistema tem, obrigatoriamente, um evento de `etapa` no log — nao ha
-   * outro caminho, porque a trava barra os tres. Sem esse evento, so
-   * pode ter vindo de fora.
-   *
-   * ⚠️ "Pelo sistema" precisa dos TRES estados de procedencia (D-129).
-   * `not origem_carga` sozinho nao serve mais: desde a carga do historico,
-   * eventos importados do Pipedrive tambem satisfazem essa condicao — sao
-   * reais, so nao aconteceram aqui. Um dos tres negocios legados tem
-   * justamente um evento importado apontando para esta etapa, e a regra
-   * antiga passou a acusa-lo como violacao. E preciso exigir tambem
-   * `not importado_do_pipedrive`.
-   *
-   * O dia em que um negocio aparecer aqui com evento de etapa nascido
-   * NESTE sistema, a trava furou de verdade, e ai e falha.
-   */
-  const foraDeRegra = await varias(
-    `select n.id, n.titulo, n.status,
-            exists (select 1 from evento_negocio e
-                     where e.negocio_id = n.id and e.tipo = 'etapa'
-                       and not e.origem_carga
-                       and not e.importado_do_pipedrive) as movido_pelo_sistema
-       from negocio n
-      where n.etapa_id = $1 and n.status not in ('ganho','perdido')
-      order by n.titulo`,
-    [etapaFinal.id],
-  );
-
-  const legado = foraDeRegra.filter((n) => !n.movido_pelo_sistema);
-  const violacoes = foraDeRegra.filter((n) => n.movido_pelo_sistema);
-
-  anota(
-    4,
-    violacoes.length ? "falha" : "ok",
-    violacoes.length
-      ? `${violacoes.length} negocio(s) entraram em ${etapaFinal.nome} sem desfecho — A TRAVA FUROU`
-      : `Nenhum negocio entrou em ${etapaFinal.nome} sem Ganho ou Perdido`,
-    violacoes.length
-      ? violacoes.map((n) => `${n.titulo} (${n.status})`).join("\n")
-      : `verificado sobre ${foraDeRegra.length + 0} registro(s) na etapa sem desfecho`,
-  );
-
-  if (legado.length) {
-    anota(
-      4,
-      "ok",
-      `${legado.length} negocio(s) legado(s) na etapa, vindos assim do Pipedrive`,
-      legado.map((n) => `${n.titulo} (${n.status})`).join("\n") +
-        "\nD-128: mantidos como estao. Nunca passaram pela trava porque\n" +
-        "chegaram pela carga, e o sistema novo nao deixaria nascer assim.",
-    );
-  }
-}
-
-// A restricao do banco: perdido exige motivo. E a rede sob a trava da tela.
+// A regra mora no banco, nao na tela. Se a restricao sumir, a garantia
+// passa a depender de todo caminho de escrita lembrar dela — e um deles
+// vai esquecer.
 const restricao = await uma(
   `select conname, pg_get_constraintdef(oid) def from pg_constraint
     where conrelid = 'public.negocio'::regclass and conname = 'perdido_exige_motivo'`,
@@ -328,7 +276,7 @@ anota(
   restricao ? "ok" : "falha",
   restricao
     ? "Restricao perdido_exige_motivo presente no banco"
-    : "Restricao perdido_exige_motivo AUSENTE — a trava depende so da tela",
+    : "Restricao perdido_exige_motivo AUSENTE — a regra passa a depender so da tela",
   restricao?.def,
 );
 
@@ -343,6 +291,58 @@ anota(
     ? `${perdidoSemMotivo} negocio(s) perdido(s) sem motivo`
     : "Todo negocio perdido tem motivo registrado",
 );
+
+/*
+ * ⚠️ A outra metade da D-145, e a que se perde em silencio: declarar
+ * desfecho NAO MOVE MAIS A ETAPA. Antes empurrava o negocio para a etapa
+ * final, consequencia da D-047. Sem a trava isso passou a DESTRUIR
+ * informacao — perdido em Cold Lead ia parar em Aguardando Contrato e
+ * ninguem mais saberia onde ele morreu.
+ *
+ * Nao ha restricao de banco que garanta isso: e comportamento de server
+ * action. O que da para medir e a CONSEQUENCIA. Se as perdas voltarem a
+ * se concentrar na etapa final, alguem religou o empurrao.
+ *
+ * Etapa diz ate onde chegou; status diz como terminou.
+ */
+const perdasPorEtapa = await varias(
+  `select e.nome, e.ordem, count(*)::int total
+     from negocio n join etapa e on e.id = n.etapa_id
+    where n.status = 'perdido'
+    group by e.nome, e.ordem
+    order by e.ordem`,
+);
+const etapasComPerda = perdasPorEtapa.length;
+anota(
+  4,
+  etapasComPerda > 1 ? "ok" : "aviso",
+  etapasComPerda > 1
+    ? `Perdas espalhadas por ${etapasComPerda} etapas — a etapa preserva onde o negocio morreu`
+    : "Todas as perdas estao numa etapa so — verificar se o desfecho voltou a mover a etapa",
+  perdasPorEtapa.map((e) => `${e.nome}: ${e.total}`).join("\n"),
+);
+
+/*
+ * Informativo, nao criterio: quantos negocios estao abertos na etapa
+ * final. Sob a D-047 isto era violacao; sob a D-145 e a espera legitima
+ * que motivou a revogacao. Fica no relatorio porque e numero que o
+ * maestro olha — nao porque reprova coisa alguma.
+ */
+const etapaFinal = await uma(
+  `select id, nome from etapa where lower(nome) like '%aguardando%contrato%' limit 1`,
+);
+if (etapaFinal) {
+  const emEspera = await conta(
+    "negocio",
+    `where etapa_id = '${etapaFinal.id}' and status not in ('ganho','perdido')`,
+  );
+  anota(
+    4,
+    "ok",
+    `${emEspera} negocio(s) aguardando contrato, ainda sem desfecho`,
+    "Estado legitimo desde a D-145: contrato em assinatura nao e ganho nem perdido.",
+  );
+}
 
 /* ==================================================================
  * CRITERIO 5 — Lista e Kanban respondem com a base real

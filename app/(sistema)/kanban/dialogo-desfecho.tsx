@@ -6,11 +6,20 @@ import { Trophy, XCircle } from "lucide-react";
 import type { Desfecho } from "./constantes";
 
 /**
- * ⚠️ A trava de desfecho (D-047) — a unica trava do sistema.
+ * Declarar o desfecho de um negocio: Ganho ou Perdido.
  *
- * Entrar em "Aguardando Contrato" obriga a declarar Ganho ou Perdido, e
- * Perdido obriga o motivo. Fechar o dialogo cancela a transicao: o
- * negocio nao vai para a etapa (B-054).
+ * ⚠️ Isto JA FOI a trava de desfecho (D-047), a unica trava do
+ * sistema — entrar em "Aguardando Contrato" abria este dialogo e nao
+ * deixava sair sem escolher. A D-145 revogou aquilo em 20/08/2026:
+ * nenhuma etapa exige desfecho, e este dialogo so aparece quando alguem
+ * PEDE, pelos botoes do topo da ficha do negocio.
+ *
+ * O que sobreviveu, e nunca foi a trava: Perdido obriga o motivo. E
+ * regra de dado, garantida por `perdido_exige_motivo` no banco, e e o
+ * que sustenta o indicador de perdas.
+ *
+ * ⚠️ Confirmar aqui NAO move a etapa (D-145). Etapa diz ate onde o
+ * negocio chegou; status diz como ele terminou.
  *
  * O seletor de cliente do Bubble que a D-076 previa aqui saiu do MVP por
  * decisao do maestro em 17/08/2026 — fica para fase final.

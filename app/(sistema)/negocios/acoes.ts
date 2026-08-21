@@ -55,10 +55,11 @@ export type DadosNegocio = {
 /**
  * Cria um negocio.
  *
- * ⚠️ D-047/RF-024 — a trava vale na criacao, nao so no movimento: nascer
- * em "Aguardando Contrato" exige declarar Ganho ou Perdido, e Perdido
- * exige motivo. A checagem mora aqui, no servidor, pelo mesmo motivo de
- * sempre — dialogo se contorna, server action nao.
+ * ⚠️ D-145 revoga a D-047: nenhuma etapa exige desfecho ao nascer.
+ * Quem ja sabe o resultado pode declarar; quem nao sabe, cria e pronto.
+ *
+ * O que a checagem daqui ainda garante — e por isso ela continua no
+ * servidor, onde dialogo nenhum a contorna: Perdido exige motivo.
  *
  * ⚠️ O status nao vem da tela: sai de `etapa.status_inicial` (D-045).
  * Cold Lead nasce `parado`, e e por isso que "parado" e a maioria da
@@ -123,11 +124,11 @@ export async function criarNegocio(d: DadosNegocio, desfecho?: Desfecho) {
 
   if (error) return { erro: error.message };
 
-  // D-021. ⚠️ Sim, um negocio pode NASCER ganho: a D-017 deixa criar em
-  // qualquer etapa, e a trava da D-047 pede o desfecho ali no
-  // formulario. Nascer ganho sem follow-up seria o unico caminho de
-  // desfecho sem a automacao — e o comprador que entra ja fechado e
-  // justamente o que mais merece retorno.
+  // D-021. ⚠️ Sim, um negocio pode NASCER ganho: a D-017 deixa criar
+  // em qualquer etapa e quem ja sabe o resultado pode declara-lo aqui.
+  // Nascer ganho sem follow-up seria o unico caminho de desfecho sem a
+  // automacao — e o comprador que entra ja fechado e justamente o que
+  // mais merece retorno.
   if (status === "ganho") {
     await criarFollowUpDoGanho(supabase, data.id);
     revalidatePath("/atividades");

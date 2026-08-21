@@ -96,21 +96,34 @@ export function OrganizacoesDaPessoa({
                   <X className="size-3.5" aria-hidden />
                 </button>
               </div>
-              <input
-                key={o.cargo ?? ""}
-                type="text"
-                defaultValue={o.cargo ?? ""}
-                placeholder="Cargo"
-                aria-label={`Cargo em ${o.nome}`}
-                onBlur={async (e) => {
-                  const novo = e.target.value.trim();
-                  if (novo !== (o.cargo ?? "")) {
-                    await editarCargo(pessoaId, o.id, novo);
-                    router.refresh();
-                  }
-                }}
-                className="text-text-muted placeholder:text-text-muted/60 mt-0.5 ml-6 w-[calc(100%-1.5rem)] rounded border border-transparent bg-transparent text-sm hover:border-border focus:border-border focus:px-1.5"
-              />
+              {/* ⚠️ Este campo era invisível: input sem borda e sem fundo,
+                  que só ganhava contorno no hover. Lia-se como texto, e um
+                  usuário não achou onde põe o cargo. Agora tem rótulo escrito
+                  e cara de campo nos dois temas — `surface-sunken` afunda
+                  contra o `surface` do painel. */}
+              <div className="mt-1.5 ml-6">
+                <label
+                  htmlFor={`cargo-${o.id}`}
+                  className="text-text-secondary mb-1 block text-xs font-medium"
+                >
+                  Cargo em {o.nome}
+                </label>
+                <input
+                  id={`cargo-${o.id}`}
+                  key={o.cargo ?? ""}
+                  type="text"
+                  defaultValue={o.cargo ?? ""}
+                  placeholder="Ex.: Diretor Comercial"
+                  onBlur={async (e) => {
+                    const novo = e.target.value.trim();
+                    if (novo !== (o.cargo ?? "")) {
+                      await editarCargo(pessoaId, o.id, novo);
+                      router.refresh();
+                    }
+                  }}
+                  className="h-control-sm border-border bg-surface-sunken placeholder:text-text-muted/70 focus:border-brand-ink w-full rounded-md border px-2 text-sm"
+                />
+              </div>
             </li>
           ))}
         </ul>

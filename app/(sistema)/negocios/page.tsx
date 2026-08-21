@@ -406,7 +406,6 @@ export default async function PaginaNegocios({
             usuarios={usuarios ?? []}
             origens={origens ?? []}
             produtos={produtos ?? []}
-            motivos={motivos ?? []}
             responsavelPadrao={euId}
           />
         </div>

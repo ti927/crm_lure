@@ -22,7 +22,6 @@ import { EtiquetaStatus, faixaDaEtapa } from "@/components/dominio/etiquetas";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { moverNegocio, maisDaEtapa } from "./acoes";
 import type { Desfecho } from "./constantes";
-import { DialogoDesfecho } from "./dialogo-desfecho";
 
 export type Cartao = {
   id: string;
@@ -186,11 +185,9 @@ function Coluna({
 
 export function Quadro({
   colunas: iniciais,
-  motivos,
   responsavelId,
 }: {
   colunas: ColunaEtapa[];
-  motivos: { id: string; nome: string }[];
   responsavelId?: string;
 }) {
   const quadroRef = useRef<HTMLDivElement>(null);
@@ -200,10 +197,6 @@ export function Quadro({
   const [arrastando, setArrastando] = useState<Cartao | null>(null);
   const [carregando, setCarregando] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-  // Movimento parado a espera do desfecho (D-047).
-  const [pendente, setPendente] = useState<{ cartao: Cartao; etapaId: string } | null>(
-    null
-  );
 
   // 6px antes de considerar arrasto: sem isso, clicar num cartao vira
   // arrasto acidental e o negocio muda de etapa sem querer. E o mesmo
@@ -354,18 +347,6 @@ export function Quadro({
         </DragOverlay>
       </DndContext>
 
-      {pendente && (
-        <DialogoDesfecho
-          titulo={pendente.cartao.titulo}
-          motivos={motivos}
-          aoCancelar={() => setPendente(null)}
-          aoConfirmar={(desfecho) => {
-            const { cartao, etapaId } = pendente;
-            setPendente(null);
-            void confirmar(cartao, etapaId, desfecho);
-          }}
-        />
-      )}
     </>
   );
 }

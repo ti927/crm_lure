@@ -18,11 +18,9 @@ type Etapa = { id: string; nome: string; ordem: number };
  * ⚠️ Só o título e a organização são obrigatórios (D-023). Todo o resto
  * é opcional — inclusive o valor, porque em Cold Lead ninguém sabe ainda.
  *
- * ⚠️ A trava de desfecho (D-047) vale aqui: escolher "Aguardando
- * Contrato" revela Ganho/Perdido no próprio formulário, em vez de abrir
- * um segundo diálogo por cima do primeiro. É a mesma obrigação — e a
- * server action recusa a criação sem desfecho de qualquer jeito, porque
- * formulário se contorna.
+ * ⚠️ Nenhuma etapa exige desfecho na criação (D-145, revoga a
+ * D-047). O bloco de Ganho/Perdido que este formulário revelava ao
+ * escolher "Aguardando Contrato" saiu junto — ver a nota no corpo.
  */
 export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsavelPadrao, aoFechar }: {
   etapas: Etapa[];
