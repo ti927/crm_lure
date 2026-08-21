@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.12 · 20/08/2026
+> Documento 12 da biblioteca do projeto · v0.13 · 21/08/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 145 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 146 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 
 ---
@@ -216,7 +216,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **145 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **146 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -227,6 +227,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.13** — 21/08/2026 — **A trava saiu do código, e um campo invisível ensinou a regra da vez.** A D-145 já estava escrita aqui, mas o **verificador oficial da virada ainda media a trava revogada** — chamava de "A TRAVA FUROU" um estado que a própria D-145 tornou legítimo. Corrigido, e com uma medição nova: a **dispersão das perdas por etapa**, que é como se detecta pelo dado se alguém religou o empurrão que a D-145 tirou. Entra a **C-11** (Doc 09 v0.7): o campo de cargo existia, gravava, e um usuário não o achou porque era um input transparente sem borda. É o **quarto caso do mesmo padrão em duas sessões**, e vira regra: **campo editável carrega borda** — affordance só no hover não existe no celular, que é metade do sistema (D-097). Entra também a **D-146**: o rodapé da marca rola com o conteúdo em vez de ficar cravado no pé. **146 decisões.**
 - **v0.12** — 20/08/2026 — **A única trava do sistema caiu (D-145, revoga a D-047).** A seção 3 de "o que não pode dar errado" deixa de descrever a trava de desfecho e passa a descrever o que de fato é inegociável ali: **perdido exige motivo**. Registrado que declarar desfecho **não move mais a etapa** — fazia isso por causa da D-047 e passou a destruir a informação de onde o negócio morreu — e que o **Kanban mostra só negócio aberto**, enquanto a Lista continua com tudo. Entra também a **D-144**: o push revoga a parte da D-124 que dizia "sem agendador", com a assimetria que torna o risco aceitável — o sino não depende do cron. **145 decisões.**
 - **v0.11** — 20/08/2026 — **A F8 saiu do papel na mesma sessão que a destravou.** O bloco da F8 deixa de descrever um plano e passa a descrever o que existe. Entra o aviso que esta sessão pagou para aprender: a armadilha da C-05 apareceu por uma **terceira porta** — não na política nova, mas no e-mail falso do próprio script de ensaio, porque `usuario_atual()` lê `usuario` sob RLS e aquela política confere o domínio do e-mail. Zero alerta, zero erro. Fica a regra: **sino vazio não é prova de que não há alertas**. Reforçado que o sino mora no layout, onde um defeito derruba todas as telas de uma vez. **143 decisões.**
 - **v0.10** — 20/08/2026 — **A F8 deixou de depender de decisão.** O bloco que dizia "faltam definir o prazo do negócio parado e a antecedência do lembrete" foi substituído pelo que ficou decidido (**D-139** a **D-142**, Doc 15 v0.2): os dois prazos viraram **escolha do usuário em degraus**, o sino conta **só o que exige ação**, e a entidade Notificação **não vira tabela** — encerrando P-014 e P-027, abertas desde o Bloco 4. Entra o aviso de que as duas tabelas novas são as **primeiras com RLS por usuário** e por isso comparam com `usuario_atual()` e nunca com `auth.uid()` — a armadilha da C-05, escrita antes de morder desta vez. O Doc 15 entra na biblioteca de documentos. **142 decisões.**
