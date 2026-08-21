@@ -105,31 +105,24 @@ export function PessoasDaOrganizacao({
                 </button>
               </div>
 
-              {/* ⚠️ Ver a nota gemea em organizacoes-da-pessoa.tsx: o campo
-                  era um input transparente e ninguém o achava. */}
-              <div className="mt-1.5">
-                <label
-                  htmlFor={`cargo-p-${p.id}`}
-                  className="text-text-secondary mb-1 block text-xs font-medium"
-                >
-                  Cargo
-                </label>
-                <input
-                  id={`cargo-p-${p.id}`}
-                  key={p.cargo ?? ""}
-                  type="text"
-                  defaultValue={p.cargo ?? ""}
-                  placeholder="Ex.: Diretor Comercial"
-                  onBlur={async (e) => {
-                    const novo = e.target.value.trim();
-                    if (novo !== (p.cargo ?? "")) {
-                      await editarCargo(organizacaoId, p.id, novo);
-                      router.refresh();
-                    }
-                  }}
-                  className="h-control-sm border-border bg-surface-sunken placeholder:text-text-muted/70 focus:border-brand-ink w-full rounded-md border px-2 text-sm"
-                />
-              </div>
+              {/* ⚠️ Ver a nota gêmea em organizacoes-da-pessoa.tsx (C-11):
+                  borda e fundo permanentes, hover como reforço e não como
+                  única pista. */}
+              <input
+                key={p.cargo ?? ""}
+                type="text"
+                defaultValue={p.cargo ?? ""}
+                placeholder="Cargo"
+                aria-label={`Cargo de ${p.nome}`}
+                onBlur={async (e) => {
+                  const novo = e.target.value.trim();
+                  if (novo !== (p.cargo ?? "")) {
+                    await editarCargo(organizacaoId, p.id, novo);
+                    router.refresh();
+                  }
+                }}
+                className="h-control-sm border-border-strong bg-surface-sunken placeholder:text-text-muted hover:bg-surface-hover focus:border-brand-ink mt-1.5 w-full rounded-md border px-2 text-sm"
+              />
 
               <div className="mt-1 flex flex-wrap gap-1.5">
                 {p.contatos.map((c, i) =>

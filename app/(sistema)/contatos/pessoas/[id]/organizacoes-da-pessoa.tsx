@@ -96,34 +96,28 @@ export function OrganizacoesDaPessoa({
                   <X className="size-3.5" aria-hidden />
                 </button>
               </div>
-              {/* ⚠️ Este campo era invisível: input sem borda e sem fundo,
-                  que só ganhava contorno no hover. Lia-se como texto, e um
-                  usuário não achou onde põe o cargo. Agora tem rótulo escrito
-                  e cara de campo nos dois temas — `surface-sunken` afunda
-                  contra o `surface` do painel. */}
-              <div className="mt-1.5 ml-6">
-                <label
-                  htmlFor={`cargo-${o.id}`}
-                  className="text-text-secondary mb-1 block text-xs font-medium"
-                >
-                  Cargo em {o.nome}
-                </label>
-                <input
-                  id={`cargo-${o.id}`}
-                  key={o.cargo ?? ""}
-                  type="text"
-                  defaultValue={o.cargo ?? ""}
-                  placeholder="Ex.: Diretor Comercial"
-                  onBlur={async (e) => {
-                    const novo = e.target.value.trim();
-                    if (novo !== (o.cargo ?? "")) {
-                      await editarCargo(pessoaId, o.id, novo);
-                      router.refresh();
-                    }
-                  }}
-                  className="h-control-sm border-border bg-surface-sunken placeholder:text-text-muted/70 focus:border-brand-ink w-full rounded-md border px-2 text-sm"
-                />
-              </div>
+              {/* ⚠️ C-11 — este campo era um input transparente que só ganhava
+                  contorno no hover. Lia-se como rótulo, e um usuário real não
+                  achou onde se preenche o cargo. Agora a borda e o fundo são
+                  PERMANENTES: o realce de hover continua existindo, mas como
+                  reforço, nunca como a única pista de que ali se digita.
+                  ⚠️ No celular não existe hover — affordance que depende dele
+                  não existe para metade do sistema (D-097). */}
+              <input
+                key={o.cargo ?? ""}
+                type="text"
+                defaultValue={o.cargo ?? ""}
+                placeholder="Cargo"
+                aria-label={`Cargo em ${o.nome}`}
+                onBlur={async (e) => {
+                  const novo = e.target.value.trim();
+                  if (novo !== (o.cargo ?? "")) {
+                    await editarCargo(pessoaId, o.id, novo);
+                    router.refresh();
+                  }
+                }}
+                className="h-control-sm border-border-strong bg-surface-sunken placeholder:text-text-muted hover:bg-surface-hover focus:border-brand-ink mt-1.5 ml-6 w-[calc(100%-1.5rem)] rounded-md border px-2 text-sm"
+              />
             </li>
           ))}
         </ul>
