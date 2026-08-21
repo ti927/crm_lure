@@ -47,9 +47,9 @@ export default async function LayoutSistema({
   const notificacoes = (alertas ?? []) as Notificacao[];
 
   return (
-    // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura, e o
-    // rodapé fica fixo no pé. O `min-h-0` na linha é o que deixa as telas
-    // com rolagem interna encolherem em vez de empurrar o rodapé para fora.
+    // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura inteira.
+    // O rodapé NÃO está aqui — ele mora dentro do `main`, para rolar com
+    // o conteúdo em vez de ficar cravado no pé (ver a nota lá embaixo).
     //
     // ⚠️ `h-svh`, e não `min-h-svh`. A diferença não é estética: com
     // `min-h`, esta coluna CRESCE com o conteúdo e nenhum descendente tem
@@ -99,13 +99,26 @@ export default async function LayoutSistema({
                 `overflow` nunca dispara. `rolagem-visivel` cobre as telas
                 que rolam aqui em vez de por dentro — Estatísticas e
                 Notificações. */}
+            {/* ⚠️ O rodapé mora AQUI DENTRO, depois do conteúdo, e não na
+                coluna externa. É o que o faz rolar junto em vez de ficar
+                cravado no pé o tempo todo, comendo ~41px de toda tela —
+                as telas deste sistema são densas e a altura é preciosa.
+
+                Por que dentro do `main` e não na coluna externa: se a
+                coluna externa rolasse, o cabeçalho subiria junto, porque
+                ele é `sticky` dentro dela. Rolando só o `main`, o
+                cabeçalho fica parado e o rodapé aparece ao chegar no fim.
+
+                ⚠️ Consequência assumida: as telas que ocupam `h-full`
+                (Lista, Kanban, Contatos) passam a ter ~41px de rolagem no
+                `main` que antes não tinham. */}
             <main className="rolagem-visivel min-h-0 min-w-0 flex-1 overflow-auto">
               {children}
+              <RodapeSistema />
             </main>
           </div>
         </div>
 
-        <RodapeSistema />
         {/* Convite para a tela de inicio. So no celular, so fora do modo
             aplicativo, e so uma vez — ver o componente. */}
         <ConviteInstalar />
