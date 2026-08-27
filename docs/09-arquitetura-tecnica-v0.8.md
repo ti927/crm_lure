@@ -1,12 +1,12 @@
-﻿# 09 — Arquitetura Técnica (v0.7)
+﻿# 09 — Arquitetura Técnica (v0.8)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.7 |
+| **Versão** | v0.8 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-11 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-12 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -412,6 +412,18 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 |---|---|---|---|
 | **C-11** | Um usuário real não conseguiu encontrar onde se preenche o **cargo** de uma pessoa. O campo existia, funcionava e gravava | Duas coisas somadas. (a) **O cargo pertence ao vínculo pessoa↔organização (D-036)**, não à pessoa — então ele não está no diálogo de criar/editar pessoa, que é o primeiro lugar onde alguém procura. (b) Nas duas fichas ele era um `<input>` com `border-transparent bg-transparent`, texto `text-text-muted text-sm` e rótulo só em `aria-label`: **só ganhava contorno no hover**. Lia-se como texto exibido, não como campo editável. O `placeholder` "Cargo" reforçava o engano — parecia rótulo | **Borda e fundo permanentes**: `border-strong` de repouso e `surface-sunken`, que afunda contra o `surface` do painel nos dois temas. O realce de ponteiro continua existindo, mas virou **reforço** — passou a ser mudança de fundo (`surface-hover`), nunca mais a única pista de que ali se digita |
 
+#### C-12 — os rótulos das etapas não paravam em lugar nenhum (27/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-12** | No Kanban, cartão aparecia **acima** da faixa de nomes das etapas, e ao rolar para baixo os rótulos **iam embora** em vez de ficar. O quadro parecia bugado | **Duas causas somadas, e nenhuma delas era o `sticky` em si.** (a) Os rótulos eram `sticky top-0` **dentro** do container que rola os cartões, e esse container tem `padding` no topo — sobra uma faixa acima do ponto onde o rótulo trava, e cartão passa por ela. (b) O `main` **também** rola, ~41px, por causa do rodapé que a D-146 pôs lá dentro (**P-049**): esse segundo scroll leva o quadro inteiro para cima, rótulos `sticky` incluídos. Rótulo preso ao quadro não sobrevive ao quadro subir | A faixa de rótulos **saiu da rolagem dos cartões** e virou irmã dela. Os dois defeitos somem por construção: nada passa por cima do que está em outro container, e o `sticky top-0` passa a valer contra o `main`, que é quem de fato rola. O preço é `rotulos-alinhados.ts`, que faz as duas faixas concordarem em largura |
+
+⚠️ **O preço tem duas parcelas, e as duas são medidas em vez de chutadas.** A barra de rolagem vertical do quadro ocupa largura real (12px, fixados por `rolagem-visivel`); sem compensar, a faixa de rótulos ficaria 12px mais larga e as seis colunas sairiam progressivamente do lugar — 2px na primeira, 12px na última. `offsetWidth - clientWidth` dá o número certo naquele navegador. E abaixo do piso de 160px por coluna (D-148) o quadro volta a rolar de lado, então a faixa precisa ser empurrada junto: **rótulo que nomeia a coluna errada é pior do que rótulo nenhum.**
+
+⚠️ **A lição é sobre `sticky`, e vale para as outras telas.** `position: sticky` gruda no **scrollport mais próximo**. Havendo dois scrolls aninhados — e neste sistema há, desde a D-146 —, grudar no de dentro não protege de nada quando é o de fora que se move. Antes de usar `sticky`, a pergunta é *qual* container rola, não *se* algum rola.
+
+⚠️ **O compilador do React recusou a primeira versão do hook**, e estava certo: ela recebia os dois `ref` como argumento e escrevia em `faixa.style.marginRight`. Quem cria o ref é quem pode mexer nele — o hook passou a ser dono dos dois e a devolvê-los.
+
 ⚠️ **É o quarto caso do mesmo padrão em duas sessões.** Os outros três estão no Doc 00 §4.9: criar atividade dentro do negócio, filtro de motivo de perda na Lista, filtrar por usuário nas Estatísticas. Em nenhum dos quatro o problema era ausência — era **descoberta**. A regra que sai daí: **quando alguém disser que algo "não existe" neste sistema, a primeira hipótese é que existe e está invisível**, e a correção é de apresentação, não de função.
 
 ⚠️ **A primeira correção errou a mão para o outro lado.** Ela acrescentou um rótulo escrito acima do campo (*"Cargo em Quick Aviação"*), o que resolvia a descoberta mas gastava uma linha inteira numa coluna de 20rem, para dizer o que o nome da organização logo acima já dizia. O maestro corrigiu: **o problema nunca foi a falta de rótulo, era o campo não parecer campo.** A versão que ficou mantém o `placeholder` "Cargo" e o `aria-label`, e gasta a tinta na borda.
@@ -579,6 +591,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.8** — 27/08/2026 — **Sessão 13.** Correção **C-12**: os rótulos das etapas do Kanban não paravam em lugar nenhum — cartão passava acima deles e rolar para baixo os levava junto. Duas causas somadas, e nenhuma era o `sticky` em si: a faixa de `padding` acima do ponto de trava, e o **segundo scroll** que o rodapé da D-146 criou no `main` (P-049). A faixa de rótulos saiu da rolagem dos cartões. Fica a regra: **`sticky` gruda no scrollport mais próximo**, e havendo dois scrolls aninhados, grudar no de dentro não protege quando é o de fora que se move — a pergunta antes de usar `sticky` é *qual* container rola, não *se* algum rola.
 - **v0.7** — 21/08/2026 — **Sessão 12.** Correção **C-11** acrescentada à seção 3.11: o campo de cargo existia e gravava, mas era um input transparente sem rótulo escrito — um usuário real não o encontrou. É o quarto caso do mesmo padrão em duas sessões, e o registro fixa a regra que sai dele: quando alguém disser que algo "não existe" aqui, a primeira hipótese é que existe e está invisível. Registrado também que **campo editável carrega borda** — affordance só no hover não existe no celular.
 - **v0.6** — 19/08/2026 — **Sessão 10.** Sete migrações novas: procedência do log (`importado_do_pipedrive`), data de fechamento do negócio (`fechado_em`, com gatilho de carimbo), e as funções de indicador — comerciais, financeiras, de volume — mais a ampliação do recorte. Correções **C-08** (o negócio era a única entidade sem caminho de criação), **C-09** (função atravessando a fronteira servidor→cliente, que derrubou `/estatisticas` em produção) e **C-10** (reexportação de referência de cliente). ⚠️ Registrado o **método que encontrou a C-09**, já que o OAuth impede o agente de logar: desligar a barreira localmente, rodar o build de produção, pedir a rota e ler a pilha — `tsc`, `eslint` e `next build` não pegam erro de serialização.
 - **v0.5** — 18/08/2026 — **Sessão 09.** Seção **3.12** criada com as quatro migrações da sessão: a preferência de filtro por usuário, a chave de agrupamento de organizações (coluna gerada e indexada, com o cuidado do `unaccent` imutável), as funções que paginam por grupo — o PostgREST não expõe `group by` — e os títulos de negócio como referência. Correções **C-06** (manipulador de evento cruzando a fronteira servidor→cliente, que derrubava a aba Pessoas) e **C-07** (388 registros com acento destruído **na origem**, no dado do próprio Pipedrive, com 343 recuperados por cruzamento com a própria extração) acrescentadas à seção 3.11.

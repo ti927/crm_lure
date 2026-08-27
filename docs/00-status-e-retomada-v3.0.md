@@ -40,7 +40,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.7.md` |
+| `09-arquitetura-tecnica-v0.8.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
 | `12-claude-md-v0.14.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
@@ -462,7 +462,7 @@ Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-0
 | ~~P-027~~ | ~~Modelar a entidade Notificação no schema~~ | — | ✅ **encerrada 20/08.** Duas tabelas — `preferencia_notificacao` e `notificacao_lida` —, nenhuma delas guardando a notificação em si. SQL completo no Doc 15 §3 |
 | ~~P-036~~ | ~~Prazo do alerta de "negócio parado" e antecedência do lembrete~~ | — | ✅ **encerrada 20/08 por D-139 e D-140.** Os dois viraram **escolha do usuário em degraus** — 30/45/60/90 com padrão 60, e 1/2/3/7 com padrão 1 — em vez de constante do sistema. Era a pendência que bloqueava a F8 |
 | P-046 | 🔴 **`SUPABASE_SERVICE_ROLE_KEY` na Vercel: aba Project ou Shared?** | push | **Criada 20/08.** É a única coisa entre o push e funcionar. Se estiver em Shared sem vínculo, é a armadilha da sessão 06 |
-| P-049 | **As duas barras de rolagem em Lista, Kanban e Contatos** | UI | **Criada 21/08.** O rodapé rolando dentro do `main` (D-146) dá a essas três telas ~41px de rolagem que elas não tinham, ao lado da rolagem que já têm por dentro. Previsto por leitura, nunca visto — o OAuth barra o agente. Saída pronta: tirar `rolagem-visivel` do `main` |
+| P-049 | 🔴 **O rodapé dentro do `main` dá ~41px de rolagem às telas de altura cheia** | UI | **Criada 21/08, e VISTA em 27/08.** Deixou de ser hipótese: foi a segunda causa da **C-12** — esses 41px levavam os rótulos do Kanban embora. Os rótulos foram protegidos (saíram da rolagem dos cartões), mas a causa continua: em Lista, Kanban e Contatos a tela inteira ainda desliza 41px, e o fim do quadro fica cortado. **Resolver exige mexer na D-146**, que é do maestro: ou o rodapé sai das telas de altura cheia, ou volta a ficar sempre visível. Saída paliativa: tirar `rolagem-visivel` do `main` |
 | P-041 | **Validar o `whatsapp://` no aparelho** | UX | **Criada 19/08 (D-138) e ausente desta tabela até 21/08** — estava só no changelog da v2.4. O link universal `wa.me` deixava aba órfã por clique; o esquema de aplicativo resolve, mas nunca foi aberto num celular real |
 | ~~P-043~~ | ~~Follow-up ao ganhar negócio de outra pessoa~~ | — | ✅ **encerrada 20/08 por D-143.** A preferência é por usuário e a RLS deixa cada um ler só a sua, então ganhar o negócio de outra pessoa precisava de regra própria. ⚠️ Também estava ausente desta tabela até 21/08 |
 | P-047 | **A aba "Agendar atividade" da ficha deve virar formulário embutido**, como no Pipedrive, ou o diálogo atual serve? | UX | **Criada 20/08.** Existe e funciona; a dúvida é de forma |

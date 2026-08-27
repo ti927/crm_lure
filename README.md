@@ -22,7 +22,7 @@ Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e 
 | 05 | [Requisitos Funcionais](docs/05-requisitos-funcionais-v0.1.md) | 153 requisitos |
 | 06 | [Modelo de Domínio](docs/06-modelo-de-dominio-v0.5.md) | Entidades e regras, conceitual |
 | 08 | [UI e Design System](docs/08-ui-e-design-system-v0.1.md) | Cores, tipografia, densidade |
-| 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.7.md) | Schema físico, gatilhos, políticas |
+| 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.8.md) | Schema físico, gatilhos, políticas |
 | 10 | [Plano de Fases de Construção](docs/10-plano-de-fases-de-construcao-v0.2.md) | Ordem das fases F0 a F10 |
 | 11 | [Backlog e Critérios de Aceite](docs/11-backlog-e-criterios-de-aceite-v0.3.md) | 133 itens com critério de pronto |
 | 12 | [CLAUDE.md](docs/12-claude-md-v0.14.md) | Fonte do `CLAUDE.md` da raiz |

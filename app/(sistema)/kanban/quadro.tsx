@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRolagemLateral } from "@/components/dominio/rolagem-lateral";
+import { useRotulosAlinhados } from "./rotulos-alinhados";
 import {
   DndContext,
   DragOverlay,
@@ -25,6 +26,24 @@ import type { Desfecho } from "./constantes";
 import type { Cartao, ColunaEtapa } from "./consulta";
 
 const POR_VEZ = 20;
+
+/**
+ * Largura de cada coluna, escrita UMA vez e usada nas duas faixas.
+ *
+ * ⚠️ Rótulos e cartões vivem em containers diferentes desde que os
+ * rótulos saíram da rolagem (ver `rotulos-alinhados.ts`). Se as duas
+ * faixas descreverem a largura por conta própria, um dia elas divergem e
+ * o rótulo passa a nomear a coluna vizinha. Uma constante só é o que
+ * impede isso.
+ *
+ * `min-w-40` (160px) é o piso: abaixo dele o cartão deixa de ser
+ * legível, e aí é melhor voltar a rolar de lado do que apertar até não
+ * dar para ler (D-148).
+ */
+const LARGURA_COLUNA = "min-w-40 flex-1 basis-0";
+
+/** O espaçamento lateral também precisa bater entre as duas faixas. */
+const FAIXA = "flex gap-2 px-3";
 
 /**
  * Como o cartao pousa quando solto.
@@ -103,9 +122,33 @@ function CartaoNegocio({
   );
 }
 
-/* ---------- coluna ---------- */
+/* ---------- rotulo da etapa ---------- */
 
-function Coluna({
+/**
+ * O nome da etapa, na faixa que NÃO rola.
+ *
+ * O nome sempre escrito — a cor nunca é o único sinal (Doc 08, B-076).
+ * `truncate` com `title` porque "Apresentação Realizada" não cabe em
+ * 160px, e cortar em silêncio seria perder o nome da etapa.
+ */
+function RotuloEtapa({ coluna }: { coluna: ColunaEtapa }) {
+  return (
+    <div
+      className={`${LARGURA_COLUNA} border-border flex items-baseline justify-between gap-1 border-b px-1 pb-1.5`}
+    >
+      <h2 className="truncate text-sm font-semibold" title={coluna.nome}>
+        {coluna.nome}
+      </h2>
+      <span className="text-text-muted tabular shrink-0 text-xs">
+        {coluna.total.toLocaleString("pt-BR")}
+      </span>
+    </div>
+  );
+}
+
+/* ---------- corpo da coluna ---------- */
+
+function CorpoColuna({
   coluna,
   aoCarregarMais,
   carregando,
@@ -120,76 +163,43 @@ function Coluna({
   const faltam = coluna.total - coluna.cartoes.length;
 
   return (
-    // ⚠️ `flex-1 basis-0` no lugar do `w-72 shrink-0` que havia aqui: as
-    // seis etapas DIVIDEM a largura disponível em vez de somarem 1.840px
-    // e obrigarem a arrastar para o lado para ver as duas últimas — que
-    // são justamente onde estão 74% da base.
+    // ⚠️ SEM `overflow-y-auto` aqui, de proposito. Cada coluna tinha a
+    // propria barra vertical, e seis barrinhas competindo na mesma tela e
+    // ruido: para ver o fim de uma coluna era preciso achar a barra dela.
+    // Quem rola e o quadro, com UMA barra a direita.
     //
-    // ⚠️ `min-w-40` (160px) é o piso: abaixo disso o cartão deixa de ser
-    // legível, e aí é melhor voltar a rolar de lado do que apertar até
-    // não dar para ler. Em qualquer tela a partir de ~1.280px as seis
-    // colunas cabem inteiras; abaixo, o quadro volta a rolar. O aperto
-    // tem limite, e o limite está escrito aqui.
-    <section className="flex min-w-40 flex-1 basis-0 flex-col">
-      {/* O nome da etapa sempre escrito — a cor nunca e o unico sinal
-          (Doc 08, B-076).
+    // `min-h-24` existe porque, sem altura propria, a coluna vazia nao
+    // teria area nenhuma para receber um cartao arrastado.
+    <div
+      ref={setNodeRef}
+      className={`${LARGURA_COLUNA} flex min-h-24 flex-col gap-1.5 rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
+        isOver ? "bg-surface-hover alvo-de-solta" : ""
+      }`}
+    >
+      {coluna.cartoes.map((c, i) => (
+        <CartaoNegocio key={c.id} c={c} ordem={coluna.ordem} indice={i} />
+      ))}
 
-          ⚠️ `sticky top-0`: como quem rola na vertical e o QUADRO
-          inteiro, e nao cada coluna, sem isto o cabecalho sairia de cena
-          na primeira descida e ninguem saberia mais em que etapa esta
-          olhando. O fundo solido existe pelo mesmo motivo — sem ele os
-          cartoes apareceriam por tras do texto. */}
-      <header className="border-border bg-background sticky top-0 z-10 flex items-baseline justify-between gap-1 border-b px-1 pb-1.5">
-        {/* `truncate` com `title`: "Apresentação Realizada" não cabe em
-            160px, e cortar em silêncio seria perder o nome da etapa. O
-            atributo devolve o texto inteiro ao parar o ponteiro em cima. */}
-        <h2 className="truncate text-sm font-semibold" title={coluna.nome}>
-          {coluna.nome}
-        </h2>
-        <span className="text-text-muted tabular shrink-0 text-xs">
-          {coluna.total.toLocaleString("pt-BR")}
-        </span>
-      </header>
+      {/* Só durante uma busca. Fora dela, etapa vazia é fato comum do
+          funil e não precisa de aviso; durante a busca, o vazio É o
+          resultado e merece ser dito. */}
+      {buscando && coluna.cartoes.length === 0 && (
+        <p className="text-text-muted px-1 py-3 text-xs">Nada aqui.</p>
+      )}
 
-      {/* ⚠️ SEM `overflow-y-auto` aqui, de proposito. Cada coluna tinha a
-          propria barra vertical, e seis barrinhas competindo na mesma
-          tela e ruido: para ver o fim de uma coluna era preciso achar a
-          barra dela. Agora a coluna cresce ate onde precisa e quem rola
-          e o quadro, com UMA barra a direita.
-
-          `min-h-24` volta porque, sem altura propria, a coluna vazia
-          nao teria area nenhuma para receber um cartao arrastado. */}
-      <div
-        ref={setNodeRef}
-        className={`flex min-h-24 flex-1 flex-col gap-1.5 rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
-          isOver ? "bg-surface-hover alvo-de-solta" : ""
-        }`}
-      >
-        {coluna.cartoes.map((c, i) => (
-          <CartaoNegocio key={c.id} c={c} ordem={coluna.ordem} indice={i} />
-        ))}
-
-        {/* Só durante uma busca. Fora dela, etapa vazia é fato comum do
-            funil e não precisa de aviso; durante a busca, o vazio É o
-            resultado e merece ser dito. */}
-        {buscando && coluna.cartoes.length === 0 && (
-          <p className="text-text-muted px-1 py-3 text-xs">Nada aqui.</p>
-        )}
-
-        {faltam > 0 && (
-          <button
-            type="button"
-            onClick={aoCarregarMais}
-            disabled={carregando}
-            className="border-border text-text-secondary hover:bg-surface-hover rounded-md border border-dashed py-1.5 text-xs disabled:opacity-50"
-          >
-            {carregando
-              ? "Carregando…"
-              : `Mais ${Math.min(POR_VEZ, faltam)} de ${faltam.toLocaleString("pt-BR")}`}
-          </button>
-        )}
-      </div>
-    </section>
+      {faltam > 0 && (
+        <button
+          type="button"
+          onClick={aoCarregarMais}
+          disabled={carregando}
+          className="border-border text-text-secondary hover:bg-surface-hover rounded-md border border-dashed py-1.5 text-xs disabled:opacity-50"
+        >
+          {carregando
+            ? "Carregando…"
+            : `Mais ${Math.min(POR_VEZ, faltam)} de ${faltam.toLocaleString("pt-BR")}`}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -204,9 +214,6 @@ export function Quadro({
   responsavelId?: string;
   termo?: string;
 }) {
-  const quadroRef = useRef<HTMLDivElement>(null);
-  useRolagemLateral(quadroRef);
-
   const [colunas, setColunas] = useState(iniciais);
   const [arrastando, setArrastando] = useState<Cartao | null>(null);
   const [carregando, setCarregando] = useState<string | null>(null);
@@ -214,6 +221,18 @@ export function Quadro({
 
   const buscando = Boolean(termo);
   const vazio = colunas.every((c) => c.total === 0);
+
+  // ⚠️ Sai do ESTADO, e não das colunas iniciais: "Mais 20" acrescenta
+  // cartões e é justamente aí que a barra de rolagem vertical aparece ou
+  // muda de tamanho. Medindo o que chegou do servidor, a faixa de
+  // rótulos ficaria desalinhada exatamente depois de carregar mais.
+  const cartoesNaTela = colunas.reduce((s, c) => s + c.cartoes.length, 0);
+
+  // ⚠️ Os refs vêm do hook, e não daqui: ver a nota em
+  // `rotulos-alinhados.ts` sobre quem pode escrever num ref.
+  const { quadro: quadroRef, rotulos: rotulosRef } =
+    useRotulosAlinhados(cartoesNaTela);
+  useRolagemLateral(quadroRef);
 
   // 6px antes de considerar arrasto: sem isso, clicar num cartao vira
   // arrasto acidental e o negocio muda de etapa sem querer. E o mesmo
@@ -303,11 +322,11 @@ export function Quadro({
   }
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col">
       {erro && (
         <div
           role="alert"
-          className="border-danger text-danger-ink mx-4 mt-3 rounded-md border px-3 py-2 text-sm"
+          className="border-danger text-danger-ink mx-3 mt-2 shrink-0 rounded-md border px-3 py-2 text-sm"
         >
           {erro}
         </div>
@@ -321,26 +340,49 @@ export function Quadro({
         onDragEnd={aoSoltar}
         onDragCancel={() => setArrastando(null)}
       >
-        {/* ⚠️ As colunas agora DIVIDEM a largura (`flex-1 basis-0` em cada
-            uma) em vez de somarem 288px cada. Em qualquer tela a partir
-            de ~1.280px as seis cabem sem rolar de lado.
+        {/* ⚠️ A FAIXA DE RÓTULOS FICA FORA DA ROLAGEM DOS CARTÕES.
+            Antes ela era `sticky` lá dentro, e quebrava de duas formas ao
+            mesmo tempo: cartão aparecia acima dos nomes na faixa de
+            `padding` do container, e bastava o `main` rolar seus ~41px
+            (o rodapé da D-146, P-049) para o quadro inteiro subir levando
+            os rótulos junto — rótulo que some ao rolar não é rótulo.
+
+            Fora da rolagem os dois somem por construção: nada passa por
+            cima do que está em outro container, e o `sticky top-0` daqui
+            passa a valer contra o `main`, que é quem de fato rola.
+
+            `overflow-x-hidden` recorta a faixa quando o quadro rola de
+            lado; quem a empurra junto é `useRotulosAlinhados`, que também
+            compensa a largura da barra de rolagem vertical. */}
+        <div
+          ref={rotulosRef}
+          className={`${FAIXA} bg-background sticky top-0 z-20 shrink-0 overflow-x-hidden pt-2`}
+        >
+          {colunas.map((c) => (
+            <RotuloEtapa key={c.id} coluna={c} />
+          ))}
+        </div>
+
+        {/* ⚠️ As colunas DIVIDEM a largura (`flex-1 basis-0` em cada uma)
+            em vez de somarem 288px cada. Em qualquer tela a partir de
+            ~1.280px as seis cabem sem rolar de lado.
 
             `overflow-auto` continua aqui, e não é contradição: abaixo do
             piso de 160px por coluna a rolagem lateral volta, de propósito
             — é a válvula que impede o quadro de apertar até ficar
-            ilegível numa janela estreita. Nessa faixa a barra desenhada
-            (`rolagem-visivel`) e a roda de lado seguem valendo, porque é
-            justamente onde ainda há para onde rolar.
+            ilegível numa janela estreita.
 
-            `items-start` deixaria as colunas com alturas diferentes;
-            sem ele elas se esticam até a mais alta, e a coluna curta
-            continua sendo um alvo grande para soltar um cartão. */}
+            ⚠️ SEM `items-start`, de propósito e como já era: sem ele as
+            colunas se esticam até a mais alta, e a coluna curta continua
+            sendo um alvo grande para soltar um cartão. Alinhá-las ao topo
+            deixaria "Aguardando Contrato", com 1 cartão, com uma área de
+            solta de dois centímetros. */}
         <div
           ref={quadroRef}
-          className="rolagem-visivel flex min-h-0 flex-1 gap-2 overflow-auto px-3 py-2"
+          className={`${FAIXA} rolagem-visivel min-h-0 flex-1 overflow-auto pb-2 pt-1.5`}
         >
           {colunas.map((c) => (
-            <Coluna
+            <CorpoColuna
               key={c.id}
               coluna={c}
               carregando={carregando === c.id}
@@ -351,7 +393,7 @@ export function Quadro({
         </div>
 
         {buscando && vazio && (
-          <p className="text-text-muted px-4 pb-3 text-sm">
+          <p className="text-text-muted shrink-0 px-3 pb-2 text-sm">
             Nenhum negócio aberto casa com “{termo}”. Ganho e perdido não
             aparecem no funil — procure na Lista.
           </p>
@@ -376,6 +418,6 @@ export function Quadro({
           )}
         </DragOverlay>
       </DndContext>
-    </>
+    </div>
   );
 }
