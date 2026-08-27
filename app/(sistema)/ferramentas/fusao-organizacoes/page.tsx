@@ -4,6 +4,7 @@ import { AlertTriangle, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { dataHora } from "@/lib/formato";
 import { PainelGrupo, type Cadastro } from "./painel-grupo";
+import { Paginacao } from "@/components/dominio/paginacao";
 
 /**
  * Ferramenta de fusão de organizações duplicadas — **só desenvolvedores**
@@ -78,6 +79,14 @@ export default async function PaginaFusao({
 
   const ultima = Math.max(1, Math.ceil((total ?? 0) / POR_PAGINA));
 
+  /** A querystring atual sem a página — a paginação monta o resto. */
+  const consultaSemPagina = (() => {
+    const q = new URLSearchParams();
+    if (termo) q.set("q", termo);
+    if (chave) q.set("grupo", chave);
+    return q.toString();
+  })();
+
   return (
     <div className="flex min-w-0 flex-col">
       <div className="border-border border-b px-4 py-3">
@@ -145,17 +154,18 @@ export default async function PaginaFusao({
             })}
           </ul>
 
+          {/* ⚠️ 668 grupos de 25 em 25 dão 27 páginas, e com "Anterior /
+              Próxima" chegar ao fim custava 26 cliques. A querystring vai
+              sem o parâmetro de página: quem monta cada endereço é o
+              componente. */}
           {ultima > 1 && (
-            <div className="text-text-muted mt-3 flex items-center justify-between text-sm">
-              <Paginacao href={comParametros({ pagina: String(pagina - 1) })} desabilitado={pagina <= 1}>
-                Anterior
-              </Paginacao>
-              <span className="tabular">
-                {pagina} de {ultima}
-              </span>
-              <Paginacao href={comParametros({ pagina: String(pagina + 1) })} desabilitado={pagina >= ultima}>
-                Próxima
-              </Paginacao>
+            <div className="mt-3">
+              <Paginacao
+                pagina={pagina}
+                ultima={ultima}
+                caminho="/ferramentas/fusao-organizacoes"
+                consulta={consultaSemPagina}
+              />
             </div>
           )}
         </div>
@@ -201,23 +211,3 @@ export default async function PaginaFusao({
   );
 }
 
-function Paginacao({
-  href,
-  desabilitado,
-  children,
-}: {
-  href: string;
-  desabilitado: boolean;
-  children: React.ReactNode;
-}) {
-  const classe =
-    "h-control-sm border-border inline-flex items-center rounded-md border px-2 text-sm font-medium";
-  if (desabilitado) {
-    return <span className={`${classe} opacity-40`}>{children}</span>;
-  }
-  return (
-    <Link href={href} className={`${classe} hover:bg-surface-hover`}>
-      {children}
-    </Link>
-  );
-}

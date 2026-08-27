@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useRolagemLateral } from "@/components/dominio/rolagem-lateral";
-import { ProvedorPrevia, usePrevia } from "@/components/dominio/previa-negocio";
 import { useRotulosAlinhados } from "./rotulos-alinhados";
 import {
   DndContext,
@@ -71,7 +71,7 @@ function CartaoNegocio({
   ordem: number;
   indice: number;
 }) {
-  const abrirPrevia = usePrevia();
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: c.id });
 
   return (
@@ -80,13 +80,10 @@ function CartaoNegocio({
       {...listeners}
       {...attributes}
       // O sensor só considera arrasto depois de 6px, então um clique
-      // parado chega aqui inteiro e abre a prévia.
-      //
-      // ⚠️ Abre o pop-up, e não a ficha: no quadro se analisa cartão a
-      // cartão, e cada ida à ficha completa custa onze consultas para
-      // depois voltar. A ficha continua a um clique, pelo botão do
-      // rodapé da prévia.
-      onClick={() => !isDragging && abrirPrevia(c.id)}
+      // parado chega aqui inteiro e abre o negócio. `de=kanban` marca a
+      // origem para o link "voltar" do detalhe apontar para o Kanban, e
+      // não para a Lista (padrão de quem entrou por lá).
+      onClick={() => !isDragging && router.push(`/negocios/${c.id}?de=kanban`)}
       // Entrada escalonada: a coluna se monta de cima para baixo em vez
       // de aparecer de uma vez. Teto de dez para não virar espera.
       style={{ animationDelay: `${Math.min(indice, 10) * 30}ms` }}
@@ -325,7 +322,6 @@ export function Quadro({
   }
 
   return (
-    <ProvedorPrevia>
     <div className="flex min-h-0 flex-1 flex-col">
       {erro && (
         <div
@@ -423,6 +419,5 @@ export function Quadro({
         </DragOverlay>
       </DndContext>
     </div>
-    </ProvedorPrevia>
   );
 }

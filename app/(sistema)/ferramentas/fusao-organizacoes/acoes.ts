@@ -64,3 +64,58 @@ export async function fundirOrganizacao(principalId: string, duplicadaId: string
   revalidatePath("/contatos");
   return { resultado: data as unknown as Record<string, unknown> };
 }
+
+/* ==================================================================
+ * O cadastro inteiro, para decidir sem sair da tela.
+ * ================================================================== */
+
+export type DetalheCadastro = {
+  id: string;
+  nome: string;
+  cidade: string | null;
+  website: string | null;
+  bubble_id: string | null;
+  criado_em: string;
+  pessoas: {
+    id: string;
+    nome: string;
+    cargo: string | null;
+    contatos: { tipo: string; valor: string }[];
+  }[];
+  negocios: {
+    id: string;
+    titulo: string;
+    valor: number | null;
+    status: "parado" | "negociacao" | "ganho" | "perdido";
+    etapa: string | null;
+    responsavel: string | null;
+    criado_em: string;
+  }[];
+  atividades: {
+    rotulo: string;
+    data: string;
+    concluida: boolean;
+    responsavel: string | null;
+  }[];
+  anotacoes: { texto: string; criado_em: string; autor: string | null }[];
+};
+
+/**
+ * Tudo o que um cadastro carrega, numa ida só.
+ *
+ * ⚠️ As contagens da tela bastam para escolher qual sobrevive; não
+ * bastam para a pergunta que decide a fusão — **é a mesma empresa?**.
+ * Para isso é preciso ver os nomes. Sem isto, conferir custava abrir a
+ * ficha em outra aba, ler, voltar, e repetir para cada um dos 18
+ * cadastros de "Amaral Group" — e numa operação sem desfazer, encarecer
+ * a conferência é fazer com que se confira menos.
+ */
+export async function detalheDoCadastro(id: string) {
+  const { supabase, dev } = await exigeDesenvolvedor();
+  if (!dev) return { erro: "Esta ferramenta é restrita aos desenvolvedores." };
+
+  const { data, error } = await supabase.rpc("fusao_detalhe_cadastro", { p_id: id });
+  if (error) return { erro: error.message };
+  if (!data) return { erro: "Cadastro não encontrado." };
+  return { detalhe: data as unknown as DetalheCadastro };
+}

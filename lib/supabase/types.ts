@@ -992,6 +992,7 @@ export type Database = {
       }
       conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
       sou_desenvolvedor: { Args: Record<string, never>; Returns: boolean }
+      fusao_detalhe_cadastro: { Args: { p_id: string }; Returns: Json }
       fusao_conta_grupos: { Args: { termo?: string | null }; Returns: number }
       fusao_grupos: {
         Args: { termo?: string | null; limite?: number; deslocamento?: number }
@@ -1020,7 +1021,6 @@ export type Database = {
         Args: { p_principal: string; p_duplicada: string }
         Returns: Json
       }
-      negocio_resumo: { Args: { p_id: string }; Returns: Json }
       kanban_coluna: {
         Args: {
           p_etapa: string

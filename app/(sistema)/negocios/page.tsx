@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -14,7 +15,6 @@ import { CartoesNegocio } from "./cartoes-negocio";
 import { PainelFiltrosMobile } from "./painel-filtros-mobile";
 import { LinkOrdenacao } from "./link-ordenacao";
 import { TabelaNegocios } from "./tabela-negocios";
-import { ProvedorPrevia, LinkNegocio } from "@/components/dominio/previa-negocio";
 import { Paginacao } from "@/components/dominio/paginacao";
 import {
   IndicadorFiltro,
@@ -412,17 +412,12 @@ export default async function PaginaNegocios({
           n.etapa?.ordem
         )}`}
       >
-        {/* ⚠️ Continua sendo um `<a>` de verdade: `LinkNegocio` intercepta
-            só o clique simples e abre a prévia. Ctrl/Cmd/meio/Shift
-            passam direto para a ficha — que é o gesto de quem analisa
-            muito e quer a aba nova. */}
-        <LinkNegocio
-          id={n.id}
+        <Link
           href={`/negocios/${n.id}`}
           className="hover:text-brand-ink block truncate px-3 py-2 underline-offset-4 hover:underline motion-safe:transition-colors"
         >
           {n.titulo}
-        </LinkNegocio>
+        </Link>
       </td>
       <td className={`${celula} truncate`}>{texto(n.organizacao?.nome)}</td>
       <td className={`${celula} tabular whitespace-nowrap text-right`}>{real(n.valor)}</td>
@@ -518,14 +513,12 @@ export default async function PaginaNegocios({
             <>
               {/* B-110: no celular a Lista vira cartões — a tabela de dez
                   colunas exigiria rolagem horizontal, que o critério proíbe. */}
-              <ProvedorPrevia>
-                <div className="md:hidden">
-                  <CartoesNegocio negocios={linhas ?? []} />
-                </div>
-                <div className="hidden md:block">
-                  <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
-                </div>
-              </ProvedorPrevia>
+              <div className="md:hidden">
+                <CartoesNegocio negocios={linhas ?? []} />
+              </div>
+              <div className="hidden md:block">
+                <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
+              </div>
             </>
           )}
 

@@ -139,8 +139,9 @@ Padrão da lista de organizações, onde cada linha mostra **pessoas · atividad
 - **A janela de páginas tem largura fixa.** Extremos, vizinhos da atual e `…` no lugar do resto — sempre as mesmas posições ocupadas. Uma janela que cresce e encolhe faz os botões dançarem sob o ponteiro entre um clique e o seguinte, e é assim que se erra a página.
 - **Número digitado é preso ao intervalo.** Pedir a página 99 numa lista de 27 leva à 27, nunca a uma página vazia — vazio se lê como fim dos dados.
 - **Números de página são links**, em componente de servidor: ctrl+clique e nova aba saem de graça, e nenhuma função atravessa a fronteira para montar endereço.
-- **Prévia é para olhar; ficha é para editar.** O pop-up do negócio não carrega as listas de opções dos campos — é esse peso que ele existe para não pagar (onze consultas contra uma). O rodapé diz isso em uma linha, para a ausência do campo editável não se ler como defeito.
-- **Prévia não sequestra o link.** Clique simples abre o pop-up; Ctrl/Cmd/Shift/meio vão para a página inteira. Quem analisa muito abre em aba nova, e trocar o `<a>` por `<button>` mataria o gesto.
+- **Pop-up serve onde a alternativa é ir e voltar; não onde a tela já é o destino.** Na ferramenta de fusão, conferir um cadastro exigia abrir a ficha em outra aba e voltar, 17 vezes num grupo de 18 — ali o pop-up economiza a viagem. Na Lista de negócios, o clique **é** a viagem, e a navegação com prefetch chega antes de qualquer busca de resumo: pôr um pop-up ali trocou instantâneo por ~155 ms de espera. Foi construído nos dois lugares e revertido num (D-157).
+- **O rodapé do pop-up diz o que ele não faz.** "Conferência — nada aqui é editável", numa linha, para a ausência do campo editável não se ler como defeito.
+- **Prévia de conferência não tem teto.** Cortar a lista em seis é o instinto certo para uma prévia de leitura e o errado para uma de decisão: o cadastro com 20 negócios é justamente aquele em que o que ficou de fora era o que decidia.
 
 ---
 

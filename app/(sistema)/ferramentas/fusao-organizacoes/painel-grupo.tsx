@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Crown, ExternalLink, Loader2, TriangleAlert } from "lucide-react";
+import { Crown, Eye, Loader2, TriangleAlert } from "lucide-react";
 import { data as fdata } from "@/lib/formato";
 import { useAviso } from "@/components/dominio/avisos";
 import { previaFusao, fundirOrganizacao, type Previa } from "./acoes";
+import { DialogoCadastro } from "./dialogo-cadastro";
 
 export type Cadastro = {
   id: string;
@@ -54,6 +54,11 @@ export function PainelGrupo({
   const [previa, setPrevia] = useState<Previa | null>(null);
   const [alvo, setAlvo] = useState<Cadastro | null>(null);
   const [carregando, setCarregando] = useState<string | null>(null);
+  // ⚠️ Conferir passou a ser um pop-up, e não uma aba nova. A decisão que
+  // esta tela pede é "é a mesma empresa?", e responder isso exigia abrir
+  // a ficha, ler, voltar — 17 vezes num grupo de 18. Numa operação sem
+  // desfazer, encarecer a conferência é fazer com que se confira menos.
+  const [conferindo, setConferindo] = useState<string | null>(null);
   const [fundindo, setFundindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -168,14 +173,14 @@ export function PainelGrupo({
                 </label>
 
                 <span className="flex shrink-0 items-center gap-2">
-                  <Link
-                    href={`/contatos/organizacoes/${c.id}`}
-                    target="_blank"
-                    className="text-text-secondary hover:text-text inline-flex items-center gap-1 text-sm"
+                  <button
+                    type="button"
+                    onClick={() => setConferindo(c.id)}
+                    className="h-control-sm border-border hover:bg-surface-hover text-text-secondary hover:text-text inline-flex items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium"
                   >
-                    Abrir
-                    <ExternalLink className="size-3" aria-hidden />
-                  </Link>
+                    <Eye className="size-3.5" aria-hidden />
+                    Conferir
+                  </button>
 
                   {!ehPrincipal && (
                     <button
@@ -196,6 +201,10 @@ export function PainelGrupo({
           );
         })}
       </ul>
+
+      {conferindo && (
+        <DialogoCadastro id={conferindo} aoFechar={() => setConferindo(null)} />
+      )}
 
       {previa && alvo && (
         <DialogoConfirmacao

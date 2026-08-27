@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.18 · 27/08/2026
+> Documento 12 da biblioteca do projeto · v0.19 · 27/08/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 158 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 159 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 9. **Filtro de tela abre no recorte de quem abriu, e a preferência tem TRÊS estados** (D-149). `usuario.preferencia_kanban`, `preferencia_atividades` e `preferencia_lista_negocios` guardam a querystring. **Nulo** = nunca escolheu → abre em "só os meus". **Preenchido** = volta igual. **Vazio** = escolheu ver tudo, e o padrão **não** volta por cima. ⚠️ Tratar nulo e vazio como a mesma coisa faz o botão "Limpar" ser desfeito pelo próprio padrão no carregamento seguinte — parece defeito e é regra mal escrita. O que se guarda é **curto de propósito**: termo de busca, dia em foco e mês ficam de fora, porque são pergunta de agora e não escolha de trabalho.
 
@@ -75,6 +75,8 @@ Ela caiu porque contrariava a realidade: *Aguardando Contrato* é uma espera leg
 ⚠️ **Declarar desfecho NÃO move mais a etapa.** Antes empurrava o negócio para a etapa final, consequência da D-047. Sem a trava isso passou a destruir informação: perdido em Cold Lead ia parar em Aguardando Contrato e ninguém mais saberia onde ele morreu. A base herdada tem perdas em todas as etapas — 147 em Cold Lead, 786 em Proposta Enviada. **Etapa diz até onde chegou; status diz como terminou.**
 
 ⚠️ **O Kanban mostra só negócio aberto** (`parado` e `negociacao`). Ganho e perdido somem do funil ao serem marcados: são 2.153 dos 2.460, e com eles dentro o quadro deixa de ser funil e vira arquivo. **Eles não somem da Lista** — lá ficam todos, com filtro de status e de motivo de perda, e as Estatísticas dependem deles.
+
+⚠️ **Pop-up serve onde a alternativa é ir e voltar; não onde a tela já é o destino** (D-157 revertida, D-159). Na ferramenta de fusão, conferir um cadastro exigia abrir a ficha em outra aba e voltar — 17 vezes num grupo de 18 —, e ali o pop-up economiza a viagem. **Na Lista, o clique É a viagem:** a navegação do Next com prefetch chega antes de qualquer busca de resumo, e pôr um pop-up ali trocou instantâneo por ~155 ms de espera. A medição que motivou o pop-up (onze consultas na ficha contra uma) era verdadeira e mesmo assim a conclusão era falsa — o custo estava sendo pago **depois** do clique, não antes. **Não devolva a prévia à Lista nem ao Kanban.**
 
 ⚠️ **Quem rola é o `main`, e as telas de lista NÃO rolam por dentro** (D-151). Lista, Contatos e o rodapé dependem disso: o cabeçalho de coluna gruda no `main`, e é só por isso que o rodapé pode ser o último elemento do conteúdo sem levar o cabeçalho embora. Não devolva `overflow` à tabela — foi a causa da C-12 e da C-13 do mesmo dia. A **paginação no servidor** é quem sustenta a R-006; a virtualização saiu porque 50 linhas não são problema para o DOM e ela exigia justamente o container de rolagem que quebrava tudo.
 
@@ -229,7 +231,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **158 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **159 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -240,6 +242,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.19** — 27/08/2026 — **Fecha a sessão 13, e registra um erro de leitura que vale mais que a funcionalidade.** O pop-up e a paginação foram pedidos **dentro da ferramenta de fusão** — a pista era "27 páginas", que é 668 grupos de 25 em 25, e não as 50 da Lista — e foram construídos na Lista e no Kanban. A **D-157 caiu** e a **D-159** ficou no lugar certo: "Conferir" abre o cadastro inteiro em pop-up, com nomes e não só contagens, porque a pergunta que decide a fusão é *é a mesma empresa?*. ⚠️ Fica a regra: **pop-up serve onde a alternativa é ir e voltar, não onde a tela já é o destino** — e uma medição verdadeira (onze consultas contra uma) pode sustentar uma conclusão falsa, se o custo estiver sendo pago depois do clique e não antes. **159 decisões.**
 - **v0.18** — 27/08/2026 — **Mesclar deixou de ser proibido e virou ferramenta trancada (D-156).** `/ferramentas/fusao-organizacoes` funde um cadastro por vez, movendo negócios, atividades, anotações e vínculos — restrita a Julio e Fabio, com a recusa **no banco** e não na tela, e a rota devolvendo 404 para os demais. Antecipa a D-038 e suspende a D-094 só para os dois. ⚠️ Fica registrado o que quase apagou dados em silêncio: três tabelas têm `on delete cascade` para `organizacao`, então **mover primeiro e apagar por último** não é estilo, é a diferença entre fundir e perder. Nenhuma fusão foi executada. **156 decisões.**
 - **v0.17** — 27/08/2026 — **O agente passou a enxergar (D-153).** `npm run telas` emite sessão local e grava captura das telas, nos dois temas e com rolagem — o que faltava desde sempre, porque `curl` lê HTML e os defeitos deste projeto são visuais. Confirmou em tela a D-148, a D-149 e a D-151, e achou na primeira hora a **C-14**: com `border-collapse: collapse` o Chromium pinta as linhas do corpo por cima do `<thead>` grudado. ⚠️ Ficam duas regras novas: **borda em `<tr>` não é desenhada** no modelo separado que passou a valer nas tabelas, e **medir no DOM antes de teorizar** — duas hipóteses erradas precederam a certa, e o que decidiu foi `getBoundingClientRect`. Aberta e **encerrada no mesmo dia** a P-050: 297 telefones corrompidos na origem ficam como estão (**D-154**) — os dígitos se perderam no Pipedrive. **154 decisões.**
 - **v0.16** — 27/08/2026 — **A mesma causa em duas telas, e um defeito silencioso de semanas.** A **D-151** leva ao fim o que a C-12 começou: Lista e Contatos param de rolar por dentro, o cabeçalho gruda no `main`, as dez colunas cabem por largura percentual e o rodapé volta a ser o último elemento do conteúdo — as três coisas são a mesma, e é por isso que só funcionam juntas. A virtualização saiu; quem sustenta a R-006 é a paginação no servidor. Entra a **C-13**: a ficha da organização chamava três ações com `(uuid, uuid)` invertidos, e duas delas **mentiam em silêncio** — o que corrige o veredito da C-11, porque o campo de cargo gravava pela ficha da pessoa e nunca pela da organização. A **D-152** dá à ficha da organização o cadastro de pessoa e a criação de atividade. **152 decisões.**
