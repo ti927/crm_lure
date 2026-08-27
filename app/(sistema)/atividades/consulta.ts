@@ -93,6 +93,22 @@ export function temFiltro(f: FiltrosAtividade): boolean {
   return Boolean(f.responsavel || f.tipo || f.situacao !== "pendentes" || f.busca);
 }
 
+/** As chaves de FILTRO que esta tela reconhece. `vista`, `dia` e `mes`
+ *  ficam de fora: sao onde a pessoa esta olhando, nao o que ela escolheu
+ *  ver — e um link do sino que traga `vista=vencidas` precisa continuar
+ *  contando como visita crua, para o recorte do usuario ser aplicado por
+ *  cima em vez de atropelar a aba pedida. */
+const CHAVES_RECONHECIDAS = ["situacao", "tipo", "responsavel", "busca"];
+
+/**
+ * Visita "crua": nenhum parametro de filtro. E o sinal para aplicar a
+ * preferencia salva do usuario (ou o padrao "so as minhas") — ver a nota
+ * em `page.tsx`.
+ */
+export function buscaCrua(p: Busca): boolean {
+  return !Object.keys(p).some((k) => CHAVES_RECONHECIDAS.includes(k));
+}
+
 /**
  * Para onde o clique numa atividade leva.
  *

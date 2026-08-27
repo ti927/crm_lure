@@ -1,8 +1,10 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PainelAtividades } from "./painel-atividades";
 import {
   SELECAO,
   parseFiltros,
+  buscaCrua,
   mesBrasilia,
   hojeBrasilia,
   limitesDoMes,
@@ -41,13 +43,63 @@ export default async function PaginaAtividades({
   searchParams: Promise<Busca>;
 }) {
   const p = await searchParams;
+  const supabase = await createClient();
+
+  /**
+   * Visita "crua" (nenhum parametro de FILTRO): e aqui que a tela decide
+   * em que recorte abrir.
+   *
+   * ⚠️ Os tres estados da coluna sao a regra inteira — os mesmos do
+   * Kanban e da Lista:
+   *
+   *   preenchida — a ultima combinacao escolhida. Volta igual.
+   *   NULA       — nunca escolheu nada. Abre em "so as minhas", que e o
+   *                que se espera de quem entra para ver a propria
+   *                agenda. Nao grava: segue nula, o padrao segue valendo.
+   *   VAZIA      — escolheu ver TUDO. O padrao NAO volta por cima.
+   *
+   * ⚠️ Os parametros que ja vieram na URL sao PRESERVADOS e o recorte
+   * entra por cima. Sem isso, um link do sino apontando para
+   * `?vista=vencidas` perderia a aba no redirecionamento e cairia na
+   * lista do dia — que nao e para onde o alerta estava mandando.
+   */
+  if (buscaCrua(p)) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: eu } = await supabase
+        .from("usuario")
+        .select("id, preferencia_atividades")
+        .eq("auth_id", user.id)
+        .maybeSingle();
+
+      const destino = new URLSearchParams();
+      for (const [chave, valor] of Object.entries(p)) {
+        const v = Array.isArray(valor) ? valor[0] : valor;
+        if (v) destino.set(chave, v);
+      }
+
+      if (eu?.preferencia_atividades) {
+        for (const [chave, valor] of new URLSearchParams(
+          eu.preferencia_atividades
+        )) {
+          destino.set(chave, valor);
+        }
+        redirect(`/atividades?${destino}`);
+      }
+      if (eu && eu.preferencia_atividades === null) {
+        destino.set("responsavel", eu.id);
+        redirect(`/atividades?${destino}`);
+      }
+    }
+  }
+
   const filtros = parseFiltros(p);
   const hoje = hojeBrasilia();
   const dia = filtros.dia || hoje;
   filtros.dia = dia;
   if (filtros.vista === "calendario" && !filtros.mes) filtros.mes = mesBrasilia();
-
-  const supabase = await createClient();
 
   let doDia: LinhaAtividade[] = [];
   let vencidas: LinhaAtividade[] = [];

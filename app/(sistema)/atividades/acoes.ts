@@ -196,3 +196,50 @@ export async function buscarVinculos(termo: string): Promise<Candidato[]> {
 
   return candidatos;
 }
+
+/* ==================================================================
+ * Preferencia de filtro por usuario.
+ * ================================================================== */
+
+/**
+ * O que sobrevive a um logout, das coisas que a URL de Atividades
+ * carrega.
+ *
+ * ⚠️ A lista e curta de proposito. `dia` e `mes` sao onde a pessoa
+ * estava olhando, nao o que ela escolheu ver: guardar `dia` faria a tela
+ * reabrir num terca-feira de duas semanas atras. `vista` e navegacao —
+ * qual aba esta aberta —, nao filtro. `busca` e uma pergunta de agora.
+ *
+ * Sobram os tres que a propria `temFiltro` (consulta.ts) ja chama de
+ * filtro, menos a busca.
+ */
+const PERSISTENTES = ["situacao", "tipo", "responsavel"];
+
+/**
+ * ⚠️ Grava string VAZIA quando nao sobrou filtro nenhum, e isso e
+ * deliberado: vazio quer dizer "escolhi ver tudo", enquanto NULO quer
+ * dizer "nunca escolhi" — e so o nulo faz a tela abrir em "so as
+ * minhas". Sem essa distincao, escolher "todos os responsaveis" seria
+ * desfeito pelo padrao no carregamento seguinte.
+ */
+export async function salvarPreferenciaAtividades(query: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const entrada = new URLSearchParams(query);
+  const guardar = new URLSearchParams();
+  for (const chave of PERSISTENTES) {
+    const v = entrada.get(chave);
+    // "pendentes" e o padrao da situacao; guardar equivaleria a nao
+    // guardar, e deixaria a preferencia parecendo escolhida quando nao foi.
+    if (v && !(chave === "situacao" && v === "pendentes")) guardar.set(chave, v);
+  }
+
+  await supabase
+    .from("usuario")
+    .update({ preferencia_atividades: guardar.toString() })
+    .eq("auth_id", user.id);
+}

@@ -57,6 +57,20 @@ export default async function PaginaNegocios({
   // volta igual depois de um login novo. "Limpar filtros" tambem cai
   // aqui, mas ele grava preferencia vazia antes de navegar (ver
   // usar-filtros-lista.ts), entao nao ha redirecionamento em loop.
+  //
+  // ⚠️ A coluna tem TRES estados, e o do meio e o que entrou nesta
+  // sessao:
+  //
+  //   preenchida — a ultima combinacao escolhida. Volta igual.
+  //   NULA       — nunca escolheu nada. A Lista abre em "so os meus",
+  //                igual ao Kanban e a Atividades. Nao grava nada: a
+  //                coluna segue nula e o padrao segue valendo.
+  //   VAZIA      — escolheu ver TUDO. O padrao NAO volta por cima.
+  //
+  // O terceiro estado ja existia so por causa do laco do "Limpar";
+  // agora ele tambem e o que distingue "quero ver tudo" de "ainda nao
+  // disse nada", que e a diferenca inteira entre respeitar a escolha e
+  // atropela-la.
   if (buscaCrua(p)) {
     const {
       data: { user },
@@ -64,11 +78,14 @@ export default async function PaginaNegocios({
     if (user) {
       const { data: eu } = await supabase
         .from("usuario")
-        .select("preferencia_lista_negocios")
+        .select("id, preferencia_lista_negocios")
         .eq("auth_id", user.id)
         .maybeSingle();
       if (eu?.preferencia_lista_negocios) {
         redirect(`/negocios?${eu.preferencia_lista_negocios}`);
+      }
+      if (eu && eu.preferencia_lista_negocios === null) {
+        redirect(`/negocios?responsavel=${eu.id}`);
       }
     }
   }

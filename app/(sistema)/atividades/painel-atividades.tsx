@@ -9,6 +9,7 @@ import {
 } from "@/components/dominio/seletor-responsavel";
 import { ListaAtividades, ListaVencidas, ListaResultados } from "./lista-atividades";
 import { CampoBusca } from "@/components/dominio/campo-busca";
+import { salvarPreferenciaAtividades } from "./acoes";
 import { Calendario } from "./calendario";
 import {
   DialogoAtividade,
@@ -84,11 +85,22 @@ export function PainelAtividades({
   const [pendente, iniciar] = useTransition();
   const [dialogo, setDialogo] = useState<Estado>(null);
 
+  /**
+   * Estado do filtro mora na URL — sobrevive ao recarregar, pode ser
+   * mandado por link e volta certo no botao "voltar".
+   *
+   * ⚠️ Toda mudanca tambem grava a combinacao no usuario, para a tela
+   * reabrir no mesmo recorte no login seguinte. A acao decide sozinha o
+   * que vale a pena guardar: o dia em foco e a busca ficam de fora (ver
+   * `PERSISTENTES` em acoes.ts).
+   */
   function aplicar(chave: string, valor: string) {
     const p = new URLSearchParams(params);
     if (valor) p.set(chave, valor);
     else p.delete(chave);
-    iniciar(() => router.push(`${caminho}?${p}`));
+    const s = p.toString();
+    iniciar(() => router.push(s ? `${caminho}?${s}` : caminho));
+    void salvarPreferenciaAtividades(s);
   }
 
   function fecharDialogo(mudou: boolean) {
