@@ -103,6 +103,17 @@ try {
   // inseriu. Sem ele a contagem de duplicatas se enxergaria.
   const inicioRodada = (await uma("select now() agora")).agora;
 
+  // Quantos eventos REAIS ja existiam. Serve de referencia para o
+  // aviso do fim: veja a explicacao la embaixo.
+  const eventosReaisAntes = Number(
+    (
+      await uma(
+        `select count(*) n from evento_negocio
+          where not origem_carga and not importado_do_pipedrive`,
+      )
+    ).n,
+  );
+
   /**
    * ⚠️ O instante em que a carga de 17/08 terminou.
    *
@@ -517,9 +528,25 @@ try {
       `ambiguidades ${conta.ambiguo} · sem data ${conta.semVinculo}`,
   );
 
-  if (Number(v.eventos_reais) !== 9) {
+  /**
+   * ⚠️ Este numero era escrito a mao (9, medido em 20/08) e por isso
+   * gritava toda vez que alguem usava o sistema entre uma rodada e
+   * outra — em 27/08 ja eram 16, todos de trabalho real. Alarme que
+   * sempre toca deixa de ser alarme, entao agora ele MEDE antes de
+   * comecar e compara com o depois: o que interessa nao e quantos
+   * eventos reais existem, e se ESTA rodada criou algum. Ela nao
+   * deveria: aqui so ha insert, e o gatilho do log e `after update`.
+   */
+  if (Number(v.eventos_reais) !== eventosReaisAntes) {
     console.log(
-      `${CORES.aviso}AVISO: eventos reais eram 9 e agora sao ${v.eventos_reais}.${CORES.fim}`,
+      `${CORES.aviso}AVISO: esta rodada criou ` +
+        `${Number(v.eventos_reais) - eventosReaisAntes} evento(s) real(is) — ` +
+        `eram ${eventosReaisAntes}, agora sao ${v.eventos_reais}. So ha insert ` +
+        `aqui, entao isto nao deveria acontecer: confira antes de aplicar.${CORES.fim}`,
+    );
+  } else {
+    console.log(
+      `eventos reais intactos em ${eventosReaisAntes} — a rodada nao tocou no log.`,
     );
   }
 
