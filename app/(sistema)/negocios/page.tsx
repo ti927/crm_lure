@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -15,6 +14,8 @@ import { CartoesNegocio } from "./cartoes-negocio";
 import { PainelFiltrosMobile } from "./painel-filtros-mobile";
 import { LinkOrdenacao } from "./link-ordenacao";
 import { TabelaNegocios } from "./tabela-negocios";
+import { ProvedorPrevia, LinkNegocio } from "@/components/dominio/previa-negocio";
+import { Paginacao } from "@/components/dominio/paginacao";
 import {
   IndicadorFiltro,
   FiltroTexto,
@@ -184,6 +185,21 @@ export default async function PaginaNegocios({
   const total = count ?? 0;
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA));
   const algumFiltro = temFiltro(filtros);
+
+  /**
+   * A querystring atual SEM o parâmetro de página — é o que a paginação
+   * recebe para montar cada endereço por conta própria.
+   *
+   * ⚠️ Sai de `comParametros`, e não de uma segunda montagem paralela:
+   * duas listas de parâmetros divergem no dia em que alguém acrescentar
+   * um filtro só numa delas, e o sintoma seria o filtro sumir ao trocar
+   * de página.
+   */
+  const consultaSemPagina = (() => {
+    const q = new URLSearchParams(comParametros({ pagina: null }).split("?")[1] ?? "");
+    q.delete("pagina");
+    return q.toString();
+  })();
 
   /** Preserva os demais parametros ao trocar um deles (paginacao). */
   function comParametros(troca: Record<string, string | null>) {
@@ -396,12 +412,17 @@ export default async function PaginaNegocios({
           n.etapa?.ordem
         )}`}
       >
-        <Link
+        {/* ⚠️ Continua sendo um `<a>` de verdade: `LinkNegocio` intercepta
+            só o clique simples e abre a prévia. Ctrl/Cmd/meio/Shift
+            passam direto para a ficha — que é o gesto de quem analisa
+            muito e quer a aba nova. */}
+        <LinkNegocio
+          id={n.id}
           href={`/negocios/${n.id}`}
           className="hover:text-brand-ink block truncate px-3 py-2 underline-offset-4 hover:underline motion-safe:transition-colors"
         >
           {n.titulo}
-        </Link>
+        </LinkNegocio>
       </td>
       <td className={`${celula} truncate`}>{texto(n.organizacao?.nome)}</td>
       <td className={`${celula} tabular whitespace-nowrap text-right`}>{real(n.valor)}</td>
@@ -497,35 +518,31 @@ export default async function PaginaNegocios({
             <>
               {/* B-110: no celular a Lista vira cartões — a tabela de dez
                   colunas exigiria rolagem horizontal, que o critério proíbe. */}
-              <div className="md:hidden">
-                <CartoesNegocio negocios={linhas ?? []} />
-              </div>
-              <div className="hidden md:block">
-                <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
-              </div>
+              <ProvedorPrevia>
+                <div className="md:hidden">
+                  <CartoesNegocio negocios={linhas ?? []} />
+                </div>
+                <div className="hidden md:block">
+                  <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
+                </div>
+              </ProvedorPrevia>
             </>
           )}
 
           {ultimaPagina > 1 && (
-            <div className="border-border bg-surface flex items-center justify-between gap-3 border-t px-4 py-2">
+            <div className="border-border bg-surface flex flex-wrap items-center justify-between gap-3 border-t px-4 py-2">
               <span className="text-text-muted text-sm">
                 {inicio + 1}–{Math.min(inicio + POR_PAGINA, total)} de{" "}
                 {total.toLocaleString("pt-BR")}
               </span>
-              <div className="flex gap-1">
-                <Paginacao
-                  href={comParametros({ pagina: String(filtros.pagina - 1) })}
-                  desabilitado={filtros.pagina <= 1}
-                >
-                  Anterior
-                </Paginacao>
-                <Paginacao
-                  href={comParametros({ pagina: String(filtros.pagina + 1) })}
-                  desabilitado={filtros.pagina >= ultimaPagina}
-                >
-                  Próxima
-                </Paginacao>
-              </div>
+              {/* A querystring vai SEM o parâmetro de página: quem monta
+                  cada endereço é o componente, e ele precisa da base. */}
+              <Paginacao
+                pagina={filtros.pagina}
+                ultima={ultimaPagina}
+                caminho="/negocios"
+                consulta={consultaSemPagina}
+              />
             </div>
           )}
         </>
@@ -534,27 +551,3 @@ export default async function PaginaNegocios({
   );
 }
 
-function Paginacao({
-  href,
-  desabilitado,
-  children,
-}: {
-  href: string;
-  desabilitado: boolean;
-  children: React.ReactNode;
-}) {
-  const base =
-    "h-control-md border-border inline-flex items-center rounded-md border px-3 text-sm font-medium";
-  if (desabilitado) {
-    return (
-      <span aria-disabled className={`${base} text-text-muted opacity-50`}>
-        {children}
-      </span>
-    );
-  }
-  return (
-    <Link href={href} className={`${base} hover:bg-surface-hover`}>
-      {children}
-    </Link>
-  );
-}

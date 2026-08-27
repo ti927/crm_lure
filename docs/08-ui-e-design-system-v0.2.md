@@ -134,6 +134,14 @@ Padrão da lista de organizações, onde cada linha mostra **pessoas · atividad
 - **Zero é apagado, não escondido.** Uma etiqueta ausente se confunde com desalinhamento; apagada, ela diz "aqui não há nenhum" sem gritar.
 - **Técnica:** `Tooltip` do Radix com `Portal` — a dica sai para o fim do `body`, fora de qualquer `overflow` ou pilha de empilhamento local, pelo mesmo motivo que levou o seletor de responsável para o Popover. O gatilho é um `<span>` com `asChild`, e não o `<button>` padrão: a linha inteira já é um `<a>`, e botão dentro de link é HTML inválido. Em troca, a etiqueta leva `aria-label` com o número por extenso e a dica fica marcada como decorativa.
 
+### 6.3 Paginação e prévia
+
+- **A janela de páginas tem largura fixa.** Extremos, vizinhos da atual e `…` no lugar do resto — sempre as mesmas posições ocupadas. Uma janela que cresce e encolhe faz os botões dançarem sob o ponteiro entre um clique e o seguinte, e é assim que se erra a página.
+- **Número digitado é preso ao intervalo.** Pedir a página 99 numa lista de 27 leva à 27, nunca a uma página vazia — vazio se lê como fim dos dados.
+- **Números de página são links**, em componente de servidor: ctrl+clique e nova aba saem de graça, e nenhuma função atravessa a fronteira para montar endereço.
+- **Prévia é para olhar; ficha é para editar.** O pop-up do negócio não carrega as listas de opções dos campos — é esse peso que ele existe para não pagar (onze consultas contra uma). O rodapé diz isso em uma linha, para a ausência do campo editável não se ler como defeito.
+- **Prévia não sequestra o link.** Clique simples abre o pop-up; Ctrl/Cmd/Shift/meio vão para a página inteira. Quem analisa muito abre em aba nova, e trocar o `<a>` por `<button>` mataria o gesto.
+
 ---
 
 ## 7. Notas técnicas para o Claude Code
@@ -160,5 +168,5 @@ Padrão da lista de organizações, onde cada linha mostra **pessoas · atividad
 
 ## Changelog
 
-- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. Entram a regra **um seletor por pergunta** e a **seção 6.2** (contagem com dica de tela). A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
+- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. Entram a regra **um seletor por pergunta**, a **seção 6.2** (contagem com dica de tela) e a **6.3** (paginação e prévia). A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
 - **v0.1** — 13/08/2026 — Criação a partir do manual de marca Lure e dos tokens gerados no Claude Design. Três correções aplicadas: amarelo perde o papel de alerta, etapa 5 sai do verde-oliva, paleta de gráficos definida.

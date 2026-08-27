@@ -1020,6 +1020,7 @@ export type Database = {
         Args: { p_principal: string; p_duplicada: string }
         Returns: Json
       }
+      negocio_resumo: { Args: { p_id: string }; Returns: Json }
       kanban_coluna: {
         Args: {
           p_etapa: string

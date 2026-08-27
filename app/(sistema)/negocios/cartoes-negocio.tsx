@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LinkNegocio } from "@/components/dominio/previa-negocio";
 import { Building2, User } from "lucide-react";
 import { real, data } from "@/lib/formato";
 import {
@@ -29,7 +29,8 @@ export function CartoesNegocio({ negocios }: { negocios: LinhaNegocio[] }) {
           style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
           className="animate-in fade-in fill-mode-backwards duration-300"
         >
-          <Link
+          <LinkNegocio
+            id={n.id}
             href={`/negocios/${n.id}`}
             className={`border-border hover:bg-surface-hover active:bg-surface-hover faixa-etapa flex flex-col gap-1.5 border-b px-4 py-3 ${faixaDaEtapa(
               n.etapa?.ordem
@@ -65,7 +66,7 @@ export function CartoesNegocio({ negocios }: { negocios: LinhaNegocio[] }) {
             <span className="text-text-muted text-xs">
               Criado em {data(n.criado_em)}
             </span>
-          </Link>
+          </LinkNegocio>
         </li>
       ))}
     </ul>

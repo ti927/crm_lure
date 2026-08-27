@@ -3,6 +3,7 @@ import { Phone, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { texto, linkWhatsApp } from "@/lib/formato";
 import { TabelaDados } from "@/components/dominio/tabela-dados";
+import { Paginacao } from "@/components/dominio/paginacao";
 import { BarraContatos } from "./barra-contatos";
 import { CartoesPessoa } from "./cartoes-contato";
 import { LinhaGrupo, type Grupo } from "./grupo-organizacao";
@@ -156,14 +157,14 @@ export default async function PaginaContatos({
 
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA));
 
-  function comPagina(n: number) {
+  /** A querystring atual sem a página — a paginação monta o resto. */
+  const consultaSemPagina = (() => {
     const q = new URLSearchParams();
     if (filtros.aba === "pessoas") q.set("aba", "pessoas");
     if (filtros.busca) q.set("busca", filtros.busca);
-    if (n > 1) q.set("pagina", String(n));
-    const s = q.toString();
-    return s ? `/contatos?${s}` : "/contatos";
-  }
+    return q.toString();
+  })();
+
 
   return (
     // ⚠️ Sem `h-full`: como a Lista, esta tela deixou de ser painel fixo
@@ -202,37 +203,19 @@ export default async function PaginaContatos({
       )}
 
       {ultimaPagina > 1 && (
-        <div className="border-border bg-surface flex items-center justify-between gap-3 border-t px-4 py-2">
+        <div className="border-border bg-surface flex flex-wrap items-center justify-between gap-3 border-t px-4 py-2">
           <span className="text-text-muted text-sm">
             {inicio + 1}–{Math.min(inicio + POR_PAGINA, total)} de {total.toLocaleString("pt-BR")}
           </span>
-          <div className="flex gap-1">
-            <Paginacao href={comPagina(filtros.pagina - 1)} desabilitado={filtros.pagina <= 1}>
-              Anterior
-            </Paginacao>
-            <Paginacao href={comPagina(filtros.pagina + 1)} desabilitado={filtros.pagina >= ultimaPagina}>
-              Próxima
-            </Paginacao>
-          </div>
+          <Paginacao
+            pagina={filtros.pagina}
+            ultima={ultimaPagina}
+            caminho="/contatos"
+            consulta={consultaSemPagina}
+          />
         </div>
       )}
     </div>
   );
 }
 
-function Paginacao({
-  href,
-  desabilitado,
-  children,
-}: {
-  href: string;
-  desabilitado: boolean;
-  children: React.ReactNode;
-}) {
-  const base =
-    "h-control-md border-border inline-flex items-center rounded-md border px-3 text-sm font-medium";
-  if (desabilitado) {
-    return <span aria-disabled className={`${base} text-text-muted opacity-50`}>{children}</span>;
-  }
-  return <Link href={href} className={`${base} hover:bg-surface-hover`}>{children}</Link>;
-}
