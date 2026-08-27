@@ -833,6 +833,8 @@ export type Database = {
           nome: string
           papel_id: string
           preferencia_lista_negocios: string | null
+          preferencia_kanban: string | null
+          preferencia_atividades: string | null
         }
         Insert: {
           ativo?: boolean
@@ -844,6 +846,8 @@ export type Database = {
           nome: string
           papel_id: string
           preferencia_lista_negocios?: string | null
+          preferencia_kanban?: string | null
+          preferencia_atividades?: string | null
         }
         Update: {
           ativo?: boolean
@@ -855,6 +859,8 @@ export type Database = {
           nome?: string
           papel_id?: string
           preferencia_lista_negocios?: string | null
+          preferencia_kanban?: string | null
+          preferencia_atividades?: string | null
         }
         Relationships: [
           {
@@ -934,6 +940,25 @@ export type Database = {
         Returns: { id: string; data: string }[]
       }
       conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
+      kanban_coluna: {
+        Args: {
+          p_etapa: string
+          p_termo?: string | null
+          p_responsavel?: string | null
+          p_deslocamento?: number
+          p_limite?: number
+        }
+        Returns: {
+          id: string
+          titulo: string
+          valor: number | null
+          status: Database["public"]["Enums"]["status_negocio"]
+          organizacao_nome: string | null
+          usuario_nome: string | null
+          usuario_foto: string | null
+          total: number
+        }[]
+      }
       organizacoes_agrupadas: {
         Args: { termo?: string | null; limite?: number; deslocamento?: number }
         Returns: {
