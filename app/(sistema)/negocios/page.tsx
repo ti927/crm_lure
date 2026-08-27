@@ -306,8 +306,17 @@ export default async function PaginaNegocios({
 
   const celula = "px-3 align-middle";
 
+  // ⚠️ `sticky top-0` agora gruda no `main`, e não num container de
+  // rolagem interno — a tabela deixou de ter um. É o que faz o cabeçalho
+  // (e a linha de filtros junto dele) ficar parado ao rolar a lista, que
+  // era o defeito relatado. Ver a nota em `tabela-dados.tsx`.
+  //
+  // ⚠️ A sombra existe porque `border-collapse: collapse` NÃO leva a
+  // borda inferior junto com o elemento grudado: ela some na primeira
+  // rolagem e o cabeçalho fica sem aresta sobre as linhas. A sombra não
+  // participa do modelo de bordas colapsadas, então ela fica.
   const cabecalho = (
-    <thead className="bg-surface-sunken sticky top-0 z-20">
+    <thead className="bg-surface-sunken sticky top-0 z-20 shadow-[0_1px_0_0_var(--border)]">
       <tr>
         {COLUNAS.map((c) => {
           const ativa = c.chave === filtros.ordenarPor;
@@ -318,7 +327,7 @@ export default async function PaginaNegocios({
               key={c.chave}
               scope="col"
               aria-sort={ativa ? (filtros.crescente ? "ascending" : "descending") : "none"}
-              className={`border-border h-9 border-b text-left font-semibold ${
+              className={`border-border h-9 border-b text-left font-semibold ${c.largura} ${
                 c.esconde ? ESCONDE_CLASSE[c.esconde] : ""
               }`}
             >
@@ -328,7 +337,7 @@ export default async function PaginaNegocios({
                   c.numerica ? "justify-end" : ""
                 } ${ativa ? "text-text" : "text-text-muted"}`}
               >
-                {c.rotulo}
+                <span className="truncate">{c.rotulo}</span>
                 <Icone className="size-3 shrink-0" aria-hidden />
                 <IndicadorFiltro ativo={filtroAtivo(c.chave)} />
               </LinkOrdenacao>
@@ -362,7 +371,7 @@ export default async function PaginaNegocios({
       {/* A faixa de cor da etapa acompanha o nome escrito na
           coluna Etapa — nunca substitui (B-076). */}
       <td
-        className={`h-row-cozy faixa-etapa max-w-[22rem] truncate p-0 font-medium ${faixaDaEtapa(
+        className={`h-row-cozy faixa-etapa truncate p-0 font-medium ${faixaDaEtapa(
           n.etapa?.ordem
         )}`}
       >
@@ -373,12 +382,15 @@ export default async function PaginaNegocios({
           {n.titulo}
         </Link>
       </td>
-      <td className={`${celula} max-w-[16rem] truncate`}>{texto(n.organizacao?.nome)}</td>
+      <td className={`${celula} truncate`}>{texto(n.organizacao?.nome)}</td>
       <td className={`${celula} tabular whitespace-nowrap text-right`}>{real(n.valor)}</td>
-      <td className={`${celula} whitespace-nowrap`}>
+      {/* ⚠️ Sem `whitespace-nowrap`: com `table-fixed` a coluna tem
+          largura definida, e um nome de etapa que não coubesse vazaria por
+          cima da vizinha em vez de quebrar. */}
+      <td className={`${celula} truncate`}>
         <EtiquetaEtapa nome={n.etapa?.nome} ordem={n.etapa?.ordem} />
       </td>
-      <td className={celula}>
+      <td className={`${celula} truncate`}>
         <EtiquetaStatus status={n.status} />
       </td>
       <td className={`${celula} ${ESCONDE_CLASSE.lg} truncate`}>{texto(n.origem?.nome)}</td>
@@ -390,7 +402,11 @@ export default async function PaginaNegocios({
           texto(null)
         )}
       </td>
-      <td className={`${celula} ${ESCONDE_CLASSE.xl} truncate`}>{texto(n.motivo_perda?.nome)}</td>
+      {/* ⚠️ `lg`, e NÃO `xl`. A coluna foi movida para `lg` em `colunas.ts`
+          e a célula ficou para trás: entre 1024 e 1280px o cabeçalho abria
+          "Motivo de perda" e o corpo não, e dali para a direita cabeçalho e
+          conteúdo nomeavam colunas diferentes. */}
+      <td className={`${celula} ${ESCONDE_CLASSE.lg} truncate`}>{texto(n.motivo_perda?.nome)}</td>
       <td className={`${celula} ${ESCONDE_CLASSE.md} tabular whitespace-nowrap`}>
         {data(n.criado_em)}
       </td>
@@ -398,7 +414,11 @@ export default async function PaginaNegocios({
   ));
 
   return (
-    <div className="flex h-full min-w-0 flex-col">
+    // ⚠️ Sem `h-full`: esta tela deixou de ser um painel fixo com rolagem
+    // por dentro e passou a fluir dentro do `main`, que é quem rola. É o
+    // que faz o cabeçalho grudado funcionar (ele gruda no `main`) e o
+    // rodapé aparecer depois da última linha, em vez de morar no pé.
+    <div className="flex min-w-0 flex-col">
       <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Negócios</h1>
@@ -456,17 +476,17 @@ export default async function PaginaNegocios({
             <>
               {/* B-110: no celular a Lista vira cartões — a tabela de dez
                   colunas exigiria rolagem horizontal, que o critério proíbe. */}
-              <div className="min-h-0 flex-1 overflow-auto md:hidden">
+              <div className="md:hidden">
                 <CartoesNegocio negocios={linhas ?? []} />
               </div>
-              <div className="hidden min-h-0 flex-1 flex-col md:flex">
+              <div className="hidden md:block">
                 <TabelaNegocios cabecalho={cabecalho} linhas={corpo} />
               </div>
             </>
           )}
 
           {ultimaPagina > 1 && (
-            <div className="border-border bg-surface flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2">
+            <div className="border-border bg-surface flex items-center justify-between gap-3 border-t px-4 py-2">
               <span className="text-text-muted text-sm">
                 {inicio + 1}–{Math.min(inicio + POR_PAGINA, total)} de{" "}
                 {total.toLocaleString("pt-BR")}

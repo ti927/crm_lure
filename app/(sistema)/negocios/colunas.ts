@@ -19,26 +19,44 @@ export type Coluna = {
   numerica?: boolean;
   /** Colunas que somem primeiro quando a tela estreita. */
   esconde?: "md" | "lg" | "xl";
+  /**
+   * Largura da coluna, em porcentagem, aplicada com `table-fixed`.
+   *
+   * ⚠️ Escrita por extenso, e nao montada — o Tailwind v4 varre o codigo
+   * em busca de nomes literais e nao gera `w-[${n}%]`.
+   *
+   * ⚠️ Porcentagem, e nao pixel: quando uma coluna se esconde num
+   * breakpoint, o navegador redistribui as porcentagens restantes e as
+   * que sobram continuam preenchendo a tabela. Com largura fixa sobraria
+   * um vazio a direita.
+   */
+  largura: string;
   /** Tipo de controle no cabecalho (B-042). Sem isto, a coluna nao filtra. */
   filtro?: "texto" | "numero" | "data" | "selecao";
 };
 
 export const COLUNAS: Coluna[] = [
-  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto" },
-  { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)", filtro: "texto" },
-  { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true, filtro: "numero" },
-  { chave: "etapa", rotulo: "Etapa", ordenacao: "etapa(ordem)", filtro: "selecao" },
-  { chave: "status", rotulo: "Status", ordenacao: "status", filtro: "selecao" },
-  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao" },
-  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao" },
-  { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md", filtro: "selecao" },
+  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto", largura: "w-[16%]" },
+  { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)", filtro: "texto", largura: "w-[13%]" },
+  { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true, filtro: "numero", largura: "w-[8%]" },
+  { chave: "etapa", rotulo: "Etapa", ordenacao: "etapa(ordem)", filtro: "selecao", largura: "w-[11%]" },
+  { chave: "status", rotulo: "Status", ordenacao: "status", filtro: "selecao", largura: "w-[9%]" },
+  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao", largura: "w-[8%]" },
+  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao", largura: "w-[8%]" },
+  { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md", filtro: "selecao", largura: "w-[10%]" },
   // ⚠️ Estava em `esconde: "xl"` — so aparecia acima de 1280px, e por
   // isso passava por inexistente. Perder negocio E o dado mais caro do
   // funil: 1.121 dos 2.460 estao perdidos, e o motivo e a unica coisa
   // que explica por que. Sobe para `lg`, junto de origem e produto.
-  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "lg", filtro: "selecao" },
-  { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md", filtro: "data" },
+  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "lg", filtro: "selecao", largura: "w-[10%]" },
+  { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md", filtro: "data", largura: "w-[7%]" },
 ];
+
+/**
+ * ⚠️ As dez larguras somam 100. Se acrescentar coluna, tire de outra —
+ * senao a tabela passa de 100% e a rolagem horizontal volta, que e
+ * exatamente o que a D-151 veio eliminar.
+ */
 
 /** R-006: a base inteira nunca vai para o navegador. */
 export const POR_PAGINA = 50;

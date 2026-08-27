@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { texto, linkWhatsApp } from "@/lib/formato";
-import { TabelaVirtual } from "@/components/dominio/tabela-virtual";
+import { TabelaDados } from "@/components/dominio/tabela-dados";
 import { BarraContatos } from "./barra-contatos";
 import { CartoesPessoa } from "./cartoes-contato";
 import { LinhaGrupo, type Grupo } from "./grupo-organizacao";
@@ -79,7 +79,7 @@ export default async function PaginaContatos({
     cartoes = <CartoesPessoa pessoas={data ?? []} />;
 
     cabecalho = (
-      <thead className="bg-surface-sunken sticky top-0 z-20">
+      <thead className="bg-surface-sunken sticky top-0 z-20 shadow-[0_1px_0_0_var(--border)]">
         <tr>
           <th className={th}>Nome</th>
           <th className={th}>Organização</th>
@@ -160,7 +160,11 @@ export default async function PaginaContatos({
   }
 
   return (
-    <div className="flex h-full min-w-0 flex-col">
+    // ⚠️ Sem `h-full`: como a Lista, esta tela deixou de ser painel fixo
+    // com rolagem por dentro e passou a fluir dentro do `main`, que é quem
+    // rola. É o que faz o cabeçalho grudado ficar parado e o rodapé
+    // aparecer depois da última linha (ver `tabela-dados.tsx`).
+    <div className="flex min-w-0 flex-col">
       <BarraContatos aba={filtros.aba} total={total} />
 
       {total === 0 ? (
@@ -179,20 +183,20 @@ export default async function PaginaContatos({
       ) : (
         listaAgrupada ? (
           // Organizações: a mesma lista agrupada nos dois tamanhos.
-          <div className="min-h-0 flex-1 overflow-auto">{listaAgrupada}</div>
+          <div>{listaAgrupada}</div>
         ) : (
           <>
-            {/* Pessoas — celular: cartões; desktop: tabela virtualizada. */}
-            <div className="min-h-0 flex-1 overflow-auto md:hidden">{cartoes}</div>
-            <div className="hidden min-h-0 flex-1 flex-col md:flex">
-              <TabelaVirtual cabecalho={cabecalho} linhas={linhas} />
+            {/* Pessoas — celular: cartões; desktop: tabela. */}
+            <div className="md:hidden">{cartoes}</div>
+            <div className="hidden md:block">
+              <TabelaDados cabecalho={cabecalho} linhas={linhas} />
             </div>
           </>
         )
       )}
 
       {ultimaPagina > 1 && (
-        <div className="border-border bg-surface flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2">
+        <div className="border-border bg-surface flex items-center justify-between gap-3 border-t px-4 py-2">
           <span className="text-text-muted text-sm">
             {inicio + 1}–{Math.min(inicio + POR_PAGINA, total)} de {total.toLocaleString("pt-BR")}
           </span>

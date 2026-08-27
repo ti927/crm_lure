@@ -47,9 +47,10 @@ export default async function LayoutSistema({
   const notificacoes = (alertas ?? []) as Notificacao[];
 
   return (
-    // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura que
-    // sobra, e o rodapé fecha a página embaixo dela, atravessando a
-    // largura inteira (ver a nota lá embaixo).
+    // Coluna externa: a linha [sidebar + conteúdo] ocupa a altura
+    // inteira. O rodapé NÃO está aqui — ele é o último elemento do
+    // `main`, para aparecer ao rolar até o fim em vez de ocupar espaço
+    // fixo (ver a nota lá embaixo).
     //
     // ⚠️ `h-svh`, e não `min-h-svh`. A diferença não é estética: com
     // `min-h`, esta coluna CRESCE com o conteúdo e nenhum descendente tem
@@ -101,28 +102,26 @@ export default async function LayoutSistema({
                 Notificações. */}
             <main className="rolagem-visivel min-h-0 min-w-0 flex-1 overflow-auto">
               {children}
+
+              {/* ⚠️ O RODAPÉ É O ÚLTIMO ELEMENTO DO CONTEÚDO, e não uma
+                  faixa cravada no pé da janela: ele aparece quando se rola
+                  até o fim, como em qualquer página. Cravado, comia ~41px
+                  de TODA tela — e as telas deste sistema são densas de
+                  propósito.
+
+                  ⚠️ Foi assim (D-146), deixou de ser (D-150) e voltou a
+                  ser. O que derrubou a primeira tentativa não foi o lugar
+                  do rodapé: era que os cabeçalhos de coluna grudavam no
+                  scrollport ERRADO. O `main` rola esses ~41px, e quem
+                  estivesse grudado num container interno subia junto e
+                  saía da tela (C-12). Agora os cabeçalhos do Kanban e da
+                  Lista grudam NESTE `main`, que é quem de fato rola —
+                  então ele pode rolar sem levar nada embora. */}
+              <RodapeSistema />
             </main>
           </div>
         </div>
 
-        {/* ⚠️ O RODAPÉ MORA AQUI: na coluna externa, depois da linha
-            [sidebar + conteúdo]. Atravessa a largura inteira, por baixo
-            da sidebar — rodapé de página, como em qualquer site.
-
-            ⚠️ Isto REVOGA a D-146, que o tinha posto dentro do `main`
-            para ele rolar com o conteúdo e devolver ~41px a toda tela. O
-            preço daquilo não estava no documento: com o rodapé lá
-            dentro, as telas de altura cheia (Lista, Kanban, Contatos)
-            passavam a ter DUAS rolagens — a de dentro, e mais 41px da
-            página inteira. Esses 41px foram a segunda causa da C-12: eles
-            levavam os rótulos das etapas do Kanban para fora da tela. E
-            visualmente o rodapé virou parte do painel de cada seção, em
-            vez de pé da página.
-
-            Aqui fora, o `main` deixa de transbordar: cada tela tem
-            exatamente UMA rolagem, e os 41px voltam a ser custo fixo
-            declarado em vez de rolagem fantasma. Encerra a P-049. */}
-        <RodapeSistema />
 
         {/* Convite para a tela de inicio. So no celular, so fora do modo
             aplicativo, e so uma vez — ver o componente. */}
