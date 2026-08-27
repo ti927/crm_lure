@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.14 · 27/08/2026
+> Documento 12 da biblioteca do projeto · v0.15 · 27/08/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 149 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 150 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 9. **Filtro de tela abre no recorte de quem abriu, e a preferência tem TRÊS estados** (D-149). `usuario.preferencia_kanban`, `preferencia_atividades` e `preferencia_lista_negocios` guardam a querystring. **Nulo** = nunca escolheu → abre em "só os meus". **Preenchido** = volta igual. **Vazio** = escolheu ver tudo, e o padrão **não** volta por cima. ⚠️ Tratar nulo e vazio como a mesma coisa faz o botão "Limpar" ser desfeito pelo próprio padrão no carregamento seguinte — parece defeito e é regra mal escrita. O que se guarda é **curto de propósito**: termo de busca, dia em foco e mês ficam de fora, porque são pergunta de agora e não escolha de trabalho.
 
@@ -75,6 +75,8 @@ Ela caiu porque contrariava a realidade: *Aguardando Contrato* é uma espera leg
 ⚠️ **Declarar desfecho NÃO move mais a etapa.** Antes empurrava o negócio para a etapa final, consequência da D-047. Sem a trava isso passou a destruir informação: perdido em Cold Lead ia parar em Aguardando Contrato e ninguém mais saberia onde ele morreu. A base herdada tem perdas em todas as etapas — 147 em Cold Lead, 786 em Proposta Enviada. **Etapa diz até onde chegou; status diz como terminou.**
 
 ⚠️ **O Kanban mostra só negócio aberto** (`parado` e `negociacao`). Ganho e perdido somem do funil ao serem marcados: são 2.153 dos 2.460, e com eles dentro o quadro deixa de ser funil e vira arquivo. **Eles não somem da Lista** — lá ficam todos, com filtro de status e de motivo de perda, e as Estatísticas dependem deles.
+
+⚠️ **`sticky` gruda no scrollport MAIS PRÓXIMO** (C-12, Doc 09 §3.11). Antes de usar `sticky`, a pergunta é *qual* container rola, não *se* algum rola: havendo dois scrolls aninhados, grudar no de dentro não protege de nada quando é o de fora que se move. Foi assim que os rótulos das etapas do Kanban sumiam — eram `sticky` dentro do quadro, e quem subia era a página. **A faixa de rótulos vive FORA da rolagem dos cartões**, e `rotulos-alinhados.ts` é o que mantém as duas faixas concordando em largura. Não a mova para dentro.
 
 ⚠️ **O quadro cabe numa tela só, e tem piso** (D-148). As seis colunas dividem a largura (`flex-1 basis-0`) em vez de somarem ~1.840px — mas com **`min-w-40` (160px) de piso**, e o piso é a parte que importa: abaixo dele a rolagem lateral volta **de propósito**, porque apertar até ficar ilegível troca um incômodo por um defeito. Se acrescentar coisa ao cartão, confira que ainda cabe em 160px; a última linha usa `flex-wrap` justamente para quebrar em vez de vazar.
 
@@ -221,7 +223,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **149 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **150 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -232,6 +234,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.15** — 27/08/2026 — **O maestro abriu a tela, e o Kanban estava quebrado.** Entra a **C-12**: os rótulos das etapas não paravam em lugar nenhum — cartão passava por cima deles e rolar os levava embora. Duas causas somadas, e nenhuma era o `sticky` em si. Vira regra aqui: **`sticky` gruda no scrollport mais próximo**, e a pergunta antes de usá-lo é *qual* container rola. Entra a **D-150**, que **revoga a D-146** de seis dias atrás: o rodapé volta à coluna externa, largura inteira, por baixo da sidebar. O que a derrubou foi o preço que ela mesma tinha registrado como "consequência assumida" e ninguém tinha visto — a segunda rolagem de 41px nas telas de altura cheia, que foi justamente a segunda causa da C-12. **P-049 encerrada. 150 decisões.**
 - **v0.14** — 27/08/2026 — **O funil coube na tela, e as telas passaram a saber de quem são.** Entram três decisões: **D-147** (busca no Kanban, por função no banco — a **C-04** não deixa alcançar o nome da organização de outro jeito, e a saída de dois passos teria teto silencioso sobre 2.897 cadastros), **D-148** (as seis colunas **dividem** a largura, com piso de 160px abaixo do qual a rolagem lateral volta de propósito) e **D-149** (Kanban, Atividades e Lista abrem em "só os meus", com a preferência ganhando **três estados** — e é o terceiro que impede o "Limpar" de ser desfeito pelo padrão). Volume da base atualizado pela sincronização de 27/08. ⚠️ Fica registrada a lição do script de sincronização: ele conferia se os eventos reais continuavam sendo **9**, número escrito à mão em 20/08, e por isso acusava falso toda vez que alguém trabalhava no sistema. **Marco medido à mão vira alarme que sempre toca**, e alarme que sempre toca esconde o de verdade — agora ele mede antes e compara com o depois. **149 decisões.**
 - **v0.13** — 21/08/2026 — **A trava saiu do código, e um campo invisível ensinou a regra da vez.** A D-145 já estava escrita aqui, mas o **verificador oficial da virada ainda media a trava revogada** — chamava de "A TRAVA FUROU" um estado que a própria D-145 tornou legítimo. Corrigido, e com uma medição nova: a **dispersão das perdas por etapa**, que é como se detecta pelo dado se alguém religou o empurrão que a D-145 tirou. Entra a **C-11** (Doc 09 v0.7): o campo de cargo existia, gravava, e um usuário não o achou porque era um input transparente sem borda. É o **quarto caso do mesmo padrão em duas sessões**, e vira regra: **campo editável carrega borda** — affordance só no hover não existe no celular, que é metade do sistema (D-097). Entra também a **D-146**: o rodapé da marca rola com o conteúdo em vez de ficar cravado no pé. **146 decisões.**
 - **v0.12** — 20/08/2026 — **A única trava do sistema caiu (D-145, revoga a D-047).** A seção 3 de "o que não pode dar errado" deixa de descrever a trava de desfecho e passa a descrever o que de fato é inegociável ali: **perdido exige motivo**. Registrado que declarar desfecho **não move mais a etapa** — fazia isso por causa da D-047 e passou a destruir a informação de onde o negócio morreu — e que o **Kanban mostra só negócio aberto**, enquanto a Lista continua com tudo. Entra também a **D-144**: o push revoga a parte da D-124 que dizia "sem agendador", com a assimetria que torna o risco aceitável — o sino não depende do cron. **145 decisões.**

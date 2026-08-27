@@ -422,6 +422,8 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 
 ⚠️ **A lição é sobre `sticky`, e vale para as outras telas.** `position: sticky` gruda no **scrollport mais próximo**. Havendo dois scrolls aninhados — e neste sistema há, desde a D-146 —, grudar no de dentro não protege de nada quando é o de fora que se move. Antes de usar `sticky`, a pergunta é *qual* container rola, não *se* algum rola.
 
+⚠️ **A causa (b) foi eliminada na mesma sessão, e não só contornada.** A **D-150** revogou a D-146 e devolveu o rodapé à coluna externa: o `main` parou de transbordar, e as telas de altura cheia voltaram a ter exatamente uma rolagem. A faixa de rótulos fora da rolagem continua valendo — ela resolve a causa (a), que é independente, e deixa o quadro imune caso um segundo scroll volte a existir um dia.
+
 ⚠️ **O compilador do React recusou a primeira versão do hook**, e estava certo: ela recebia os dois `ref` como argumento e escrevia em `faixa.style.marginRight`. Quem cria o ref é quem pode mexer nele — o hook passou a ser dono dos dois e a devolvê-los.
 
 ⚠️ **É o quarto caso do mesmo padrão em duas sessões.** Os outros três estão no Doc 00 §4.9: criar atividade dentro do negócio, filtro de motivo de perda na Lista, filtrar por usuário nas Estatísticas. Em nenhum dos quatro o problema era ausência — era **descoberta**. A regra que sai daí: **quando alguém disser que algo "não existe" neste sistema, a primeira hipótese é que existe e está invisível**, e a correção é de apresentação, não de função.
