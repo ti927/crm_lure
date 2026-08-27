@@ -7,7 +7,7 @@ import { real } from "@/lib/formato";
 import { EtiquetaStatus, faixaDaEtapa } from "@/components/dominio/etiquetas";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { maisDaEtapa } from "./acoes";
-import type { ColunaEtapa, Cartao } from "./quadro";
+import type { ColunaEtapa, Cartao } from "./consulta";
 
 const POR_VEZ = 20;
 
@@ -24,9 +24,13 @@ const POR_VEZ = 20;
 export function KanbanMobile({
   colunas,
   responsavelId,
+  termo,
 }: {
   colunas: ColunaEtapa[];
   responsavelId?: string;
+  /** Termo da barra de busca — precisa vir junto para que "carregar
+   *  mais" continue dentro do mesmo recorte. */
+  termo?: string;
 }) {
   const [indice, setIndice] = useState(0);
   const [extras, setExtras] = useState<Record<string, Cartao[]>>({});
@@ -42,7 +46,13 @@ export function KanbanMobile({
   async function carregarMais() {
     setCarregando(true);
     setErro(null);
-    const r = await maisDaEtapa(coluna.id, cartoes.length, POR_VEZ, responsavelId);
+    const r = await maisDaEtapa(
+      coluna.id,
+      cartoes.length,
+      POR_VEZ,
+      responsavelId,
+      termo
+    );
     setCarregando(false);
     if (r.erro) return setErro(r.erro);
     setExtras((e) => ({
@@ -101,7 +111,9 @@ export function KanbanMobile({
       <ul className="min-h-0 flex-1 overflow-y-auto">
         {cartoes.length === 0 && (
           <li className="text-text-muted px-4 py-16 text-center text-sm">
-            Nenhum negócio nesta etapa.
+            {termo
+              ? `Nada nesta etapa para “${termo}”.`
+              : "Nenhum negócio nesta etapa."}
           </li>
         )}
         {cartoes.map((c, i) => (

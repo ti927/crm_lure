@@ -22,23 +22,7 @@ import { EtiquetaStatus, faixaDaEtapa } from "@/components/dominio/etiquetas";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { moverNegocio, maisDaEtapa } from "./acoes";
 import type { Desfecho } from "./constantes";
-
-export type Cartao = {
-  id: string;
-  titulo: string;
-  valor: number | null;
-  status: "parado" | "negociacao" | "ganho" | "perdido";
-  organizacao: { nome: string } | null;
-  usuario: { nome: string; foto_url: string | null } | null;
-};
-
-export type ColunaEtapa = {
-  id: string;
-  nome: string;
-  ordem: number;
-  total: number;
-  cartoes: Cartao[];
-};
+import type { Cartao, ColunaEtapa } from "./consulta";
 
 const POR_VEZ = 20;
 
@@ -84,7 +68,7 @@ function CartaoNegocio({
       // Entrada escalonada: a coluna se monta de cima para baixo em vez
       // de aparecer de uma vez. Teto de dez para não virar espera.
       style={{ animationDelay: `${Math.min(indice, 10) * 30}ms` }}
-      className={`border-border bg-surface faixa-etapa animate-in fade-in slide-in-from-top-1 fill-mode-backwards cursor-grab rounded-md border p-2.5 duration-300 active:cursor-grabbing ${faixaDaEtapa(
+      className={`border-border bg-surface faixa-etapa animate-in fade-in slide-in-from-top-1 fill-mode-backwards cursor-grab rounded-md border p-2 duration-300 active:cursor-grabbing ${faixaDaEtapa(
         ordem
       )} ${
         isDragging
@@ -94,14 +78,18 @@ function CartaoNegocio({
           : "hover:bg-surface-hover hover:border-border-strong hover:-translate-y-0.5 hover:shadow-md motion-safe:transition-all motion-safe:duration-200"
       }`}
     >
-      <p className="text-md line-clamp-2 font-medium">{c.titulo}</p>
-      <p className="text-text-secondary mt-0.5 truncate text-sm">
+      <p className="line-clamp-2 text-base font-medium leading-snug">{c.titulo}</p>
+      <p className="text-text-secondary truncate text-xs">
         {c.organizacao?.nome ?? "—"}
       </p>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="tabular text-sm font-medium">{real(c.valor)}</span>
+      {/* ⚠️ `flex-wrap`: numa coluna estreita, valor + status + avatar
+          nem sempre cabem na mesma linha. Sem isto um deles vazaria para
+          fora do cartão; com isto a linha quebra e o cartão só fica um
+          pouco mais alto. Nada some. */}
+      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <span className="tabular text-xs font-semibold">{real(c.valor)}</span>
         <span className="flex items-center gap-1.5">
-          <EtiquetaStatus status={c.status} />
+          <EtiquetaStatus status={c.status} compacta />
           {c.usuario && (
             <AvatarUsuario
               nome={c.usuario.nome}
@@ -121,27 +109,44 @@ function Coluna({
   coluna,
   aoCarregarMais,
   carregando,
+  buscando,
 }: {
   coluna: ColunaEtapa;
   aoCarregarMais: () => void;
   carregando: boolean;
+  buscando: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: coluna.id });
   const faltam = coluna.total - coluna.cartoes.length;
 
   return (
-    <section className="flex w-72 shrink-0 flex-col">
+    // ⚠️ `flex-1 basis-0` no lugar do `w-72 shrink-0` que havia aqui: as
+    // seis etapas DIVIDEM a largura disponível em vez de somarem 1.840px
+    // e obrigarem a arrastar para o lado para ver as duas últimas — que
+    // são justamente onde estão 74% da base.
+    //
+    // ⚠️ `min-w-40` (160px) é o piso: abaixo disso o cartão deixa de ser
+    // legível, e aí é melhor voltar a rolar de lado do que apertar até
+    // não dar para ler. Em qualquer tela a partir de ~1.280px as seis
+    // colunas cabem inteiras; abaixo, o quadro volta a rolar. O aperto
+    // tem limite, e o limite está escrito aqui.
+    <section className="flex min-w-40 flex-1 basis-0 flex-col">
       {/* O nome da etapa sempre escrito — a cor nunca e o unico sinal
           (Doc 08, B-076).
 
-          ⚠️ `sticky top-0`: como agora quem rola na vertical e o QUADRO
+          ⚠️ `sticky top-0`: como quem rola na vertical e o QUADRO
           inteiro, e nao cada coluna, sem isto o cabecalho sairia de cena
           na primeira descida e ninguem saberia mais em que etapa esta
           olhando. O fundo solido existe pelo mesmo motivo — sem ele os
           cartoes apareceriam por tras do texto. */}
-      <header className="border-border bg-background sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b px-1 pb-2">
-        <h2 className="text-md font-semibold">{coluna.nome}</h2>
-        <span className="text-text-muted tabular text-sm">
+      <header className="border-border bg-background sticky top-0 z-10 flex items-baseline justify-between gap-1 border-b px-1 pb-1.5">
+        {/* `truncate` com `title`: "Apresentação Realizada" não cabe em
+            160px, e cortar em silêncio seria perder o nome da etapa. O
+            atributo devolve o texto inteiro ao parar o ponteiro em cima. */}
+        <h2 className="truncate text-sm font-semibold" title={coluna.nome}>
+          {coluna.nome}
+        </h2>
+        <span className="text-text-muted tabular shrink-0 text-xs">
           {coluna.total.toLocaleString("pt-BR")}
         </span>
       </header>
@@ -156,7 +161,7 @@ function Coluna({
           nao teria area nenhuma para receber um cartao arrastado. */}
       <div
         ref={setNodeRef}
-        className={`flex min-h-24 flex-1 flex-col gap-2 rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
+        className={`flex min-h-24 flex-1 flex-col gap-1.5 rounded-md p-1 motion-safe:transition-colors motion-safe:duration-200 ${
           isOver ? "bg-surface-hover alvo-de-solta" : ""
         }`}
       >
@@ -164,16 +169,23 @@ function Coluna({
           <CartaoNegocio key={c.id} c={c} ordem={coluna.ordem} indice={i} />
         ))}
 
+        {/* Só durante uma busca. Fora dela, etapa vazia é fato comum do
+            funil e não precisa de aviso; durante a busca, o vazio É o
+            resultado e merece ser dito. */}
+        {buscando && coluna.cartoes.length === 0 && (
+          <p className="text-text-muted px-1 py-3 text-xs">Nada aqui.</p>
+        )}
+
         {faltam > 0 && (
           <button
             type="button"
             onClick={aoCarregarMais}
             disabled={carregando}
-            className="border-border text-text-secondary hover:bg-surface-hover rounded-md border border-dashed py-2 text-sm disabled:opacity-50"
+            className="border-border text-text-secondary hover:bg-surface-hover rounded-md border border-dashed py-1.5 text-xs disabled:opacity-50"
           >
             {carregando
               ? "Carregando…"
-              : `Carregar mais ${Math.min(POR_VEZ, faltam)} de ${faltam.toLocaleString("pt-BR")}`}
+              : `Mais ${Math.min(POR_VEZ, faltam)} de ${faltam.toLocaleString("pt-BR")}`}
           </button>
         )}
       </div>
@@ -186,9 +198,11 @@ function Coluna({
 export function Quadro({
   colunas: iniciais,
   responsavelId,
+  termo,
 }: {
   colunas: ColunaEtapa[];
   responsavelId?: string;
+  termo?: string;
 }) {
   const quadroRef = useRef<HTMLDivElement>(null);
   useRolagemLateral(quadroRef);
@@ -197,6 +211,9 @@ export function Quadro({
   const [arrastando, setArrastando] = useState<Cartao | null>(null);
   const [carregando, setCarregando] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+
+  const buscando = Boolean(termo);
+  const vazio = colunas.every((c) => c.total === 0);
 
   // 6px antes de considerar arrasto: sem isso, clicar num cartao vira
   // arrasto acidental e o negocio muda de etapa sem querer. E o mesmo
@@ -270,7 +287,8 @@ export function Quadro({
       coluna.id,
       coluna.cartoes.length,
       POR_VEZ,
-      responsavelId
+      responsavelId,
+      termo
     );
     setCarregando(null);
     if (r.erro) return setErro(r.erro);
@@ -303,50 +321,61 @@ export function Quadro({
         onDragEnd={aoSoltar}
         onDragCancel={() => setArrastando(null)}
       >
-        {/* ⚠️ A barra horizontal fica sempre desenhada (rolagem-visivel):
-            seis colunas nao cabem na tela e, com a barra fina do Windows,
-            ninguem descobre que ha mais para o lado. A roda do mouse
-            tambem rola de lado aqui, sem precisar de Shift. */}
-        {/* ⚠️ `overflow-auto`, e não só `overflow-x-auto`: quem rola nas
-            DUAS direções agora é o quadro. São duas barras no total — uma
-            embaixo e uma à direita — no lugar de uma embaixo mais seis
-            verticais, uma por coluna.
+        {/* ⚠️ As colunas agora DIVIDEM a largura (`flex-1 basis-0` em cada
+            uma) em vez de somarem 288px cada. Em qualquer tela a partir
+            de ~1.280px as seis cabem sem rolar de lado.
+
+            `overflow-auto` continua aqui, e não é contradição: abaixo do
+            piso de 160px por coluna a rolagem lateral volta, de propósito
+            — é a válvula que impede o quadro de apertar até ficar
+            ilegível numa janela estreita. Nessa faixa a barra desenhada
+            (`rolagem-visivel`) e a roda de lado seguem valendo, porque é
+            justamente onde ainda há para onde rolar.
 
             `items-start` deixaria as colunas com alturas diferentes;
             sem ele elas se esticam até a mais alta, e a coluna curta
             continua sendo um alvo grande para soltar um cartão. */}
         <div
           ref={quadroRef}
-          className="rolagem-visivel flex min-h-0 flex-1 gap-4 overflow-auto px-4 py-3"
+          className="rolagem-visivel flex min-h-0 flex-1 gap-2 overflow-auto px-3 py-2"
         >
           {colunas.map((c) => (
             <Coluna
               key={c.id}
               coluna={c}
               carregando={carregando === c.id}
+              buscando={buscando}
               aoCarregarMais={() => void carregarMais(c)}
             />
           ))}
         </div>
+
+        {buscando && vazio && (
+          <p className="text-text-muted px-4 pb-3 text-sm">
+            Nenhum negócio aberto casa com “{termo}”. Ganho e perdido não
+            aparecem no funil — procure na Lista.
+          </p>
+        )}
 
         {/* O cartao segue o cursor; o original fica esmaecido no lugar.
             A inclinacao de 3 graus e a sombra alta sao o que faz parecer
             que ele saiu do plano da tela, e nao que esta deslizando nele. */}
         <DragOverlay dropAnimation={AO_SOLTAR}>
           {arrastando && (
-            <article className="border-brand-ink bg-surface w-72 rotate-3 scale-105 cursor-grabbing rounded-md border-2 p-2.5 shadow-2xl">
-              <p className="text-md line-clamp-2 font-medium">{arrastando.titulo}</p>
-              <p className="text-text-secondary mt-0.5 truncate text-sm">
+            <article className="border-brand-ink bg-surface w-48 rotate-3 scale-105 cursor-grabbing rounded-md border-2 p-2 shadow-2xl">
+              <p className="line-clamp-2 text-base font-medium leading-snug">
+                {arrastando.titulo}
+              </p>
+              <p className="text-text-secondary truncate text-xs">
                 {arrastando.organizacao?.nome ?? "—"}
               </p>
-              <p className="tabular mt-2 text-sm font-medium">
+              <p className="tabular mt-1.5 text-xs font-semibold">
                 {real(arrastando.valor)}
               </p>
             </article>
           )}
         </DragOverlay>
       </DndContext>
-
     </>
   );
 }

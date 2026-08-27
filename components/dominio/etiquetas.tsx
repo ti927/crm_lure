@@ -39,12 +39,37 @@ const STATUS: Record<Status, { rotulo: string; ponto: string; ink: string }> = {
  * etiqueta e cinza e discreta — nunca com aparencia de erro ou alerta,
  * como manda B-075.
  */
-export function EtiquetaStatus({ status }: { status: Status }) {
+export function EtiquetaStatus({
+  status,
+  compacta = false,
+}: {
+  status: Status;
+  /**
+   * Cartao do Kanban, onde a coluna pode ter 160px de largura e o
+   * rotulo divide a linha com valor e avatar.
+   *
+   * ⚠️ O texto CONTINUA la, so menor. Reduzir a etiqueta ao ponto
+   * colorido caberia melhor e seria a solucao errada: a cor viraria o
+   * unico sinal, que e exatamente o que o Doc 08 (B-076) proibe — e
+   * quem nao distingue as cores ficaria sem saber se o negocio esta
+   * parado ou em negociacao.
+   */
+  compacta?: boolean;
+}) {
   const s = STATUS[status];
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-      <span className={`size-2 shrink-0 rounded-pill ${s.ponto}`} aria-hidden />
-      <span className={`text-sm font-medium ${s.ink}`}>{s.rotulo}</span>
+    <span
+      className={`inline-flex items-center whitespace-nowrap ${
+        compacta ? "gap-1" : "gap-1.5"
+      }`}
+    >
+      <span
+        className={`shrink-0 rounded-pill ${compacta ? "size-1.5" : "size-2"} ${s.ponto}`}
+        aria-hidden
+      />
+      <span className={`font-medium ${compacta ? "text-2xs" : "text-sm"} ${s.ink}`}>
+        {s.rotulo}
+      </span>
     </span>
   );
 }
