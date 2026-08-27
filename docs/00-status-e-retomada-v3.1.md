@@ -35,15 +35,15 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `00-status-e-retomada-v3.1.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.22.md` |
+| `03-log-de-decisoes-v0.23.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.8.md` |
+| `09-arquitetura-tecnica-v0.9.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.15.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.16.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |

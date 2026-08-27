@@ -2,13 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, Globe, Boxes, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { real, data as fdata, dataHora } from "@/lib/formato";
+import { real, dataHora } from "@/lib/formato";
 import { EtiquetaStatus, EtiquetaEtapa } from "@/components/dominio/etiquetas";
 import { CabecalhoOrganizacao } from "./cabecalho-organizacao";
 import {
   PessoasDaOrganizacao,
   type PessoaVinculada,
 } from "./pessoas-da-organizacao";
+import {
+  AtividadesDaOrganizacao,
+  type AtividadeDaOrg,
+} from "./atividades-da-organizacao";
+import { hojeBrasilia } from "@/app/(sistema)/atividades/consulta";
 
 function comEsquema(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -30,12 +35,19 @@ export default async function FichaOrganizacao({
 
   if (!org) notFound();
 
+  const {
+    data: { user: logado },
+  } = await supabase.auth.getUser();
+
   // Ficha + histórico derivado (B-093), tudo em paralelo.
   const [
     { data: vinculos },
     { data: negocios },
     { data: atividades },
     { data: anotacoes },
+    { data: tipos },
+    { data: usuarios },
+    { data: eu },
   ] = await Promise.all([
     supabase
       .from("pessoa_organizacao")
@@ -47,18 +59,40 @@ export default async function FichaOrganizacao({
       .eq("organizacao_id", id)
       .order("criado_em", { ascending: false })
       .limit(100),
+    // ⚠️ 100, e não 50: o recorte de "pendentes" é aplicado no cliente
+    // sobre o que veio, e um teto curto poderia cortar justamente as
+    // pendentes antigas — que são as que mais importam numa ficha. Não é
+    // risco de volume: são 6.561 atividades para 2.897 organizações,
+    // pouco mais de duas por cadastro.
     supabase
       .from("atividade")
-      .select("id, titulo, data, concluida, tipo_atividade(nome)")
+      .select(
+        "id, titulo, data, concluida, responsavel_id, tipo_atividade(nome), usuario(nome, foto_url)"
+      )
       .eq("organizacao_id", id)
       .order("data", { ascending: false })
-      .limit(50),
+      .limit(100),
     supabase
       .from("anotacao")
       .select("id, texto, criado_em, usuario(nome)")
       .eq("organizacao_id", id)
       .order("criado_em", { ascending: false })
       .limit(50),
+    supabase.from("tipo_atividade").select("id, nome").order("nome"),
+    supabase
+      .from("usuario")
+      .select("id, nome, foto_url")
+      .eq("ativo", true)
+      .order("nome"),
+    // ⚠️ `usuario.id`, e NUNCA `auth.uid()`: desde a D-109 os dois são
+    // diferentes, e comparar com o errado deixaria "minhas pendentes"
+    // vazio exatamente para quem veio da carga — os sócios —, sem erro
+    // nenhum na tela. É a armadilha da C-05.
+    supabase
+      .from("usuario")
+      .select("id")
+      .eq("auth_id", logado?.id ?? "")
+      .maybeSingle(),
   ]);
 
   const pessoas: PessoaVinculada[] = (vinculos ?? [])
@@ -69,6 +103,19 @@ export default async function FichaOrganizacao({
       cargo: v.cargo,
       contatos: v.pessoa!.forma_contato ?? [],
     }));
+
+  // ⚠️ Só DADOS atravessam para o componente de cliente: nenhuma função,
+  // nenhum formatador passado como propriedade (C-09/C-10).
+  const atividadesDaOrg: AtividadeDaOrg[] = (atividades ?? []).map((a) => ({
+    id: a.id,
+    titulo: a.titulo,
+    data: a.data,
+    concluida: a.concluida,
+    responsavelId: a.responsavel_id,
+    tipo: a.tipo_atividade?.nome ?? null,
+    responsavelNome: a.usuario?.nome ?? null,
+    responsavelFoto: a.usuario?.foto_url ?? null,
+  }));
 
   const secao = "text-text-muted mb-2 text-xs font-semibold uppercase tracking-caps";
 
@@ -162,27 +209,15 @@ export default async function FichaOrganizacao({
             )}
           </section>
 
-          <section>
-            <h2 className={secao}>Atividades {atividades && atividades.length > 0 && `(${atividades.length})`}</h2>
-            {!atividades || atividades.length === 0 ? (
-              <p className="text-text-muted text-sm">Nenhuma atividade.</p>
-            ) : (
-              <ul className="flex flex-col gap-1">
-                {atividades.map((a) => (
-                  <li key={a.id} className="flex items-center gap-2 text-md">
-                    <span
-                      className={`size-1.5 shrink-0 rounded-full ${a.concluida ? "bg-success" : "bg-border-strong"}`}
-                      aria-hidden
-                    />
-                    <span className={`truncate ${a.concluida ? "text-text-muted line-through" : ""}`}>
-                      {a.titulo ?? a.tipo_atividade?.nome ?? "Atividade"}
-                    </span>
-                    <span className="text-text-muted tabular ml-auto shrink-0 text-sm">{fdata(a.data)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <AtividadesDaOrganizacao
+            organizacaoId={org.id}
+            organizacaoNome={org.nome}
+            atividades={atividadesDaOrg}
+            tipos={tipos ?? []}
+            usuarios={usuarios ?? []}
+            euId={eu?.id ?? null}
+            hoje={hojeBrasilia()}
+          />
 
           <section>
             <h2 className={secao}>Anotações {anotacoes && anotacoes.length > 0 && `(${anotacoes.length})`}</h2>

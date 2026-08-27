@@ -9,6 +9,7 @@ import { SeletorAsync } from "../../seletor-async";
 import { useAviso } from "@/components/dominio/avisos";
 import {
   buscarPessoas,
+  criarPessoa,
   vincularOrganizacao,
   desvincularOrganizacao,
   editarCargo,
@@ -38,17 +39,53 @@ export function PessoasDaOrganizacao({
   const avisar = useAviso();
   const [adicionando, setAdicionando] = useState(false);
 
+  /**
+   * ⚠️ A ordem dos argumentos é (pessoaId, organizacaoId) — e ESTAS TRÊS
+   * chamadas a invertiam. O efeito não era o mesmo nas três, e é por isso
+   * que passou:
+   *
+   *   vincular    → violava a chave estrangeira (23503). Falha visível.
+   *   editarCargo → `update … where pessoa_id = <id da organização>`
+   *                 casava com ZERO linhas e devolvia sucesso. O cargo
+   *                 sumia sem erro nenhum.
+   *   desvincular → mesma coisa, e a tela ainda dizia "Vínculo removido".
+   *
+   * A ficha da PESSOA sempre passou na ordem certa, e é por isso que a
+   * C-11 concluiu que o campo de cargo "existia e gravava": gravava de
+   * lá, nunca daqui.
+   */
   async function vincular(pessoaId: string) {
     setErro(null);
-    const r = await vincularOrganizacao(organizacaoId, pessoaId, "");
+    const r = await vincularOrganizacao(pessoaId, organizacaoId, "");
     if (r?.erro) return setErro(r.erro);
     setAdicionando(false);
     avisar("Vínculo criado.");
     router.refresh();
   }
 
+  /**
+   * Cadastra a pessoa que a busca não achou e já a vincula.
+   *
+   * ⚠️ O nome vem do TERMO BUSCADO, e o botão fica por último na lista de
+   * resultados: cadastrar duplicata é o erro caro nesta base, onde 41%
+   * dos cadastros já são repetição de nome (D-121). Quem existe tem de
+   * ser mais fácil de achar do que de recriar.
+   */
+  async function criarEVincular(nome: string) {
+    setErro(null);
+    const criada = await criarPessoa(nome);
+    if (criada?.erro || !criada?.id) {
+      return setErro(criada?.erro ?? "Não foi possível cadastrar a pessoa.");
+    }
+    const r = await vincularOrganizacao(criada.id, organizacaoId, "");
+    if (r?.erro) return setErro(r.erro);
+    setAdicionando(false);
+    avisar(`${nome} cadastrada e vinculada.`);
+    router.refresh();
+  }
+
   async function remover(pessoaId: string) {
-    const r = await desvincularOrganizacao(organizacaoId, pessoaId);
+    const r = await desvincularOrganizacao(pessoaId, organizacaoId);
     if (r?.erro) return setErro(r.erro);
     avisar("Vínculo removido.");
     router.refresh();
@@ -66,7 +103,7 @@ export function PessoasDaOrganizacao({
           className="text-text-secondary hover:text-text inline-flex items-center gap-1 text-sm font-medium"
         >
           <UserPlus className="size-3.5" aria-hidden />
-          Vincular
+          Adicionar
         </button>
       </div>
 
@@ -75,6 +112,8 @@ export function PessoasDaOrganizacao({
           <SeletorAsync
             buscar={buscarPessoas}
             aoEscolher={(p) => void vincular(p.id)}
+            aoCriar={(nome) => void criarEVincular(nome)}
+            rotuloCriar={(nome) => `Cadastrar "${nome}" e vincular`}
             placeholder="Buscar pessoa pelo nome…"
           />
         </div>
@@ -117,7 +156,7 @@ export function PessoasDaOrganizacao({
                 onBlur={async (e) => {
                   const novo = e.target.value.trim();
                   if (novo !== (p.cargo ?? "")) {
-                    await editarCargo(organizacaoId, p.id, novo);
+                    await editarCargo(p.id, organizacaoId, novo);
                     router.refresh();
                   }
                 }}

@@ -1,12 +1,12 @@
-﻿# 09 — Arquitetura Técnica (v0.8)
+﻿# 09 — Arquitetura Técnica (v0.9)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.8 |
+| **Versão** | v0.9 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-12 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-13 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -426,6 +426,18 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 
 ⚠️ **O compilador do React recusou a primeira versão do hook**, e estava certo: ela recebia os dois `ref` como argumento e escrevia em `faixa.style.marginRight`. Quem cria o ref é quem pode mexer nele — o hook passou a ser dono dos dois e a devolvê-los.
 
+#### C-13 — a ficha da organização chamava as ações com os argumentos trocados (27/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-13** | Vincular pessoa pela ficha da **organização** dava erro; editar o cargo e desvincular por ali **não faziam nada e não avisavam** — a tela ainda dizia "Vínculo removido" | As três ações (`vincularOrganizacao`, `editarCargo`, `desvincularOrganizacao`) recebem `(pessoaId, organizacaoId, …)`, e a ficha da organização passava `(organizacaoId, pessoaId, …)`. Os dois são `uuid`, então **nada no tipo acusa** | Ordem corrigida nas três chamadas. A ficha da PESSOA sempre passou certo, e é por isso que ninguém tinha percebido |
+
+⚠️ **O efeito é diferente nas três, e é isso que fez o defeito sobreviver.** Medido contra a base real, em transação com `rollback`: o `insert` viola a chave estrangeira e **falha alto** (23503); o `update` do cargo casa com **zero linhas e devolve sucesso**; o `delete` idem. Duas das três operações mentiam em silêncio — e a que gritava era a menos usada.
+
+⚠️ **Isto corrige o veredito da C-11.** Lá ficou escrito que o campo de cargo "existia, funcionava e gravava", e que o problema era só de descoberta. Gravava **pela ficha da pessoa**; pela ficha da organização, onde o usuário reclamou de não achar o campo, ele nunca gravou. A lição da C-11 continua de pé — mas o campo tinha dois defeitos empilhados, e só um foi consertado naquele dia.
+
+⚠️ **Par de argumentos do mesmo tipo é uma armadilha estrutural**, não um descuido pontual: `(uuid, uuid)` aceita qualquer ordem e o compilador aplaude. Onde a troca for possível, ou os parâmetros viram um objeto nomeado, ou o defeito volta.
+
 ⚠️ **É o quarto caso do mesmo padrão em duas sessões.** Os outros três estão no Doc 00 §4.9: criar atividade dentro do negócio, filtro de motivo de perda na Lista, filtrar por usuário nas Estatísticas. Em nenhum dos quatro o problema era ausência — era **descoberta**. A regra que sai daí: **quando alguém disser que algo "não existe" neste sistema, a primeira hipótese é que existe e está invisível**, e a correção é de apresentação, não de função.
 
 ⚠️ **A primeira correção errou a mão para o outro lado.** Ela acrescentou um rótulo escrito acima do campo (*"Cargo em Quick Aviação"*), o que resolvia a descoberta mas gastava uma linha inteira numa coluna de 20rem, para dizer o que o nome da organização logo acima já dizia. O maestro corrigiu: **o problema nunca foi a falta de rótulo, era o campo não parecer campo.** A versão que ficou mantém o `placeholder` "Cargo" e o `aria-label`, e gasta a tinta na borda.
@@ -593,6 +605,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.9** — 27/08/2026 — **Sessão 13, terceira parte.** Correção **C-13**: a ficha da organização chamava as três ações de vínculo com `(organizacaoId, pessoaId)` onde a assinatura pede `(pessoaId, organizacaoId)`. Os dois são `uuid`, então nada no tipo acusava — e o efeito era diferente nas três: o `insert` falhava alto, o `update` do cargo e o `delete` casavam com **zero linhas e devolviam sucesso**. Corrige de passagem o veredito da **C-11**: o campo de cargo gravava pela ficha da pessoa, nunca pela da organização, que é justamente onde o usuário reclamou.
 - **v0.8** — 27/08/2026 — **Sessão 13.** Correção **C-12**: os rótulos das etapas do Kanban não paravam em lugar nenhum — cartão passava acima deles e rolar para baixo os levava junto. Duas causas somadas, e nenhuma era o `sticky` em si: a faixa de `padding` acima do ponto de trava, e o **segundo scroll** que o rodapé da D-146 criou no `main` (P-049). A faixa de rótulos saiu da rolagem dos cartões. Fica a regra: **`sticky` gruda no scrollport mais próximo**, e havendo dois scrolls aninhados, grudar no de dentro não protege quando é o de fora que se move — a pergunta antes de usar `sticky` é *qual* container rola, não *se* algum rola.
 - **v0.7** — 21/08/2026 — **Sessão 12.** Correção **C-11** acrescentada à seção 3.11: o campo de cargo existia e gravava, mas era um input transparente sem rótulo escrito — um usuário real não o encontrou. É o quarto caso do mesmo padrão em duas sessões, e o registro fixa a regra que sai dele: quando alguém disser que algo "não existe" aqui, a primeira hipótese é que existe e está invisível. Registrado também que **campo editável carrega borda** — affordance só no hover não existe no celular.
 - **v0.6** — 19/08/2026 — **Sessão 10.** Sete migrações novas: procedência do log (`importado_do_pipedrive`), data de fechamento do negócio (`fechado_em`, com gatilho de carimbo), e as funções de indicador — comerciais, financeiras, de volume — mais a ampliação do recorte. Correções **C-08** (o negócio era a única entidade sem caminho de criação), **C-09** (função atravessando a fronteira servidor→cliente, que derrubou `/estatisticas` em produção) e **C-10** (reexportação de referência de cliente). ⚠️ Registrado o **método que encontrou a C-09**, já que o OAuth impede o agente de logar: desligar a barreira localmente, rodar o build de produção, pedir a rota e ler a pilha — `tsc`, `eslint` e `next build` não pegam erro de serialização.

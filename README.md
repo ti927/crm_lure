@@ -17,15 +17,15 @@ Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e 
 | 00 | [Status e Retomada](docs/00-status-e-retomada-v3.1.md) | Onde o projeto está e o que vem a seguir |
 | 01 | [Plano de Execução](docs/01-plano-de-execucao-v0.3.md) | Método da consultoria — encerrada na Fase 6 |
 | 02 | [Roteiro de Entrevistas](docs/02-roteiro-de-entrevistas-v1.1.md) | As 80 perguntas e suas respostas |
-| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.22.md) | **150 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.23.md) | **152 decisões com justificativa.** Consulte antes de perguntar |
 | 04 | [Visão de Produto](docs/04-visao-de-produto-v0.1.md) | Por que o sistema existe |
 | 05 | [Requisitos Funcionais](docs/05-requisitos-funcionais-v0.1.md) | 153 requisitos |
 | 06 | [Modelo de Domínio](docs/06-modelo-de-dominio-v0.5.md) | Entidades e regras, conceitual |
 | 08 | [UI e Design System](docs/08-ui-e-design-system-v0.1.md) | Cores, tipografia, densidade |
-| 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.8.md) | Schema físico, gatilhos, políticas |
+| 09 | [Arquitetura Técnica](docs/09-arquitetura-tecnica-v0.9.md) | Schema físico, gatilhos, políticas |
 | 10 | [Plano de Fases de Construção](docs/10-plano-de-fases-de-construcao-v0.2.md) | Ordem das fases F0 a F10 |
 | 11 | [Backlog e Critérios de Aceite](docs/11-backlog-e-criterios-de-aceite-v0.3.md) | 133 itens com critério de pronto |
-| 12 | [CLAUDE.md](docs/12-claude-md-v0.15.md) | Fonte do `CLAUDE.md` da raiz |
+| 12 | [CLAUDE.md](docs/12-claude-md-v0.16.md) | Fonte do `CLAUDE.md` da raiz |
 | 13 | [Glossário](docs/13-glossario-v0.1.md) | Vocabulário do projeto |
 | 15 | [Plano da Central de Notificações](docs/15-plano-central-de-notificacoes-v0.3.md) | A F8, **construída** — sino, painel e follow-up ao ganhar |
 | 14 | [Migração do Pipedrive](docs/14-migracao-do-pipedrive-v0.2.md) | Mapeamento campo a campo |
