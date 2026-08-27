@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { CalendarPlus } from "lucide-react";
 import { data as fdata } from "@/lib/formato";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
+import {
+  SeletorResponsavel,
+  type Usuario,
+} from "@/components/dominio/seletor-responsavel";
 import { DialogoAtividade } from "@/app/(sistema)/atividades/dialogo-atividade";
+import { SITUACOES, type Situacao } from "@/app/(sistema)/atividades/consulta";
 
 export type AtividadeDaOrg = {
   id: string;
@@ -19,24 +24,22 @@ export type AtividadeDaOrg = {
 };
 
 type Tipo = { id: string; nome: string };
-type Usuario = { id: string; nome: string; foto_url: string | null };
 
 /**
- * Um recorte só, com três posições, em vez de dois interruptores.
+ * Atividades da organização, com filtro de responsável e de situação.
  *
- * "Ativa" aqui quer dizer **pendente** — é o que se pergunta olhando uma
- * ficha de cliente: o que ainda tenho para fazer com esta empresa. As
- * concluídas continuam alcançáveis, mas não são o padrão: elas são
- * histórico, e histórico não é o que faz alguém abrir a ficha.
+ * ⚠️ **Dois seletores, e não um.** A primeira versão tinha um só, com
+ * três posições ("Minhas pendentes / Todas pendentes / Todas"), que
+ * misturava DUAS perguntas independentes: *de quem* e *em que estado*.
+ * Misturadas, metade das combinações não existia — não havia como ver as
+ * concluídas de uma pessoa, nem as pendentes de outra que não eu. O
+ * maestro pediu o filtro por usuário e o caminho certo era separar, não
+ * acrescentar uma quarta posição àquela lista.
+ *
+ * ⚠️ O seletor de responsável é o MESMO do Kanban e da Lista (D-090), com
+ * foto. Um seletor de gente diferente em cada tela seria três coisas para
+ * aprender no lugar de uma.
  */
-const RECORTES = [
-  { chave: "minhas", rotulo: "Minhas pendentes" },
-  { chave: "pendentes", rotulo: "Todas pendentes" },
-  { chave: "todas", rotulo: "Todas" },
-] as const;
-
-type Recorte = (typeof RECORTES)[number]["chave"];
-
 export function AtividadesDaOrganizacao({
   organizacaoId,
   organizacaoNome,
@@ -59,21 +62,22 @@ export function AtividadesDaOrganizacao({
   const router = useRouter();
   const [agendando, setAgendando] = useState(false);
 
-  // ⚠️ Abre em "minhas" só se houver um "eu" para comparar. Sem isso, a
-  // seção nasceria vazia para quem o banco ainda não reconhece — e vazio
-  // se lê como "não há nada", que é a armadilha do sino mudo da C-05.
-  const [recorte, setRecorte] = useState<Recorte>(euId ? "minhas" : "pendentes");
+  // ⚠️ Abre em "eu" só se houver um "eu" para comparar. Sem isso a seção
+  // nasceria vazia para quem o banco ainda não reconhece — e vazio se lê
+  // como "não há nada", que é a armadilha do sino mudo da C-05.
+  const [responsavel, setResponsavel] = useState(euId ?? "");
+  const [situacao, setSituacao] = useState<Situacao>("pendentes");
 
-  const visiveis = atividades.filter((a) => {
-    if (recorte === "todas") return true;
-    if (a.concluida) return false;
-    if (recorte === "pendentes") return true;
-    return a.responsavelId === euId;
-  });
+  const casa = (a: AtividadeDaOrg) =>
+    (!responsavel || a.responsavelId === responsavel) &&
+    (situacao === "todas" ||
+      (situacao === "pendentes" ? !a.concluida : a.concluida));
+
+  const visiveis = atividades.filter(casa);
 
   // Pendente primeiro e mais antiga no topo: quem está parada há mais
-  // tempo é a que cobra atenção. Concluída (só em "Todas") vai para o
-  // fim, da mais recente para a mais antiga, que é ordem de histórico.
+  // tempo é a que cobra atenção. Concluída vai para o fim, da mais
+  // recente para a mais antiga, que é ordem de histórico.
   const ordenadas = [...visiveis].sort((a, b) => {
     if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
     return a.concluida
@@ -81,33 +85,51 @@ export function AtividadesDaOrganizacao({
       : a.data.localeCompare(b.data);
   });
 
-  const pendentesMinhas = atividades.filter(
-    (a) => !a.concluida && a.responsavelId === euId
-  ).length;
+  const pendentes = atividades.filter((a) => !a.concluida);
+  const minhasPendentes = pendentes.filter((a) => a.responsavelId === euId).length;
+
+  /**
+   * ⚠️ Vazio NÃO é o mesmo que "não há nada", e a mensagem tem de dizer
+   * qual dos dois é. Com o filtro abrindo em "eu", uma organização cheia
+   * de atividades de outra pessoa apareceria vazia para mim — e eu
+   * concluiria que não há nada a fazer ali. A frase abaixo conta quantas
+   * o recorte está escondendo.
+   */
+  const escondidas = atividades.length - visiveis.length;
 
   return (
     <section>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-text-muted text-xs font-semibold uppercase tracking-caps">
           Atividades{" "}
-          {pendentesMinhas > 0 && (
+          {minhasPendentes > 0 && (
             <span className="text-text-secondary normal-case">
-              · {pendentesMinhas}{" "}
-              {pendentesMinhas === 1 ? "sua pendente" : "suas pendentes"}
+              · {minhasPendentes}{" "}
+              {minhasPendentes === 1 ? "sua pendente" : "suas pendentes"}
             </span>
           )}
         </h2>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* Doc 08 §6.1: o rótulo do controle não repete o que está
+              escrito ao lado, e nenhum deles quebra linha. */}
+          <SeletorResponsavel
+            usuarios={usuarios}
+            escolhido={responsavel}
+            aoEscolher={setResponsavel}
+            rotuloTodos="Todos"
+            classe="h-control-sm bg-surface border-border max-w-[9rem] rounded-md border px-2 text-sm"
+          />
+
           <select
-            aria-label="Recorte das atividades"
-            value={recorte}
-            onChange={(e) => setRecorte(e.target.value as Recorte)}
+            aria-label="Filtrar por situação"
+            value={situacao}
+            onChange={(e) => setSituacao(e.target.value as Situacao)}
             className="h-control-sm bg-surface border-border rounded-md border px-2 text-sm"
           >
-            {RECORTES.map((r) => (
-              <option key={r.chave} value={r.chave}>
-                {r.rotulo}
+            {SITUACOES.map((s) => (
+              <option key={s.valor} value={s.valor}>
+                {s.rotulo}
               </option>
             ))}
           </select>
@@ -118,7 +140,7 @@ export function AtividadesDaOrganizacao({
             className="h-control-sm border-border hover:bg-surface-hover text-text-secondary hover:text-text inline-flex items-center gap-1.5 rounded-md border px-2 text-sm font-medium"
           >
             <CalendarPlus className="size-3.5" aria-hidden />
-            Nova atividade
+            Nova
           </button>
         </div>
       </div>
@@ -147,11 +169,11 @@ export function AtividadesDaOrganizacao({
 
       {ordenadas.length === 0 ? (
         <p className="text-text-muted text-sm">
-          {recorte === "minhas"
-            ? "Nenhuma atividade sua pendente aqui."
-            : recorte === "pendentes"
-              ? "Nenhuma atividade pendente."
-              : "Nenhuma atividade."}
+          {atividades.length === 0
+            ? "Nenhuma atividade."
+            : `Nenhuma atividade neste recorte — ${escondidas} ${
+                escondidas === 1 ? "está escondida" : "estão escondidas"
+              } pelo filtro.`}
         </p>
       ) : (
         <ul className="flex flex-col gap-1">
@@ -176,7 +198,7 @@ export function AtividadesDaOrganizacao({
                 </span>
 
                 {a.responsavelNome && (
-                  <span className="shrink-0">
+                  <span className="shrink-0" title={a.responsavelNome}>
                     <AvatarUsuario
                       nome={a.responsavelNome}
                       foto={a.responsavelFoto}

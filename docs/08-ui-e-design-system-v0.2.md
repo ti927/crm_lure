@@ -118,6 +118,8 @@ Regras que saíram de um defeito real: com dez colunas em ~1.216px, a linha de f
 
 **5. Filtro de intervalo empilha, não divide a coluna.** Dois campos lado a lado numa coluna de ~110px ficam com ~40px cada e viram quadradinhos onde não se lê o que foi digitado. Empilhados, cada um usa a largura inteira — custa uma linha no cabeçalho, uma vez só.
 
+**7. Um seletor por pergunta.** Um controle que mistura duas dimensões — *de quem* e *em que estado*, por exemplo — parece econômico e some com metade das combinações: uma lista de "Minhas pendentes / Todas pendentes / Todas" não tem como mostrar *as concluídas de uma pessoa*. Dois seletores lado a lado ocupam quase o mesmo espaço e cobrem o produto inteiro das opções. ⚠️ **E quando o recorte esconde tudo, a tela diz quantas** — *"Nenhuma atividade neste recorte, 22 estão escondidas pelo filtro"*. Vazio silencioso se lê como "não existe", que é a armadilha da C-05.
+
 **6. Quando o rótulo não cabe de jeito nenhum, encurte o rótulo — não corte no meio.** "MOTIVO DE PERDA" mede ~120px em maiúsculas com `tracking-caps`, e a coluna tem ~77px úteis: não há largura que resolva sem roubar de outra coluna. O cabeçalho mostra **"MOTIVO"**, com o nome inteiro no `title` e no rótulo que o CSV usa. ⚠️ Reservar largura para o **funil de filtro ativo** quando a coluna nascer filtrada: desde a D-149 a coluna Responsável abre sempre filtrada, e esse ícone custa 12px permanentes.
 
 ---
@@ -146,5 +148,5 @@ Regras que saíram de um defeito real: com dez colunas em ~1.216px, a linha de f
 
 ## Changelog
 
-- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
+- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. Entra também a regra **um seletor por pergunta**. A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
 - **v0.1** — 13/08/2026 — Criação a partir do manual de marca Lure e dos tokens gerados no Claude Design. Três correções aplicadas: amarelo perde o papel de alerta, etapa 5 sai do verde-oliva, paleta de gráficos definida.
