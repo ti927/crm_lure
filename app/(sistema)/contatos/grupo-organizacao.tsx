@@ -2,29 +2,60 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Building2, ChevronRight, Briefcase, Layers } from "lucide-react";
+import {
+  Building2,
+  ChevronRight,
+  Briefcase,
+  Layers,
+  Users,
+  CalendarCheck,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { data as fdata } from "@/lib/formato";
+import { EtiquetaContagem } from "@/components/dominio/etiqueta-contagem";
 
-export type Grupo = {
+/** Item da amostra de atividades — vem em `jsonb` para carregar o estado. */
+export type AtividadeAmostra = {
+  rotulo: string;
+  data: string;
+  concluida: boolean;
+};
+
+/**
+ * As contagens que a linha mostra, com a amostra de cada uma.
+ *
+ * ⚠️ Contagem e amostra são coisas separadas de propósito: são 3.312
+ * vínculos de pessoa e 5.213 atividades ligadas a organização, e trazer
+ * as listas inteiras para desenhar três números carregaria a base numa
+ * tela de 50 linhas (R-006). O número é exato; a lista é uma amostra, e a
+ * dica diz quanto ficou de fora.
+ */
+type Contagens = {
+  negocios: number;
+  /** Títulos dos negócios mais recentes — a referência que identifica o
+   *  cadastro quando o nome se repete e cidade/site estão vazios. */
+  titulos: string[] | null;
+  pessoas: number;
+  nomes_pessoas: string[] | null;
+  atividades: number;
+  atividades_pendentes: number;
+  amostra_atividades: AtividadeAmostra[] | null;
+};
+
+export type Grupo = Contagens & {
   chave: string;
   nome: string;
   quantidade: number;
   representante_id: string;
   cidade: string | null;
   website: string | null;
-  negocios: number;
-  /** Títulos dos negócios mais recentes — a referência que identifica o
-   *  cadastro quando o nome se repete e cidade/site estão vazios. */
-  titulos: string[] | null;
 };
 
-type Irmao = {
+type Irmao = Contagens & {
   id: string;
   nome: string;
   cidade: string | null;
   website: string | null;
-  negocios: number;
-  titulos: string[] | null;
 };
 
 /**
@@ -75,7 +106,7 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
             <span className="text-md block truncate font-medium">{grupo.nome}</span>
             <Referencia cidade={grupo.cidade} titulos={grupo.titulos} />
           </span>
-          <Contagem n={grupo.negocios} />
+          <Contagens item={grupo} />
         </Link>
       </li>
     );
@@ -105,7 +136,7 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
           </span>
           <Referencia cidade={grupo.cidade} titulos={grupo.titulos} />
         </span>
-        <Contagem n={grupo.negocios} />
+        <Contagens item={grupo} />
       </button>
 
       {aberto && (
@@ -123,7 +154,7 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
                   <span className="text-md block truncate">{o.nome}</span>
                   <Referencia cidade={o.cidade} titulos={o.titulos} />
                 </span>
-                <Contagem n={o.negocios} />
+                <Contagens item={o} />
               </Link>
             </li>
           ))}
@@ -145,7 +176,10 @@ function Referencia({
   cidade: string | null;
   titulos: string[] | null;
 }) {
-  const lista = titulos?.filter(Boolean) ?? [];
+  // ⚠️ Só os dois primeiros. A amostra do servidor subiu para 6 porque a
+  // dica de tela dos negócios usa a mesma lista; aqui, seis títulos numa
+  // linha de 44px voltariam a empurrar o nome da organização para fora.
+  const lista = (titulos?.filter(Boolean) ?? []).slice(0, 2);
   if (!cidade && lista.length === 0) return null;
 
   return (
@@ -162,11 +196,92 @@ function Referencia({
   );
 }
 
-function Contagem({ n }: { n: number }) {
+/**
+ * As três contagens da linha, na mesma ordem em toda a lista: pessoas,
+ * atividades, negócios. Ordem fixa é o que deixa a coluna da direita
+ * legível de cima a baixo — com a ordem variando, cada linha exigiria ler
+ * o ícone de novo.
+ */
+function Contagens({ item }: { item: Contagens }) {
+  const pessoas = item.nomes_pessoas?.filter(Boolean) ?? [];
+  const ativs = item.amostra_atividades ?? [];
+  const titulos = item.titulos?.filter(Boolean) ?? [];
+
+  const restantes = (total: number, mostrados: number) =>
+    total > mostrados
+      ? `+${(total - mostrados).toLocaleString("pt-BR")} não ${
+          total - mostrados === 1 ? "mostrada" : "mostradas"
+        }`
+      : undefined;
+
   return (
-    <span className="text-text-muted tabular flex shrink-0 items-center gap-1 text-sm">
-      <Briefcase className="size-3.5" aria-hidden />
-      {n.toLocaleString("pt-BR")}
+    <span className="flex shrink-0 items-center gap-0.5">
+      <EtiquetaContagem
+        icone={Users}
+        n={item.pessoas}
+        rotulo="pessoas vinculadas"
+        titulo="Pessoas vinculadas"
+        vazio="Nenhuma pessoa vinculada."
+        rodape={restantes(item.pessoas, pessoas.length)}
+        itens={pessoas.map((nome) => (
+          <span key={nome} className="truncate">
+            {nome}
+          </span>
+        ))}
+      />
+
+      <EtiquetaContagem
+        icone={CalendarCheck}
+        n={item.atividades}
+        rotulo="atividades vinculadas"
+        titulo="Atividades"
+        vazio="Nenhuma atividade."
+        // ⚠️ O rodapé diz PENDENTES, e não só quantas sobraram: numa ficha
+        // de cliente a pergunta é o que falta fazer, e o número do ícone
+        // conta tudo, inclusive as concluídas de 2021.
+        rodape={
+          [
+            item.atividades_pendentes > 0
+              ? `${item.atividades_pendentes} pendente${item.atividades_pendentes === 1 ? "" : "s"}`
+              : "Nenhuma pendente",
+            restantes(item.atividades, ativs.length),
+          ]
+            .filter(Boolean)
+            .join(" · ") || undefined
+        }
+        itens={ativs.map((a, i) => (
+          <span key={i} className="flex min-w-0 flex-1 items-center gap-2">
+            {/* Verde concluída, cinza pendente — e a data escrita do lado,
+                porque cor sozinha não informa (Doc 08, B-076). */}
+            <span
+              className={`size-1.5 shrink-0 rounded-full ${
+                a.concluida ? "bg-success" : "bg-border-strong"
+              }`}
+              aria-hidden
+            />
+            <span className={`truncate ${a.concluida ? "text-text-muted" : ""}`}>
+              {a.rotulo}
+            </span>
+            <span className="text-text-muted tabular ml-auto shrink-0 text-sm">
+              {fdata(a.data)}
+            </span>
+          </span>
+        ))}
+      />
+
+      <EtiquetaContagem
+        icone={Briefcase}
+        n={item.negocios}
+        rotulo="negócios"
+        titulo="Negócios"
+        vazio="Nenhum negócio."
+        rodape={restantes(item.negocios, titulos.length)}
+        itens={titulos.map((t, i) => (
+          <span key={i} className="truncate">
+            {t}
+          </span>
+        ))}
+      />
     </span>
   );
 }

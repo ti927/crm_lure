@@ -970,6 +970,13 @@ export type Database = {
           website: string | null
           negocios: number
           titulos: string[] | null
+          pessoas: number
+          nomes_pessoas: string[] | null
+          atividades: number
+          atividades_pendentes: number
+          amostra_atividades:
+            | { rotulo: string; data: string; concluida: boolean }[]
+            | null
         }[]
       }
       organizacoes_do_grupo: {
@@ -981,6 +988,13 @@ export type Database = {
           website: string | null
           negocios: number
           titulos: string[] | null
+          pessoas: number
+          nomes_pessoas: string[] | null
+          atividades: number
+          atividades_pendentes: number
+          amostra_atividades:
+            | { rotulo: string; data: string; concluida: boolean }[]
+            | null
         }[]
       }
 

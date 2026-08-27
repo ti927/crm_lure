@@ -122,6 +122,18 @@ Regras que saíram de um defeito real: com dez colunas em ~1.216px, a linha de f
 
 **6. Quando o rótulo não cabe de jeito nenhum, encurte o rótulo — não corte no meio.** "MOTIVO DE PERDA" mede ~120px em maiúsculas com `tracking-caps`, e a coluna tem ~77px úteis: não há largura que resolva sem roubar de outra coluna. O cabeçalho mostra **"MOTIVO"**, com o nome inteiro no `title` e no rótulo que o CSV usa. ⚠️ Reservar largura para o **funil de filtro ativo** quando a coluna nascer filtrada: desde a D-149 a coluna Responsável abre sempre filtrada, e esse ícone custa 12px permanentes.
 
+### 6.2 Contagem com dica de tela
+
+Padrão da lista de organizações, onde cada linha mostra **pessoas · atividades · negócios**.
+
+- **Ordem fixa em toda a lista.** Com a ordem variando linha a linha, a coluna da direita exigiria reler o ícone a cada vez. Fixa, ela se lê de cima a baixo.
+- **O número é a informação; a dica é o detalhe.** A mesma lista serve computador e celular (D-121), e **no celular não existe hover** — então nada essencial pode viver só na dica. É a regra que a C-11 deixou. Tudo o que a dica mostra também está na ficha da organização, a um clique da mesma linha.
+- **Contagem exata, lista por amostra.** O número conta tudo; a dica mostra os primeiros e **diz quanto ficou de fora** (*"+3 não mostradas"*). Trazer as listas inteiras para desenhar três números carregaria a base numa tela de 50 linhas (R-006).
+- **A dica diz o que o número não diz.** O ícone de atividades conta todas, inclusive concluídas de 2021; o rodapé da dica diz quantas estão **pendentes**, que é o que se pergunta numa ficha de cliente. Pendentes aparecem primeiro na lista.
+- **Estado nunca é só cor.** O ponto verde/cinza vem acompanhado da data e do texto esmaecido para o concluído (B-076).
+- **Zero é apagado, não escondido.** Uma etiqueta ausente se confunde com desalinhamento; apagada, ela diz "aqui não há nenhum" sem gritar.
+- **Técnica:** `Tooltip` do Radix com `Portal` — a dica sai para o fim do `body`, fora de qualquer `overflow` ou pilha de empilhamento local, pelo mesmo motivo que levou o seletor de responsável para o Popover. O gatilho é um `<span>` com `asChild`, e não o `<button>` padrão: a linha inteira já é um `<a>`, e botão dentro de link é HTML inválido. Em troca, a etiqueta leva `aria-label` com o número por extenso e a dica fica marcada como decorativa.
+
 ---
 
 ## 7. Notas técnicas para o Claude Code
@@ -148,5 +160,5 @@ Regras que saíram de um defeito real: com dez colunas em ~1.216px, a linha de f
 
 ## Changelog
 
-- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. Entra também a regra **um seletor por pergunta**. A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
+- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. Entram a regra **um seletor por pergunta** e a **seção 6.2** (contagem com dica de tela). A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
 - **v0.1** — 13/08/2026 — Criação a partir do manual de marca Lure e dos tokens gerados no Claude Design. Três correções aplicadas: amarelo perde o papel de alerta, etapa 5 sai do verde-oliva, paleta de gráficos definida.

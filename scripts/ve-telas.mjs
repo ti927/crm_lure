@@ -56,6 +56,14 @@ const LARGURA = Number(arg("largura", "1440"));
  * pagina mostra tudo funcionando e nao prova nada.
  */
 const ROLAR = Number(arg("rolar", "0"));
+/**
+ * Seletor CSS sobre o qual parar o ponteiro antes de capturar.
+ *
+ * ⚠️ Existe porque dica de tela, menu e realce de ponteiro so aparecem
+ * COM o ponteiro em cima — e uma captura sem isso mostra a tela em
+ * repouso e nao prova nada sobre o que foi construido para o hover.
+ */
+const APONTAR = arg("apontar", "");
 const ALTURA = Number(arg("altura", "900"));
 const ROTAS = arg(
   "rotas",
@@ -247,6 +255,18 @@ try {
       // A tela pronta e a tela sem esqueleto: esperar so o `load` pega o
       // carregando, que e justamente o que nao se quer olhar.
       await pagina.waitForTimeout(700);
+
+      if (APONTAR) {
+        const alvo = pagina.locator(APONTAR).first();
+        if (await alvo.count()) {
+          await alvo.hover();
+          // A dica tem atraso de abertura e animacao de entrada; capturar
+          // em seguida pegaria o meio da animacao.
+          await pagina.waitForTimeout(700);
+        } else {
+          console.log(`  ⚠️  nada casou com "${APONTAR}" em ${rota}`);
+        }
+      }
 
       if (ROLAR > 0) {
         // ⚠️ Rola o `main`, que e quem rola nestas telas (D-151), e cai
