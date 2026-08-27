@@ -1,10 +1,10 @@
-﻿# 08 — UI e Design System (v0.1)
+﻿# 08 — UI e Design System (v0.2)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | UI e Design System |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.1 |
+| **Versão** | v0.2 |
 | **Data** | 13/08/2026 |
 | **Status** | rascunho — aguarda validação do maestro |
 
@@ -104,6 +104,22 @@ Escala base **13px** para corpo de tabela e **14px** para formulário — adequa
 - **Linha de tabela: 44px** (D-090). Cerca de 15 negócios por tela; a navegação se dá por filtro (D-055), não por rolagem.
 - **Tema claro e escuro, ambos** (D-091), alternáveis por botão. Todo componente novo é verificado nas duas variantes — vira critério de aceite no Doc 11.
 
+### 6.1 Linha de filtro em tabela densa
+
+Regras que saíram de um defeito real: com dez colunas em ~1.216px, a linha de filtro da Lista ficou com texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes. O maestro descreveu como "desleixado", e estava certo. O conserto não foi acertar números — foi tirar as causas.
+
+**1. Rótulo de controle não repete o cabeçalho.** O `<select>` embaixo de **PRODUTO** diz **"Todos"**, não "Todos os produtos". A frase longa não cabe em 85px e o navegador a corta no meio (*"Todos os pr…"*), que é o que dá cara de improviso — e ela é redundante, porque o nome da coluna está escrito logo acima. ⚠️ **O nome não some da acessibilidade:** ele passa para o `aria-label`, que antes dizia a bobagem *"Filtrar por todos os produtos"* e agora diz *"Filtrar por Produto"*.
+
+**2. Nenhum controle pode quebrar linha.** Duas linhas de texto dentro de um campo de 28px leem-se como defeito, não como informação. Todo gatilho leva `whitespace-nowrap`, `overflow-hidden` e um filho `min-w-0 truncate`; o valor inteiro vai no `title`. Foi o que o seletor de responsável exigiu — ele vive em duas larguras muito diferentes (barra do Kanban e coluna de 130px), então o texto de "sem filtro" virou propriedade.
+
+**3. Uma medida só para a linha inteira.** Todos os controles de filtro compartilham a mesma constante de altura e padding. Com dez colunas lado a lado, 2px de diferença entre um `<select>` e um `<input>` aparecem como desalinhamento na linha toda.
+
+**4. Célula de filtro alinha pelo topo (`align-top`).** Valor e Criado em têm **dois** controles empilhados; as outras têm um. Centralizado, o controle único flutuava no meio de uma célula alta e a linha inteira ficava irregular. Pelo topo, todos começam na mesma altura e o segundo campo desce por baixo, de propósito.
+
+**5. Filtro de intervalo empilha, não divide a coluna.** Dois campos lado a lado numa coluna de ~110px ficam com ~40px cada e viram quadradinhos onde não se lê o que foi digitado. Empilhados, cada um usa a largura inteira — custa uma linha no cabeçalho, uma vez só.
+
+**6. Quando o rótulo não cabe de jeito nenhum, encurte o rótulo — não corte no meio.** "MOTIVO DE PERDA" mede ~120px em maiúsculas com `tracking-caps`, e a coluna tem ~77px úteis: não há largura que resolva sem roubar de outra coluna. O cabeçalho mostra **"MOTIVO"**, com o nome inteiro no `title` e no rótulo que o CSV usa. ⚠️ Reservar largura para o **funil de filtro ativo** quando a coluna nascer filtrada: desde a D-149 a coluna Responsável abre sempre filtrada, e esse ícone custa 12px permanentes.
+
 ---
 
 ## 7. Notas técnicas para o Claude Code
@@ -130,4 +146,5 @@ Escala base **13px** para corpo de tabela e **14px** para formulário — adequa
 
 ## Changelog
 
+- **v0.2** — 27/08/2026 — **Seção 6.1 nova: linha de filtro em tabela densa.** Seis regras tiradas de um defeito real — texto quebrando dentro dos campos, frases cortadas no meio e controles de alturas diferentes na Lista de dez colunas. A que mais rende: **rótulo de controle não repete o cabeçalho** ("Todos", não "Todos os produtos"), porque a frase longa não cabe, o navegador a corta no meio e ela é redundante com o nome da coluna logo acima — o nome vai para o `aria-label`, onde faz falta.
 - **v0.1** — 13/08/2026 — Criação a partir do manual de marca Lure e dos tokens gerados no Claude Design. Três correções aplicadas: amarelo perde o papel de alerta, etapa 5 sai do verde-oliva, paleta de gráficos definida.

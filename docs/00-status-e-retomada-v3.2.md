@@ -39,7 +39,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
-| `08-ui-e-design-system-v0.1.md` |
+| `08-ui-e-design-system-v0.2.md` |
 | `09-arquitetura-tecnica-v0.10.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |

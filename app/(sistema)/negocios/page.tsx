@@ -255,7 +255,8 @@ export default async function PaginaNegocios({
           <FiltroSelecao
             nomeParam="etapa"
             valor={filtros.etapa}
-            rotuloTodos="Todas as etapas"
+            coluna="Etapa"
+            rotuloTodos="Todas"
             opcoes={(etapas ?? []).map((e) => ({ valor: e.id, rotulo: e.nome }))}
           />
         );
@@ -264,7 +265,8 @@ export default async function PaginaNegocios({
           <FiltroSelecao
             nomeParam="status"
             valor={filtros.status}
-            rotuloTodos="Todos os status"
+            coluna="Status"
+            rotuloTodos="Todos"
             opcoes={STATUS_OPCOES}
           />
         );
@@ -273,7 +275,8 @@ export default async function PaginaNegocios({
           <FiltroSelecao
             nomeParam="origem"
             valor={filtros.origem}
-            rotuloTodos="Todas as origens"
+            coluna="Origem"
+            rotuloTodos="Todas"
             opcoes={(origens ?? []).map((o) => ({ valor: o.id, rotulo: o.nome }))}
           />
         );
@@ -282,7 +285,8 @@ export default async function PaginaNegocios({
           <FiltroSelecao
             nomeParam="produto"
             valor={filtros.produto}
-            rotuloTodos="Todos os produtos"
+            coluna="Produto"
+            rotuloTodos="Todos"
             opcoes={(produtos ?? []).map((o) => ({ valor: o.id, rotulo: o.nome }))}
           />
         );
@@ -293,7 +297,8 @@ export default async function PaginaNegocios({
           <FiltroSelecao
             nomeParam="motivoPerda"
             valor={filtros.motivoPerda}
-            rotuloTodos="Todos os motivos"
+            coluna="Motivo de perda"
+            rotuloTodos="Todos"
             opcoes={(motivos ?? []).map((o) => ({ valor: o.id, rotulo: o.nome }))}
           />
         );
@@ -343,12 +348,12 @@ export default async function PaginaNegocios({
                 // padding caiu de 12 para 8px de cada lado, que e o que
                 // devolve espaco real ao rotulo.
                 titulo={c.rotulo}
-                className={`hover:text-text flex h-9 items-center gap-1 px-2 text-xs uppercase tracking-caps ${
+                className={`hover:text-text flex h-9 items-center gap-1 px-1.5 text-xs uppercase tracking-caps ${
                   c.numerica ? "justify-end" : ""
                 } ${ativa ? "text-text" : "text-text-muted"}`}
               >
-                <span className="truncate">{c.rotulo}</span>
-                <Icone className="size-3 shrink-0" aria-hidden />
+                <span className="truncate">{c.rotuloCurto ?? c.rotulo}</span>
+                <Icone className="size-2.5 shrink-0" aria-hidden />
                 <IndicadorFiltro ativo={filtroAtivo(c.chave)} />
               </LinkOrdenacao>
             </th>
@@ -359,7 +364,13 @@ export default async function PaginaNegocios({
         {COLUNAS.map((c) => (
           <th
             key={c.chave}
-            className={`border-border bg-surface-sunken border-b p-1 font-normal ${
+            // ⚠️ `align-top`: as colunas Valor e Criado em têm DOIS
+            // controles empilhados e as outras um só. Centralizado, o
+            // controle único flutuava no meio de uma célula alta e a
+            // linha inteira ficava desalinhada — que era metade da
+            // sensação de desleixo. Pelo topo, todos começam na mesma
+            // altura e o segundo campo desce por baixo, de propósito.
+            className={`border-border bg-surface-sunken border-b p-1.5 align-top font-normal ${
               c.esconde ? ESCONDE_CLASSE[c.esconde] : ""
             }`}
           >

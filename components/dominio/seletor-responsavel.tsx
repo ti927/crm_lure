@@ -24,11 +24,23 @@ export function SeletorResponsavel({
   escolhido,
   aoEscolher,
   classe,
+  rotuloTodos = "Todos os responsáveis",
 }: {
   usuarios: Usuario[];
   escolhido: string;
   aoEscolher: (id: string) => void;
   classe: string;
+  /**
+   * Texto de "sem filtro" no gatilho.
+   *
+   * ⚠️ Existe porque o mesmo seletor vive em duas larguras muito
+   * diferentes: no Kanban ele tem a barra inteira, na coluna da Lista tem
+   * ~120px. "Todos os responsáveis" ali quebrava em DUAS LINHAS dentro do
+   * campo, e duas linhas dentro de um controle de 28px se leem como
+   * defeito. Na Lista o cabeçalho da coluna já diz "Responsável", então
+   * repetir a palavra dentro do campo não informa nada.
+   */
+  rotuloTodos?: string;
 }) {
   const atual = usuarios.find((u) => u.id === escolhido);
 
@@ -36,15 +48,22 @@ export function SeletorResponsavel({
     <Popover.Root>
       <Popover.Trigger
         aria-label="Filtrar por responsável"
+        title={atual ? atual.nome : rotuloTodos}
+        // ⚠️ `min-w-0` no conteudo e `shrink-0` na seta: sem os dois, um
+        // nome longo empurra a seta para fora do campo em vez de cortar o
+        // nome. `justify-between` mantem a seta colada na direita mesmo
+        // quando sobra espaco.
         className={`${classe} ${
           escolhido ? "border-brand-ink font-medium" : ""
-        } hover:bg-surface-hover flex items-center gap-2`}
+        } hover:bg-surface-hover flex items-center justify-between gap-1.5 overflow-hidden whitespace-nowrap`}
       >
-        {atual ? (
-          <UsuarioComFoto nome={atual.nome} foto={atual.foto_url} tamanho="sm" />
-        ) : (
-          <span className="text-text">Todos os responsáveis</span>
-        )}
+        <span className="min-w-0 flex-1 truncate text-left">
+          {atual ? (
+            <UsuarioComFoto nome={atual.nome} foto={atual.foto_url} tamanho="sm" />
+          ) : (
+            <span className="text-text">{rotuloTodos}</span>
+          )}
+        </span>
         <ChevronDown className="text-text-muted size-3.5 shrink-0" aria-hidden />
       </Popover.Trigger>
 

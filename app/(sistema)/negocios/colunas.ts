@@ -33,26 +33,42 @@ export type Coluna = {
   largura: string;
   /** Tipo de controle no cabecalho (B-042). Sem isto, a coluna nao filtra. */
   filtro?: "texto" | "numero" | "data" | "selecao";
+  /**
+   * Rotulo alternativo, so para o cabecalho da tabela.
+   *
+   * ⚠️ "MOTIVO DE PERDA" em maiusculas com `tracking-caps` mede ~120px e
+   * a coluna tem ~77px de texto util: nao ha largura que resolva sem
+   * roubar de outra coluna. Cortar em silencio ("MOTIVO DE PE…") e o que
+   * dava cara de improviso. O nome inteiro continua no `title` e no
+   * `rotulo`, que e o que o CSV e a acessibilidade usam.
+   */
+  rotuloCurto?: string;
 };
 
 export const COLUNAS: Coluna[] = [
-  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto", largura: "w-[15%]" },
+  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto", largura: "w-[14%]" },
   { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)", filtro: "texto", largura: "w-[14%]" },
   { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true, filtro: "numero", largura: "w-[9%]" },
   { chave: "etapa", rotulo: "Etapa", ordenacao: "etapa(ordem)", filtro: "selecao", largura: "w-[11%]" },
   { chave: "status", rotulo: "Status", ordenacao: "status", filtro: "selecao", largura: "w-[8%]" },
-  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao", largura: "w-[7%]" },
-  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao", largura: "w-[7%]" },
-  { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md", filtro: "selecao", largura: "w-[10%]" },
+  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao", largura: "w-[8%]" },
+  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao", largura: "w-[8%]" },
+  { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md", filtro: "selecao", largura: "w-[11%]" },
   // ⚠️ Estava em `esconde: "xl"` — so aparecia acima de 1280px, e por
   // isso passava por inexistente. Perder negocio E o dado mais caro do
   // funil: 1.121 dos 2.460 estao perdidos, e o motivo e a unica coisa
   // que explica por que. Sobe para `lg`, junto de origem e produto.
-  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "lg", filtro: "selecao", largura: "w-[9%]" },
+  { chave: "motivo_perda", rotulo: "Motivo de perda", rotuloCurto: "Motivo", ordenacao: "motivo_perda(nome)", esconde: "lg", filtro: "selecao", largura: "w-[7%]" },
   { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md", filtro: "data", largura: "w-[10%]" },
 ];
 
 /**
+ * ⚠️ Responsavel leva 11 e Motivo 7 por um motivo medido, nao por gosto:
+ * desde a D-149 a coluna Responsavel nasce FILTRADA para todo usuario, e
+ * o funil de filtro ativo custa 12px permanentes no cabecalho — sem o
+ * ponto extra, "RESPONSAVEL" ficava cortado o tempo todo. Motivo cede
+ * porque seu rotulo curto ("MOTIVO") cabe folgado.
+ *
  * ⚠️ As dez larguras somam 100. Se acrescentar coluna, tire de outra —
  * senao a tabela passa de 100% e a rolagem horizontal volta, que e
  * exatamente o que a D-151 veio eliminar.
