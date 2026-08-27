@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v3.1)
+﻿# 00 — Status e Retomada (v3.2)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v3.1 |
+| **Versão** | v3.2 |
 | **Última atualização** | 27/08/2026 — Sessão 13 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,18 +32,18 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v3.1.md` |
+| `00-status-e-retomada-v3.2.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.23.md` |
+| `03-log-de-decisoes-v0.24.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
 | `08-ui-e-design-system-v0.1.md` |
-| `09-arquitetura-tecnica-v0.9.md` |
+| `09-arquitetura-tecnica-v0.10.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.16.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.17.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
@@ -468,6 +468,7 @@ Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-0
 | P-047 | **A aba "Agendar atividade" da ficha deve virar formulário embutido**, como no Pipedrive, ou o diálogo atual serve? | UX | **Criada 20/08.** Existe e funciona; a dúvida é de forma |
 | P-048 | **Como alcançar os registros alterados no Pipedrive?** | dados | **Criada 20/08.** Eram 144; em 27/08 somaram-se **83 alterados e 1 apagado**. Exige `pipedrive_id` no schema. A divergência cresce a cada dia |
 | P-042 | **O prazo do follow-up ao ganhar (90 dias) deve ser editável no painel?** | F8 | **Criada 20/08.** A D-021 só diz "desativável". Não bloqueia: o `check` do schema já aceita 1 a 365, e é acrescentar o campo à tela |
+| P-050 | **297 telefones corrompidos NA ORIGEM** | dados | **Criada 27/08**, vista pela primeira vez numa captura de tela (D-153). São **168 em notação científica** (`56298E+12`) e **129 gravados como `"5"`**. ⚠️ **Não é defeito da carga:** conferido em `dados/pipedrive/persons.json`, o Pipedrive já os tem assim — os dígitos se perderam lá, e `56298E+12` guarda 5 algarismos significativos de um número de 13. **Irrecuperável daqui**, como a C-07 dos acentos. ⚠️ Pior que ausência: o link do WhatsApp abre com lixo. Decisão pendente — apagar os inválidos, marcá-los na tela, ou deixar |
 | P-037 | **Curar os 45 nomes com acento perdido** | qualidade | **Criada 18/08.** Listados em `acentos-pendentes.tsv`, fora do git porque o repositório é público. Conserto pela ficha, que agora é editável (C-07) |
 | ~~P-039~~ | ~~Os 3 negócios legados em Aguardando Contrato~~ | — | ✅ **encerrada 19/08 por D-128**: ficam como estão. O verificador passou a separar legado de violação por regra — quem entrou na etapa pelo sistema tem evento de `etapa` no log; quem não tem, veio da carga |
 | P-040 | **Validar a D-127** — organização criada de dentro do diálogo de negócio | escopo | **Criada 19/08.** Mesma natureza da P-038. Sem isso, registrar um lead novo exige ir a Contatos e voltar; com isso, cria-se organização fora da tela de Contatos |
@@ -530,6 +531,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v3.2** — 27/08/2026 — **Fim da sessão 13: o agente passou a enxergar.** **D-153** — `scripts/ve-telas.mjs` emite sessão local e grava captura das telas num Chromium sem interface, nos dois temas e com rolagem. O que era verificável antes ia até `build` + `curl`, que lê HTML e não vê pixel. Resultado imediato: a **D-148, a D-149 e a D-151 foram confirmadas EM TELA** (o Kanban do Rafael abre com 205 dos 308, a Lista com 757 dos 2.462, os rótulos ficam ao rolar, as dez colunas cabem), e apareceram dois defeitos que o HTML não mostrava — a **C-14** (linha fantasma por cima do cabeçalho grudado) e a **P-050** (297 telefones corrompidos na origem). Doc 03 a v0.24 (**153 decisões**), Doc 09 a v0.10.
 - **v3.1** — 27/08/2026 — **Fim da sessão 13.** Fecha o que a v3.0 abriu no meio da sessão. O maestro abriu o Kanban e o achou quebrado: **C-12** (Doc 09 v0.8) — cartão acima dos rótulos das etapas, e rótulos sumindo ao rolar. A faixa de rótulos saiu da rolagem dos cartões, e a **D-150 revogou a D-146**: o rodapé voltou à coluna externa, largura inteira, por baixo da sidebar. **P-049 encerrada** — ela era a segunda causa da C-12, e o que a fechou foi ver em tela o que estava escrito como "consequência assumida" desde 21/08. Doc 03 a v0.22 (**150 decisões**), Doc 09 a v0.8.
 - **v3.0** — 27/08/2026 — **Fim da sessão 13.** Dados sincronizados pela terceira vez: **36 novos entraram**, e a divergência dos **alterados cresceu em 83** — a **P-048** segue sendo a única saída e continua exigindo `pipedrive_id` no schema. Três decisões novas (**D-147** a **D-149**, **149 decisões**): busca no Kanban por função no banco, colunas que dividem a largura com piso de 160px, e o filtro por responsável abrindo em "só os meus" nas três telas. ⚠️ A lição desta sessão é sobre **medição escrita à mão**: o alarme do script de sincronização comparava com um 9 gravado em 20/08 e por isso acusava falso toda vez que alguém trabalhava no sistema — o número certo nunca foi um valor, era uma diferença. Doc 03 a v0.21.
 - **v2.9** — 21/08/2026 — **Fim da sessão 12.** Fecha o que a v2.8 abriu no meio da sessão. Entra a **D-146**: o rodapé da marca deixou de ficar cravado no pé e passou a **rolar com o conteúdo**, devolvendo ~41px a toda tela — foi posto dentro do `main`, e não na coluna externa, porque ali o cabeçalho `sticky` subiria junto. **P-049 aberta** com a consequência assumida e não vista: Lista, Kanban e Contatos ganham uma barra vertical ao lado da que já têm por dentro. ✅ **O maestro conferiu o campo de cargo em tela e aprovou** — e antes disso corrigiu o rumo da C-11, que tinha acrescentado um rótulo em vez de resolver a borda. Corrigida uma falha de escrituração antiga: **P-041 e P-043 eram citadas no documento e nunca tinham entrado na tabela de pendências**. Doc 09 a v0.7 com a C-11 revista. **Tudo empurrado.**

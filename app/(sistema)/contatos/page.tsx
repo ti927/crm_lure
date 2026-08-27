@@ -25,8 +25,14 @@ export default async function PaginaContatos({
   const supabase = await createClient();
 
   const inicio = (filtros.pagina - 1) * POR_PAGINA;
-  const th = "border-border h-9 border-b px-3 text-left text-xs font-semibold uppercase tracking-caps text-text-muted";
-  const celula = "px-3 align-middle";
+  // ⚠️ `bg-surface-sunken` na CELULA, e nao so no `<thead>`: com
+  // `border-collapse: collapse` o navegador nao pinta o fundo do thead,
+  // e as linhas passariam visiveis por tras do cabecalho ao rolar.
+  const th =
+    "bg-surface-sunken border-border h-9 border-b px-3 text-left text-xs font-semibold uppercase tracking-caps text-text-muted";
+  // ⚠️ `border-b` na CELULA, e nao no `<tr>`: no modelo de bordas
+  // separado (ver `tabela-dados.tsx`) borda de linha nao e desenhada.
+  const celula = "border-border border-b px-3 align-middle";
 
   let total = 0;
   let cabecalho: React.ReactNode = null;
@@ -79,7 +85,7 @@ export default async function PaginaContatos({
     cartoes = <CartoesPessoa pessoas={data ?? []} />;
 
     cabecalho = (
-      <thead className="bg-surface-sunken sticky top-0 z-20 shadow-[0_1px_0_0_var(--border)]">
+      <thead className="bg-surface-sunken sticky top-0 z-20">
         <tr>
           <th className={th}>Nome</th>
           <th className={th}>Organização</th>
@@ -95,7 +101,7 @@ export default async function PaginaContatos({
         <tr
           key={pe.id}
           style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
-          className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 motion-safe:transition-colors"
+          className="hover:bg-surface-hover animate-in fade-in fill-mode-backwards duration-300 motion-safe:transition-colors"
         >
           <td className="h-row-cozy max-w-[22rem] truncate p-0 font-medium">
             <Link

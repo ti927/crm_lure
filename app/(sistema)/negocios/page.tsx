@@ -304,19 +304,17 @@ export default async function PaginaNegocios({
     }
   }
 
-  const celula = "px-3 align-middle";
+  // ⚠️ `border-b` na CELULA, e nao no `<tr>`: no modelo de bordas
+  // separado (ver `tabela-dados.tsx`) borda de linha nao e desenhada.
+  const celula = "border-border border-b px-2 align-middle";
 
   // ⚠️ `sticky top-0` agora gruda no `main`, e não num container de
   // rolagem interno — a tabela deixou de ter um. É o que faz o cabeçalho
   // (e a linha de filtros junto dele) ficar parado ao rolar a lista, que
   // era o defeito relatado. Ver a nota em `tabela-dados.tsx`.
   //
-  // ⚠️ A sombra existe porque `border-collapse: collapse` NÃO leva a
-  // borda inferior junto com o elemento grudado: ela some na primeira
-  // rolagem e o cabeçalho fica sem aresta sobre as linhas. A sombra não
-  // participa do modelo de bordas colapsadas, então ela fica.
   const cabecalho = (
-    <thead className="bg-surface-sunken sticky top-0 z-20 shadow-[0_1px_0_0_var(--border)]">
+    <thead className="bg-surface-sunken sticky top-0 z-20">
       <tr>
         {COLUNAS.map((c) => {
           const ativa = c.chave === filtros.ordenarPor;
@@ -327,13 +325,25 @@ export default async function PaginaNegocios({
               key={c.chave}
               scope="col"
               aria-sort={ativa ? (filtros.crescente ? "ascending" : "descending") : "none"}
-              className={`border-border h-9 border-b text-left font-semibold ${c.largura} ${
+              // ⚠️ `bg-surface-sunken` AQUI, na celula, e nao so no
+              // `<thead>`. Com `border-collapse: collapse` o navegador
+              // nao pinta o fundo do thead — pinta o das celulas —, e
+              // sem isto as linhas passavam VISIVEIS por tras da faixa
+              // de titulos enquanto se rolava. A linha de filtros nao
+              // tinha o defeito porque as celulas dela ja tinham fundo,
+              // e foi essa diferenca que denunciou a causa.
+              className={`border-border bg-surface-sunken h-9 border-b text-left font-semibold ${c.largura} ${
                 c.esconde ? ESCONDE_CLASSE[c.esconde] : ""
               }`}
             >
               <LinkOrdenacao
                 href={comParametros({ ordenar: c.chave, dir: proximaDir, pagina: null })}
-                className={`hover:text-text flex h-9 items-center gap-1 px-3 text-xs uppercase tracking-caps ${
+                // ⚠️ `title`: em 85px "MOTIVO DE PERDA" nao cabe de jeito
+                // nenhum, e cortar em silencio perde o nome da coluna. O
+                // padding caiu de 12 para 8px de cada lado, que e o que
+                // devolve espaco real ao rotulo.
+                titulo={c.rotulo}
+                className={`hover:text-text flex h-9 items-center gap-1 px-2 text-xs uppercase tracking-caps ${
                   c.numerica ? "justify-end" : ""
                 } ${ativa ? "text-text" : "text-text-muted"}`}
               >
@@ -366,12 +376,12 @@ export default async function PaginaNegocios({
       // Entrada escalonada por linha, com teto: cinquenta linhas em
       // cascata viraria espera, não elegância.
       style={{ animationDelay: `${Math.min(i, 14) * 18}ms` }}
-      className="border-border hover:bg-surface-hover animate-in fade-in fill-mode-backwards border-b duration-300 motion-safe:transition-colors"
+      className="hover:bg-surface-hover animate-in fade-in fill-mode-backwards duration-300 motion-safe:transition-colors"
     >
       {/* A faixa de cor da etapa acompanha o nome escrito na
           coluna Etapa — nunca substitui (B-076). */}
       <td
-        className={`h-row-cozy faixa-etapa truncate p-0 font-medium ${faixaDaEtapa(
+        className={`border-border h-row-cozy faixa-etapa truncate border-b p-0 font-medium ${faixaDaEtapa(
           n.etapa?.ordem
         )}`}
       >

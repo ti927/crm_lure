@@ -13,16 +13,20 @@ import { salvarPreferenciaLista } from "./acoes";
 export function LinkOrdenacao({
   href,
   className,
+  titulo,
   children,
 }: {
   href: string;
   className: string;
+  /** Nome inteiro da coluna, para quando o rotulo nao couber na largura. */
+  titulo?: string;
   children: ReactNode;
 }) {
   return (
     <Link
       href={href}
       className={className}
+      title={titulo}
       onClick={() => {
         const consulta = href.includes("?") ? href.split("?")[1] : "";
         const p = new URLSearchParams(consulta);

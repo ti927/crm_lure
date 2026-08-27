@@ -1,12 +1,12 @@
-﻿# 09 — Arquitetura Técnica (v0.9)
+﻿# 09 — Arquitetura Técnica (v0.10)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.9 |
+| **Versão** | v0.10 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-13 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-14 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -438,6 +438,16 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 
 ⚠️ **Par de argumentos do mesmo tipo é uma armadilha estrutural**, não um descuido pontual: `(uuid, uuid)` aceita qualquer ordem e o compilador aplaude. Onde a troca for possível, ou os parâmetros viram um objeto nomeado, ou o defeito volta.
 
+#### C-14 — a linha fantasma atravessando o cabeçalho grudado (27/08/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-14** | Na Lista, ao rolar, uma linha de negócio aparecia **desbotada por cima** da faixa de títulos das colunas | `border-collapse: collapse` com `<thead>` grudado: o Chromium pinta as linhas do corpo **por cima** do cabeçalho. Não é vão nem transparência — as células do cabeçalho foram medidas no DOM e estavam contíguas (56 a 159,5px) e opacas | `border-separate` com `border-spacing-0`, e as bordas divisórias movidas do `<tr>` para as **células** |
+
+⚠️ **Duas hipóteses erradas antes da certa, e foi a medição que resolveu.** A primeira foi "o `<thead>` não pinta fundo, só as células" — pintar as células **não mudou nada**. A segunda foi "o build está velho" — o chunk compilado tinha a classe nova. Só medindo `getBoundingClientRect` e `getComputedStyle` no navegador ficou claro que a geometria estava certa e o problema era **ordem de pintura**. Sem a captura de tela (D-153) o defeito nem teria sido visto: no HTML ele não existe.
+
+⚠️ **Preço do modelo separado, e ele morde calado:** borda em `<tr>` **não é desenhada**. Toda divisória de linha passou para as células. Se alguém devolver um `border-b` a um `<tr>` dessas tabelas, ele simplesmente não aparece — sem erro, sem aviso.
+
 ⚠️ **É o quarto caso do mesmo padrão em duas sessões.** Os outros três estão no Doc 00 §4.9: criar atividade dentro do negócio, filtro de motivo de perda na Lista, filtrar por usuário nas Estatísticas. Em nenhum dos quatro o problema era ausência — era **descoberta**. A regra que sai daí: **quando alguém disser que algo "não existe" neste sistema, a primeira hipótese é que existe e está invisível**, e a correção é de apresentação, não de função.
 
 ⚠️ **A primeira correção errou a mão para o outro lado.** Ela acrescentou um rótulo escrito acima do campo (*"Cargo em Quick Aviação"*), o que resolvia a descoberta mas gastava uma linha inteira numa coluna de 20rem, para dizer o que o nome da organização logo acima já dizia. O maestro corrigiu: **o problema nunca foi a falta de rótulo, era o campo não parecer campo.** A versão que ficou mantém o `placeholder` "Cargo" e o `aria-label`, e gasta a tinta na borda.
@@ -605,6 +615,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.10** — 27/08/2026 — **Sessão 13, quarta parte: o agente passou a enxergar.** Correção **C-14**: com `border-collapse: collapse` o Chromium pinta as linhas do corpo por cima do `<thead>` grudado, e uma linha fantasma atravessava a faixa de títulos. Duas hipóteses erradas antes da certa — e o que resolveu foi **medir** `getBoundingClientRect` no navegador, que mostrou geometria correta e ordem de pintura errada. Trocado para `border-separate`, com as divisórias movidas do `<tr>` para as células; ⚠️ no modelo separado, borda em `<tr>` não é desenhada.
 - **v0.9** — 27/08/2026 — **Sessão 13, terceira parte.** Correção **C-13**: a ficha da organização chamava as três ações de vínculo com `(organizacaoId, pessoaId)` onde a assinatura pede `(pessoaId, organizacaoId)`. Os dois são `uuid`, então nada no tipo acusava — e o efeito era diferente nas três: o `insert` falhava alto, o `update` do cargo e o `delete` casavam com **zero linhas e devolviam sucesso**. Corrige de passagem o veredito da **C-11**: o campo de cargo gravava pela ficha da pessoa, nunca pela da organização, que é justamente onde o usuário reclamou.
 - **v0.8** — 27/08/2026 — **Sessão 13.** Correção **C-12**: os rótulos das etapas do Kanban não paravam em lugar nenhum — cartão passava acima deles e rolar para baixo os levava junto. Duas causas somadas, e nenhuma era o `sticky` em si: a faixa de `padding` acima do ponto de trava, e o **segundo scroll** que o rodapé da D-146 criou no `main` (P-049). A faixa de rótulos saiu da rolagem dos cartões. Fica a regra: **`sticky` gruda no scrollport mais próximo**, e havendo dois scrolls aninhados, grudar no de dentro não protege quando é o de fora que se move — a pergunta antes de usar `sticky` é *qual* container rola, não *se* algum rola.
 - **v0.7** — 21/08/2026 — **Sessão 12.** Correção **C-11** acrescentada à seção 3.11: o campo de cargo existia e gravava, mas era um input transparente sem rótulo escrito — um usuário real não o encontrou. É o quarto caso do mesmo padrão em duas sessões, e o registro fixa a regra que sai dele: quando alguém disser que algo "não existe" aqui, a primeira hipótese é que existe e está invisível. Registrado também que **campo editável carrega borda** — affordance só no hover não existe no celular.

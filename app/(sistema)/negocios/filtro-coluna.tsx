@@ -73,8 +73,15 @@ export function FiltroNumero({ min, max }: { min: string; max: string }) {
     if (limpo !== atual) aplicarVarios({ [campo]: limpo });
   }
 
+  /**
+   * ⚠️ EMPILHADOS, e nao lado a lado. Com `table-fixed` a coluna Valor
+   * tem ~110px: dois campos na mesma linha ficavam com ~40px cada e
+   * viravam dois quadradinhos onde nao dava para ler o que se digitou.
+   * Empilhado, cada um usa a largura inteira da coluna — custa uma linha
+   * a mais no cabecalho, uma vez so, e devolve o filtro ao uso.
+   */
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-col gap-0.5">
       <input
         key={`min-${min}`}
         type="number"
@@ -86,11 +93,8 @@ export function FiltroNumero({ min, max }: { min: string; max: string }) {
         }}
         placeholder="mín."
         aria-label="Valor mínimo"
-        className={`${CAMPO} w-16 text-right ${ativo ? CAMPO_ATIVO : ""}`}
+        className={`${CAMPO} w-full text-right ${ativo ? CAMPO_ATIVO : ""}`}
       />
-      <span className="text-text-muted text-xs" aria-hidden>
-        –
-      </span>
       <input
         key={`max-${max}`}
         type="number"
@@ -113,21 +117,26 @@ export function FiltroData({ de, ate }: { de: string; ate: string }) {
   const { aplicarVarios } = useFiltrosLista();
   const ativo = Boolean(de || ate);
 
+  /** ⚠️ Empilhados pelo mesmo motivo do filtro de valor — e aqui era
+   *  pior: campo de data nativo precisa de ~110px para mostrar
+   *  "dd/mm/aaaa" mais o icone, e lado a lado sobravam 50px. */
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-col gap-0.5">
       <input
         type="date"
         value={de}
         onChange={(e) => aplicarVarios({ criadoDe: e.target.value })}
         aria-label="Criado a partir de"
-        className={`${CAMPO} w-[6.4rem] ${ativo ? CAMPO_ATIVO : ""}`}
+        title="Criado a partir de"
+        className={`${CAMPO} w-full ${ativo ? CAMPO_ATIVO : ""}`}
       />
       <input
         type="date"
         value={ate}
         onChange={(e) => aplicarVarios({ criadoAte: e.target.value })}
         aria-label="Criado até"
-        className={`${CAMPO} w-[6.4rem] ${ativo ? CAMPO_ATIVO : ""}`}
+        title="Criado até"
+        className={`${CAMPO} w-full ${ativo ? CAMPO_ATIVO : ""}`}
       />
     </div>
   );

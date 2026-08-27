@@ -36,20 +36,20 @@ export type Coluna = {
 };
 
 export const COLUNAS: Coluna[] = [
-  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto", largura: "w-[16%]" },
-  { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)", filtro: "texto", largura: "w-[13%]" },
-  { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true, filtro: "numero", largura: "w-[8%]" },
+  { chave: "titulo", rotulo: "Título", ordenacao: "titulo", filtro: "texto", largura: "w-[15%]" },
+  { chave: "organizacao", rotulo: "Organização", ordenacao: "organizacao(nome)", filtro: "texto", largura: "w-[14%]" },
+  { chave: "valor", rotulo: "Valor", ordenacao: "valor", numerica: true, filtro: "numero", largura: "w-[9%]" },
   { chave: "etapa", rotulo: "Etapa", ordenacao: "etapa(ordem)", filtro: "selecao", largura: "w-[11%]" },
-  { chave: "status", rotulo: "Status", ordenacao: "status", filtro: "selecao", largura: "w-[9%]" },
-  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao", largura: "w-[8%]" },
-  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao", largura: "w-[8%]" },
+  { chave: "status", rotulo: "Status", ordenacao: "status", filtro: "selecao", largura: "w-[8%]" },
+  { chave: "origem", rotulo: "Origem", ordenacao: "origem(nome)", esconde: "lg", filtro: "selecao", largura: "w-[7%]" },
+  { chave: "produto", rotulo: "Produto", ordenacao: "produto(nome)", esconde: "lg", filtro: "selecao", largura: "w-[7%]" },
   { chave: "responsavel", rotulo: "Responsável", ordenacao: "usuario(nome)", esconde: "md", filtro: "selecao", largura: "w-[10%]" },
   // ⚠️ Estava em `esconde: "xl"` — so aparecia acima de 1280px, e por
   // isso passava por inexistente. Perder negocio E o dado mais caro do
   // funil: 1.121 dos 2.460 estao perdidos, e o motivo e a unica coisa
   // que explica por que. Sobe para `lg`, junto de origem e produto.
-  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "lg", filtro: "selecao", largura: "w-[10%]" },
-  { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md", filtro: "data", largura: "w-[7%]" },
+  { chave: "motivo_perda", rotulo: "Motivo de perda", ordenacao: "motivo_perda(nome)", esconde: "lg", filtro: "selecao", largura: "w-[9%]" },
+  { chave: "criado_em", rotulo: "Criado em", ordenacao: "criado_em", esconde: "md", filtro: "data", largura: "w-[10%]" },
 ];
 
 /**

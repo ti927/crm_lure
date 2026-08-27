@@ -24,6 +24,17 @@ import type { ReactNode } from "react";
  * `useVirtualizer` era também a única coisa que o compilador do React
  * não conseguia memoizar neste projeto.
  *
+ * ⚠️ `border-separate` com `border-spacing-0`, e NAO `border-collapse`.
+ * Nao e preferencia: com bordas colapsadas o Chromium pinta as linhas do
+ * corpo POR CIMA do `<thead>` grudado, e ao rolar aparecia uma linha
+ * fantasma atravessando a faixa de titulos. Medido no DOM antes de
+ * trocar — as celulas do cabecalho eram contiguas (56 a 159,5px) e
+ * opacas, entao o vao nao existia: era ordem de pintura.
+ *
+ * ⚠️ O preco: borda em `<tr>` NAO e desenhada no modelo separado. Toda
+ * linha divisoria mora nas CELULAS. Se um dia voltar um `border-b` num
+ * `<tr>` daqui, ele simplesmente nao aparece — sem erro nenhum.
+ *
  * ⚠️ `table-fixed`: sem ele o navegador dimensiona as colunas pelo
  * conteúdo, um título longo empurra a tabela para além da tela e volta a
  * rolagem horizontal — que é o que o pedido desta sessão veio eliminar.
@@ -43,7 +54,7 @@ export function TabelaDados({
   linhas: ReactNode[];
 }) {
   return (
-    <table className="w-full table-fixed border-collapse text-base">
+    <table className="w-full table-fixed border-separate border-spacing-0 text-base">
       {cabecalho}
       <tbody>{linhas}</tbody>
     </table>
