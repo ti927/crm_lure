@@ -43,7 +43,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `09-arquitetura-tecnica-v0.10.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.17.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.18.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |

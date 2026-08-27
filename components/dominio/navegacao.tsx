@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Columns3, Calendar, Users, Package, ChartColumn, Bell } from "lucide-react";
+import {
+  Briefcase,
+  Columns3,
+  Calendar,
+  Users,
+  Package,
+  ChartColumn,
+  Bell,
+  Combine,
+} from "lucide-react";
 
 /**
  * Menu lateral.
@@ -35,7 +44,23 @@ const DESTINOS = [
  */
 const PESSOAIS = [{ href: "/notificacoes", rotulo: "Notificações", Icone: Bell }];
 
-export function Navegacao({ aoNavegar }: { aoNavegar?: () => void } = {}) {
+/**
+ * Ferramentas de manutenção — só para quem tem a marca `desenvolvedor`
+ * (D-156).
+ *
+ * ⚠️ Esconder o item NÃO é a trava. Quem sabe o endereço chega na rota, e
+ * quem sabe o nome da função chama a função. A recusa de verdade está no
+ * banco, dentro de `funde_organizacao`; isto aqui é só para não oferecer
+ * a quatro pessoas uma ferramenta que vai recusá-las.
+ */
+const FERRAMENTAS = [
+  { href: "/ferramentas/fusao-organizacoes", rotulo: "Fundir duplicadas", Icone: Combine },
+];
+
+export function Navegacao({
+  aoNavegar,
+  desenvolvedor = false,
+}: { aoNavegar?: () => void; desenvolvedor?: boolean } = {}) {
   const caminho = usePathname();
 
   const item = ({ href, rotulo, Icone }: (typeof DESTINOS)[number]) => {
@@ -69,6 +94,16 @@ export function Navegacao({ aoNavegar }: { aoNavegar?: () => void } = {}) {
       {DESTINOS.map(item)}
       <hr className="border-border my-1.5" />
       {PESSOAIS.map(item)}
+
+      {desenvolvedor && (
+        <>
+          <hr className="border-border my-1.5" />
+          <p className="text-text-muted tracking-caps px-2.5 pb-1 text-2xs font-semibold uppercase">
+            Manutenção
+          </p>
+          {FERRAMENTAS.map(item)}
+        </>
+      )}
     </nav>
   );
 }

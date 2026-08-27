@@ -30,7 +30,7 @@ export default async function LayoutSistema({
   children: ReactNode;
 }) {
   const supabase = await createClient();
-  const [{ data: sessao }, { data: alertas }] = await Promise.all([
+  const [{ data: sessao }, { data: alertas }, { data: souDev }] = await Promise.all([
     supabase.auth.getUser(),
     // F8 — os alertas são DERIVADOS na leitura (D-124), sem agendador:
     // esta é a consulta que os calcula. Custa ~12 ms no banco, e sai numa
@@ -42,6 +42,10 @@ export default async function LayoutSistema({
     // consultar numa navegação completa — coerente com a D-124, que diz
     // que o alerta aparece quando alguém abre o sistema.
     supabase.rpc("notificacoes"),
+    // ⚠️ Vem do BANCO, não de uma lista de e-mails no código: a marca
+    // `usuario.desenvolvedor` é a mesma que a função de fusão consulta,
+    // então o menu nunca oferece o que a operação vai recusar.
+    supabase.rpc("sou_desenvolvedor"),
   ]);
   const user = sessao.user;
   const notificacoes = (alertas ?? []) as Notificacao[];
@@ -73,7 +77,7 @@ export default async function LayoutSistema({
                 <LogoLure />
               </Link>
             </div>
-            <Navegacao />
+            <Navegacao desenvolvedor={souDev === true} />
           </aside>
 
           <div className="flex min-w-0 flex-1 flex-col">

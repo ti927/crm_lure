@@ -64,6 +64,14 @@ const ROLAR = Number(arg("rolar", "0"));
  * repouso e nao prova nada sobre o que foi construido para o hover.
  */
 const APONTAR = arg("apontar", "");
+/**
+ * Seletor CSS para CLICAR antes de capturar.
+ *
+ * ⚠️ Dialogo de confirmacao so existe depois do clique, e e justamente
+ * onde mora a informacao que impede um erro sem volta. Capturar a tela
+ * antes do clique nao prova nada sobre ele.
+ */
+const CLICAR = arg("clicar", "");
 const ALTURA = Number(arg("altura", "900"));
 const ROTAS = arg(
   "rotas",
@@ -255,6 +263,16 @@ try {
       // A tela pronta e a tela sem esqueleto: esperar so o `load` pega o
       // carregando, que e justamente o que nao se quer olhar.
       await pagina.waitForTimeout(700);
+
+      if (CLICAR) {
+        const alvo = pagina.locator(CLICAR).first();
+        if (await alvo.count()) {
+          await alvo.click();
+          await pagina.waitForTimeout(900);
+        } else {
+          console.log(`  ⚠️  nada casou com "${CLICAR}" em ${rota}`);
+        }
+      }
 
       if (APONTAR) {
         const alvo = pagina.locator(APONTAR).first();

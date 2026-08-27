@@ -349,6 +349,54 @@ export type Database = {
         }
         Relationships: []
       }
+      fusao_organizacao: {
+        Row: {
+          adotados: Json
+          autor_id: string | null
+          criado_em: string
+          duplicada_id: string
+          duplicada_nome: string
+          id: string
+          movidos: Json
+          principal_id: string
+        }
+        Insert: {
+          adotados?: Json
+          autor_id?: string | null
+          criado_em?: string
+          duplicada_id: string
+          duplicada_nome: string
+          id?: string
+          movidos: Json
+          principal_id: string
+        }
+        Update: {
+          adotados?: Json
+          autor_id?: string | null
+          criado_em?: string
+          duplicada_id?: string
+          duplicada_nome?: string
+          id?: string
+          movidos?: Json
+          principal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fusao_organizacao_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fusao_organizacao_principal_id_fkey"
+            columns: ["principal_id"]
+            isOneToOne: false
+            referencedRelation: "organizacao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inscricao_push: {
         Row: {
           auth: string
@@ -832,6 +880,7 @@ export type Database = {
           id: string
           nome: string
           papel_id: string
+          desenvolvedor: boolean
           preferencia_lista_negocios: string | null
           preferencia_kanban: string | null
           preferencia_atividades: string | null
@@ -845,6 +894,7 @@ export type Database = {
           id?: string
           nome: string
           papel_id: string
+          desenvolvedor?: boolean
           preferencia_lista_negocios?: string | null
           preferencia_kanban?: string | null
           preferencia_atividades?: string | null
@@ -858,6 +908,7 @@ export type Database = {
           id?: string
           nome?: string
           papel_id?: string
+          desenvolvedor?: boolean
           preferencia_lista_negocios?: string | null
           preferencia_kanban?: string | null
           preferencia_atividades?: string | null
@@ -940,6 +991,35 @@ export type Database = {
         Returns: { id: string; data: string }[]
       }
       conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
+      sou_desenvolvedor: { Args: Record<string, never>; Returns: boolean }
+      fusao_conta_grupos: { Args: { termo?: string | null }; Returns: number }
+      fusao_grupos: {
+        Args: { termo?: string | null; limite?: number; deslocamento?: number }
+        Returns: { chave: string; nome: string; quantidade: number }[]
+      }
+      fusao_cadastros: {
+        Args: { chave_grupo: string }
+        Returns: {
+          id: string
+          nome: string
+          cidade: string | null
+          website: string | null
+          bubble_id: string | null
+          criado_em: string
+          negocios: number
+          pessoas: number
+          atividades: number
+          anotacoes: number
+        }[]
+      }
+      previa_fusao_organizacao: {
+        Args: { p_principal: string; p_duplicada: string }
+        Returns: Json
+      }
+      funde_organizacao: {
+        Args: { p_principal: string; p_duplicada: string }
+        Returns: Json
+      }
       kanban_coluna: {
         Args: {
           p_etapa: string
