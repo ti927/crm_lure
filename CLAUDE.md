@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.21 · 01/09/2026
+> Documento 12 da biblioteca do projeto · v0.22 · 01/09/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 161 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 162 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 9. **Filtro de tela abre no recorte de quem abriu, e a preferência tem TRÊS estados** (D-149). `usuario.preferencia_kanban`, `preferencia_atividades` e `preferencia_lista_negocios` guardam a querystring. **Nulo** = nunca escolheu → abre em "só os meus". **Preenchido** = volta igual. **Vazio** = escolheu ver tudo, e o padrão **não** volta por cima. ⚠️ Tratar nulo e vazio como a mesma coisa faz o botão "Limpar" ser desfeito pelo próprio padrão no carregamento seguinte — parece defeito e é regra mal escrita. O que se guarda é **curto de propósito**: termo de busca, dia em foco e mês ficam de fora, porque são pergunta de agora e não escolha de trabalho.
 
@@ -110,6 +110,8 @@ Cada etapa carrega um status inicial sugerido. Cold Lead nasce `parado`.
 ⚠️ **A recuperação de endereço herdou entre homônimos, e isso foi decidido** (D-160). Das 423 cidades recuperadas do snapshot, 241 não envolvem suposição e **182 vêm de um cadastro irmão**: "Elmo Engenharia" está nove vezes na base e só um dos nove tinha endereço. Quem decidiu foi o maestro, com a alternativa medida. Ao ler `organizacao.cidade` hoje, saiba que numa parte dos duplicados ela é inferência de nome igual, não dado conferido cadastro a cadastro.
 
 ⚠️ **Filtro em lista AGRUPADA entra em três funções, não em uma** (D-161). A lista de Contatos filtra por local em `organizacoes_agrupadas`, `conta_organizacoes_agrupadas` e `organizacoes_do_grupo` — listagem, paginação e expansão. Filtrar só a listagem faz a paginação anunciar 7 páginas e a lista mostrar 5; não filtrar a expansão faz o crachá dizer 3 e abrir mostrar 18. **Dois números que se contradizem na mesma tela não desacreditam o errado — desacreditam os dois.** O predicado é `organizacao_no_recorte`, função única: `where` repetido em três lugares diverge no dia em que alguém corrigir um.
+
+⚠️ **O endereço postal do Pipedrive é cidade + UF, e só** (D-162): **840 dos 864 (97,2%)** são literalmente "Cidade, UF, Brasil", e os 56 CEPs de lá são de MUNICÍPIO — terminam em `-000`. Os outros 24 foram digitados à mão, e para esses existe `organizacao.endereco`: **uma** coluna de texto livre, não sete campos de formulário. **21 cadastros a preenchem.** ⚠️ E fica a lição que a D-160 pagou: **conservadorismo vira perda quando o dado está à vista.** Recusar palpite é certo; recusar o que está escrito e legível não é — 12 cadastros ficaram sem cidade nenhuma porque o reconhecimento só entendia um formato. Quem lê texto livre de endereço aqui usa o **dicionário de cidades** da extração, nunca uma expressão regular nova.
 
 ⚠️ **A extração de 17/08 desmentiu a suposição de que a maior parte da base estaria parada.** O real: 74% dos negócios estão nas duas últimas etapas — **Proposta Enviada 1.168** e **Aguardando Contrato 642** —, contra 360 em Cold Lead. Dos 2.458, apenas 306 seguem abertos: 1.121 foram perdidos e 1.031 ganhos. Qualquer decisão de carregamento, ordenação ou desempenho tem que partir daí, não da intuição anterior.
 
@@ -237,7 +239,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **161 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **162 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -248,6 +250,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.22** — 01/09/2026 — **Uma pergunta do maestro achou o que a D-160 tinha deixado passar.** "Os endereços do Pipedrive são só cidade-UF?" — sim, **97,2%** (840 de 864), e os 56 CEPs de lá são de município, não de rua. Mas os outros **24 foram digitados à mão**, e o reconhecimento da D-160 só entendia "Cidade, UF": **12 estavam sem cidade nenhuma** com a cidade escrita e legível na origem. A **D-162** abre `organizacao.endereco` (texto livre, uma coluna e não sete — 13 cadastros não justificam um formulário que 2.890 deixariam vazio) e troca a expressão regular por **dicionário de cidades**. ⚠️ Fica a regra: **conservadorismo vira perda quando o dado está à vista** — recusar palpite é certo, recusar o que está escrito não é. E duas armadilhas pegas no ensaio: limpeza sensível a acento fazia "Goiania" virar logradouro, e o estado por extenso fazia "Bahia, Brasil" virar endereço. **162 decisões.**
 - **v0.21** — 01/09/2026 — **A lista de Contatos ganha filtro por localização (D-161)** — seletor único com três recortes: estado inteiro, cidade e **sem endereço** (1.877 organizações, a maioria da base, e o único caminho até elas para preencher o que falta). ⚠️ Fica a regra que este filtro cobrou: **em lista agrupada, filtro entra em TRÊS funções ao mesmo tempo** — a lista, a contagem que alimenta a paginação e a expansão do grupo. Filtrar só uma faz a paginação anunciar 7 páginas e a lista mostrar 5, ou o crachá dizer 3 e abrir mostrar 18 — e **dois números que se contradizem na mesma tela não desacreditam o errado, desacreditam os dois**. O predicado mora numa função só (`organizacao_no_recorte`) porque `where` repetido em três lugares é como eles divergem no dia em que alguém corrigir um. **161 decisões.**
 - **v0.20** — 01/09/2026 — **Sessão 14: o endereço, e um pedaço da carga que ninguém tinha notado faltar.** A **D-160** dá à organização uma coluna `uf` própria e recupera do snapshot o que a `carga-migracao.mjs` descartou: **864 organizações tinham endereço no Pipedrive e a carga gravou só `address_locality`** — vazio em 281 delas, apesar do endereço preenchido. Cidade sai de 594 para **1.017**, UF de 0 para **1.025**, e o local ganha **coluna própria** na lista de Contatos, fora da linha de referência onde um título de negócio comprido o empurrava para fora. ⚠️ Ficam três regras: **UF nunca dentro de `cidade`**; **campo novo em `organizacao` obriga a mexer na fusão**, que apaga a duplicada e faria o campo sumir calado; e **182 das 423 cidades recuperadas são herança entre homônimos**, decisão tomada com a alternativa medida. ⚠️ Fica também o custo que só aparece rodando: um `update` por linha levava três minutos para 1.012 cadastros, e um `update` só sobre `unnest`, três segundos — a restrição é **ida ao pooler**, não custo de consulta. **160 decisões.**
 - **v0.19** — 27/08/2026 — **Fecha a sessão 13, e registra um erro de leitura que vale mais que a funcionalidade.** O pop-up e a paginação foram pedidos **dentro da ferramenta de fusão** — a pista era "27 páginas", que é 668 grupos de 25 em 25, e não as 50 da Lista — e foram construídos na Lista e no Kanban. A **D-157 caiu** e a **D-159** ficou no lugar certo: "Conferir" abre o cadastro inteiro em pop-up, com nomes e não só contagens, porque a pergunta que decide a fusão é *é a mesma empresa?*. ⚠️ Fica a regra: **pop-up serve onde a alternativa é ir e voltar, não onde a tela já é o destino** — e uma medição verdadeira (onze consultas contra uma) pode sustentar uma conclusão falsa, se o custo estiver sendo pago depois do clique e não antes. **159 decisões.**

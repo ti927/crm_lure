@@ -93,49 +93,174 @@ const chave = (s) =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim() || null;
 
-/**
- * Cidade e UF de uma organização do Pipedrive, ou nulos.
- *
- * ⚠️ A ordem importa: o subcampo separado vale mais que o texto
- * corrido, porque o texto corrido é o que o usuário digitou na caixa de
- * autocompletar e às vezes é um endereço solto sem estrutura.
- */
-function derivar(o) {
-  const limpo = (v) => {
-    const t = String(v ?? "").trim();
-    // U+FFFD é o acento que a própria API do Pipedrive destruiu (C-07).
-    return t && !t.includes("�") ? t : null;
-  };
+const limpo = (v) => {
+  const t = String(v ?? "").trim();
+  // U+FFFD é o acento que a própria API do Pipedrive destruiu (C-07).
+  return t && !t.includes("�") ? t : null;
+};
 
+/**
+ * O dicionário de cidades CONHECIDAS, montado da própria extração.
+ *
+ * ⚠️ É o que separa reconhecer de adivinhar. Para achar a cidade dentro
+ * de "R. 86, 445 - St. Sul, Goiânia - GO, 74083-385" a alternativa seria
+ * uma expressão que tentasse descrever todas as formas possíveis de
+ * escrever um endereço à mão — e ela erraria calada no primeiro formato
+ * novo. Aqui só entra nome que o Pipedrive já reconheceu como cidade em
+ * ALGUM cadastro; o que não estiver no dicionário fica sem cidade, que é
+ * o resultado honesto.
+ *
+ * `address_admin_area_level_2` entra junto porque no Brasil ele é o
+ * município — é ele que traz "Goiânia" quando o `locality` veio vazio.
+ */
+function montaDicionarioDeCidades(orgs) {
+  const dic = new Map(); // chave normalizada -> nome com acento
+  for (const o of orgs) {
+    for (const campo of ["address_locality", "address_admin_area_level_2"]) {
+      const nome = limpo(o[campo]);
+      const k = nome && chave(nome);
+      // O primeiro a aparecer vence, e a busca depois prefere o nome
+      // MAIS LONGO: sem isso "Aparecida de Goiânia" viraria "Goiânia".
+      if (k && !dic.has(k)) dic.set(k, nome);
+    }
+  }
+  return dic;
+}
+
+/**
+ * Procura, dentro de um texto livre, a última cidade conhecida que
+ * aparece nele.
+ *
+ * ⚠️ A ÚLTIMA, e não a primeira: no português de endereço a cidade vem
+ * depois da rua e do bairro — "Rua 235 - Setor Leste Universitário,
+ * Goiânia - GO". Pegar a primeira acharia "Setor Leste" se ele por acaso
+ * fosse nome de município em outro estado.
+ *
+ * ⚠️ E a MAIS LONGA entre as que terminam no mesmo ponto, porque
+ * "Aparecida de Goiânia" contém "Goiânia" — a curta casaria também, e
+ * mandaria o cadastro para a cidade errada.
+ */
+function achaCidade(texto, dicionario) {
+  const alvo = " " + chave(texto) + " ";
+  let melhor = null;
+  for (const [k, nome] of dicionario) {
+    const pos = alvo.lastIndexOf(" " + k + " ");
+    if (pos < 0) continue;
+    const fim = pos + k.length;
+    if (
+      !melhor ||
+      fim > melhor.fim ||
+      (fim === melhor.fim && k.length > melhor.tamanho)
+    ) {
+      melhor = { nome, fim, tamanho: k.length };
+    }
+  }
+  return melhor?.nome ?? null;
+}
+
+/** A sigla ou o nome do estado, onde quer que estejam no texto. */
+function achaUf(texto) {
+  // "- GO," · "-GO" · "/GO" · ", GO" · " GO " — sempre isolada, para não
+  // confundir com as duas primeiras letras de uma palavra.
+  const sigla = chave(texto).match(/(?:^| )([a-z]{2})(?: |$)/g) ?? [];
+  for (let i = sigla.length - 1; i >= 0; i--) {
+    const s = sigla[i].trim().toUpperCase();
+    if (SIGLAS.has(s)) return s;
+  }
+  // "Jataí - Goiás Rua 114" e "Bahia, Brasil" só dizem o nome por extenso.
+  const norm = " " + chave(texto) + " ";
+  for (const [nome, uf] of Object.entries(POR_EXTENSO)) {
+    if (norm.includes(" " + nome + " ")) return uf;
+  }
+  return null;
+}
+
+/**
+ * Cidade, UF e logradouro de uma organização do Pipedrive.
+ *
+ * ⚠️ A ordem importa: o subcampo separado vale mais que o texto corrido,
+ * porque o subcampo veio do autocompletar do Google e o texto corrido é
+ * o que a pessoa digitou.
+ *
+ * ⚠️ `endereco` só é preenchido quando o texto diz algo ALÉM de cidade e
+ * UF. Repetir "Goiânia, GO" ali em 840 cadastros seria encher a ficha de
+ * eco — e é por isso que o teste não é "tem texto?", e sim "sobra
+ * alguma coisa depois de tirar a cidade, a UF, o país e o CEP?".
+ */
+function derivar(o, dicionarioCidades) {
   let cidade = limpo(o.address_locality);
   let uf = POR_EXTENSO[chave(o.address_admin_area_level_1)] ?? null;
+  let endereco = null;
 
-  // "Cidade, UF, Brasil" · "Cidade - UF, Brasil" · "Cidade, UF"
-  const endereco = limpo(o.address);
-  if (endereco) {
-    const m = endereco.match(/^([^,\-]+?)\s*[,\-]\s*([A-Za-z]{2})\s*(?:,\s*Brasil\s*)?$/i);
-    if (m && SIGLAS.has(m[2].toUpperCase())) {
-      cidade ??= m[1].trim();
-      uf ??= m[2].toUpperCase();
+  const texto = limpo(o.address);
+  if (texto) {
+    cidade ??= achaCidade(texto, dicionarioCidades);
+    uf ??= achaUf(texto);
+
+    // O que sobra do texto depois de tirar o que já está estruturado.
+    //
+    // ⚠️ A conta é feita na forma NORMALIZADA dos dois lados. Comparar o
+    // texto cru contra a cidade acentuada não casa "Goiania" com
+    // "Goiânia", e o cadastro ganharia um logradouro que é só o eco da
+    // própria cidade — foi o que o primeiro ensaio produziu.
+    //
+    // ⚠️ O nome do estado POR EXTENSO sai junto com a sigla: "Bahia,
+    // Brasil" e "Mato Grosso, Brasil" não são endereço, e sem isto
+    // virariam logradouro por sobrar a palavra do estado.
+    const estadoPorExtenso =
+      Object.entries(POR_EXTENSO).find(([, s]) => s === uf)?.[0] ?? null;
+
+    let resto = chave(texto) ?? "";
+    for (const pedaco of [cidade, uf, estadoPorExtenso, "Brasil", "Brazil"]) {
+      const k = pedaco && chave(pedaco);
+      if (!k) continue;
+      resto = resto.replace(new RegExp("\\b" + escapa(k) + "\\b", "g"), " ");
     }
+    // CEP não é logradouro. Depois da normalização ele perdeu o hífen,
+    // então "74083-385" chega aqui como "74083 385".
+    resto = resto.replace(/\b\d{5}\s?\d{3}\b/g, " ").replace(/\s+/g, " ").trim();
+
+    // ⚠️ Sobra que é quase o nome de UMA CIDADE não é endereço — é a
+    // cidade escrita errado: "aparecida de goiani" contra "Aparecida de
+    // Goiânia". Guardá-la como logradouro poria lixo num campo novo em
+    // troca de nada.
+    //
+    // ⚠️ A comparação é contra o DICIONÁRIO INTEIRO, e não só contra a
+    // cidade que este cadastro extraiu: quando o nome vem truncado,
+    // `achaCidade` não acha nada e a cidade extraída é nula — foi
+    // exatamente aí que o eco escapou no ensaio anterior.
+    const ecoDeCidade =
+      resto.length >= 6 &&
+      [...dicionarioCidades.keys()].some(
+        (k) => k.startsWith(resto) || resto.startsWith(k)
+      );
+
+    // Duas letras não são endereço — é o que sobra de "GO" mal cortado.
+    // Guarda-se o texto ORIGINAL, com acento e pontuação: o resíduo serve
+    // para DECIDIR, não para ser gravado.
+    if (resto.length > 2 && /[a-z]/i.test(resto) && !ecoDeCidade) endereco = texto;
   }
 
   // ⚠️ País estrangeiro fica sem UF, e não com uma UF inventada: a base
   // tem um cadastro em Luanda. A restrição do banco recusaria de todo
   // jeito; recusar aqui é o que produz a recusa explicada.
-  return { cidade, uf };
+  return { cidade, uf, endereco };
 }
+
+/** Escapa o que vai virar expressão regular. */
+const escapa = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /* ---------- 1. o que a origem sabe, por nome ---------- */
 
 const origem = JSON.parse(await readFile(ORIGEM, "utf8"));
+const dicionario = montaDicionarioDeCidades(origem);
 const porNome = new Map();
 
 for (const o of origem) {
   const k = chave(o.nome ?? o.name);
   if (!k) continue;
-  const d = derivar(o);
-  if (!d.cidade && !d.uf) continue;
+  const d = derivar(o, dicionario);
+  if (!d.cidade && !d.uf && !d.endereco) continue;
 
   const atual = porNome.get(k);
   if (!atual) {
@@ -145,8 +270,13 @@ for (const o of origem) {
   // Divergência dentro do mesmo nome: o grupo inteiro sai de cena.
   if (d.cidade && atual.cidade && chave(d.cidade) !== chave(atual.cidade)) atual.conflito = true;
   if (d.uf && atual.uf && d.uf !== atual.uf) atual.conflito = true;
+  // ⚠️ Logradouro DIFERENTE entre homônimos não invalida o grupo: dois
+  // cadastros "Amaral Group" podem ser duas unidades da mesma empresa em
+  // ruas diferentes, e isso não torna a cidade duvidosa. Mas também não
+  // se escolhe um deles — o primeiro vale, os demais não sobrescrevem.
   atual.cidade ??= d.cidade;
   atual.uf ??= d.uf;
+  atual.endereco ??= d.endereco;
 }
 
 const conflitados = [...porNome.values()].filter((v) => v.conflito).length;
@@ -171,19 +301,21 @@ await cli.connect();
 
 try {
   const { rows: colunas } = await cli.query(
-    "select 1 from information_schema.columns where table_name = 'organizacao' and column_name = 'uf'"
+    "select column_name from information_schema.columns " +
+      "where table_name = 'organizacao' and column_name in ('uf', 'endereco')"
   );
-  if (colunas.length === 0) {
+  if (colunas.length < 2) {
     throw new Error(
-      "A coluna `organizacao.uf` não existe. Aplique antes a migration " +
-        "20260901120000_uf_da_organizacao.sql."
+      "Faltam colunas em `organizacao`. Aplique antes as migrations " +
+        "20260901120000_uf_da_organizacao.sql e " +
+        "20260901200000_logradouro_da_organizacao.sql."
     );
   }
 
   await cli.query("begin");
 
   const { rows: orgs } = await cli.query(
-    "select id, nome, cidade, uf, chave_agrupamento from organizacao"
+    "select id, nome, cidade, uf, endereco, chave_agrupamento from organizacao"
   );
 
   const mudancas = [];
@@ -199,26 +331,41 @@ try {
     // Só o que está vazio. Nada sobrescreve.
     const cidade = o.cidade ? null : d.cidade;
     const uf = o.uf ? null : d.uf;
+    const endereco = o.endereco ? null : d.endereco;
 
     // Registrado, não corrigido: a cidade que está no banco pode ter
     // sido digitada por alguém depois da carga, e vale mais.
     if (o.cidade && d.cidade && chave(o.cidade) !== chave(d.cidade)) divergemDaOrigem++;
 
-    if (cidade || uf) mudancas.push({ id: o.id, nome: o.nome, cidade, uf });
+    if (cidade || uf || endereco)
+      mudancas.push({ id: o.id, nome: o.nome, cidade, uf, endereco });
   }
 
   const ganhamCidade = mudancas.filter((m) => m.cidade).length;
   const ganhamUf = mudancas.filter((m) => m.uf).length;
+  const ganhamEndereco = mudancas.filter((m) => m.endereco).length;
 
   console.log(`Banco: ${orgs.length} organizações.`);
   console.log(`  recuperam a CIDADE perdida: ${ganhamCidade}`);
   console.log(`  ganham a UF: ${ganhamUf}`);
+  console.log(`  ganham LOGRADOURO (texto livre com rua/bairro): ${ganhamEndereco}`);
   console.log(`  seguem sem endereço (não há na origem): ${semCorrespondencia}`);
   console.log(`  já tinham cidade diferente da origem, mantidas: ${divergemDaOrigem}\n`);
 
-  console.log("Amostra do que seria gravado:");
-  for (const m of mudancas.filter((x) => x.cidade).slice(0, 12)) {
+  console.log("Amostra de cidade/UF:");
+  for (const m of mudancas.filter((x) => x.cidade).slice(0, 8)) {
     console.log(`   ${m.nome} → ${m.cidade}${m.uf ? " / " + m.uf : ""}`);
+  }
+
+  // ⚠️ Os logradouros saem TODOS, sem amostra: são poucos e cada um foi
+  // escrito à mão de um jeito. Conferir treze linhas com o olho é o que
+  // substitui, aqui, o teste que não existe.
+  if (ganhamEndereco > 0) {
+    console.log("\nLogradouros (todos):");
+    for (const m of mudancas.filter((x) => x.endereco)) {
+      console.log(`   ${m.nome} → ${m.endereco}`);
+      console.log(`      cidade/UF extraídas: ${m.cidade ?? "(já tinha)"} / ${m.uf ?? "(já tinha)"}`);
+    }
   }
 
   /*
@@ -235,15 +382,17 @@ try {
   if (mudancas.length > 0) {
     await cli.query(
       `update organizacao o
-          set cidade = coalesce(o.cidade, n.cidade),
-              uf     = coalesce(o.uf, n.uf)
-         from (select * from unnest($1::uuid[], $2::text[], $3::text[])
-                 as t(id, cidade, uf)) n
+          set cidade   = coalesce(o.cidade, n.cidade),
+              uf       = coalesce(o.uf, n.uf),
+              endereco = coalesce(o.endereco, n.endereco)
+         from (select * from unnest($1::uuid[], $2::text[], $3::text[], $4::text[])
+                 as t(id, cidade, uf, endereco)) n
         where o.id = n.id`,
       [
         mudancas.map((m) => m.id),
         mudancas.map((m) => m.cidade),
         mudancas.map((m) => m.uf),
+        mudancas.map((m) => m.endereco),
       ]
     );
   }

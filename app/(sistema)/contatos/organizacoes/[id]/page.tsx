@@ -29,7 +29,7 @@ export default async function FichaOrganizacao({
 
   const { data: org } = await supabase
     .from("organizacao")
-    .select("id, nome, cidade, uf, website, bubble_id")
+    .select("id, nome, cidade, uf, endereco, website, bubble_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -135,6 +135,7 @@ export default async function FichaOrganizacao({
             nome: org.nome,
             cidade: org.cidade ?? "",
             uf: org.uf ?? "",
+            endereco: org.endereco ?? "",
             website: org.website ?? "",
             bubbleId: org.bubble_id ?? "",
           }}
@@ -147,9 +148,20 @@ export default async function FichaOrganizacao({
           <div>
             <h2 className={secao}>Dados</h2>
             <dl className="flex flex-col gap-2 text-md">
-              <div className="flex items-center gap-2">
-                <MapPin className="text-text-muted size-4 shrink-0" aria-hidden />
-                <span>{local(org.cidade, org.uf) ?? "—"}</span>
+              {/* ⚠️ Um pino só para as duas linhas: cidade/UF e
+                  logradouro são o mesmo endereço, e dois pinos empilhados
+                  fariam parecer dois lugares. O logradouro só aparece
+                  quando existe — em 21 dos 2.903 cadastros. */}
+              <div className="flex items-start gap-2">
+                <MapPin className="text-text-muted mt-0.5 size-4 shrink-0" aria-hidden />
+                <span className="min-w-0">
+                  <span className="block">{local(org.cidade, org.uf) ?? "—"}</span>
+                  {org.endereco && (
+                    <span className="text-text-secondary block text-sm">
+                      {org.endereco}
+                    </span>
+                  )}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Globe className="text-text-muted size-4 shrink-0" aria-hidden />

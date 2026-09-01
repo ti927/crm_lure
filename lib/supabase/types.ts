@@ -637,6 +637,7 @@ export type Database = {
           bubble_id: string | null
           cidade: string | null
           criado_em: string
+          endereco: string | null
           id: string
           nome: string
           uf: string | null
@@ -646,6 +647,7 @@ export type Database = {
           bubble_id?: string | null
           cidade?: string | null
           criado_em?: string
+          endereco?: string | null
           id?: string
           nome: string
           uf?: string | null
@@ -655,6 +657,7 @@ export type Database = {
           bubble_id?: string | null
           cidade?: string | null
           criado_em?: string
+          endereco?: string | null
           id?: string
           nome?: string
           uf?: string | null
@@ -1020,6 +1023,7 @@ export type Database = {
           nome: string
           cidade: string | null
           uf: string | null
+          endereco: string | null
           website: string | null
           bubble_id: string | null
           criado_em: string

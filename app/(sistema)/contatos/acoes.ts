@@ -11,6 +11,8 @@ export type DadosOrganizacao = {
   cidade: string;
   /** Sigla de duas letras, ou string vazia. Normalizada no servidor. */
   uf: string;
+  /** Logradouro, número e bairro em texto livre. Não repete cidade/UF. */
+  endereco: string;
   website: string;
   bubbleId: string;
 };
@@ -25,6 +27,7 @@ export async function criarOrganizacao(d: DadosOrganizacao) {
     .insert({
       nome,
       cidade: d.cidade.trim() || null,
+      endereco: d.endereco.trim() || null,
       // ⚠️ Normalizada no SERVIDOR, e não confiando na lista da tela: a
       // ação é chamável direto, e a restrição do banco recusaria com uma
       // mensagem de Postgres no lugar de um cadastro salvo.
@@ -51,6 +54,7 @@ export async function editarOrganizacao(id: string, d: DadosOrganizacao) {
       nome,
       cidade: d.cidade.trim() || null,
       uf: normalizaUf(d.uf),
+      endereco: d.endereco.trim() || null,
       website: d.website.trim() || null,
       bubble_id: d.bubbleId.trim() || null,
     })

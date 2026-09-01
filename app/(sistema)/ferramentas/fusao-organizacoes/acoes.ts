@@ -74,6 +74,7 @@ export type DetalheCadastro = {
   nome: string;
   cidade: string | null;
   uf: string | null;
+  endereco: string | null;
   website: string | null;
   bubble_id: string | null;
   criado_em: string;

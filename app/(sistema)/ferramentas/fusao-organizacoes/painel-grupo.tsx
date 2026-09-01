@@ -13,6 +13,7 @@ export type Cadastro = {
   nome: string;
   cidade: string | null;
   uf: string | null;
+  endereco: string | null;
   website: string | null;
   bubble_id: string | null;
   criado_em: string;
@@ -154,6 +155,15 @@ export function PainelGrupo({
                         <>
                           <span aria-hidden className="opacity-40">·</span>
                           <span>{local(c.cidade, c.uf)}</span>
+                        </>
+                      )}
+                      {/* ⚠️ O logradouro entra na conferência: quando dois
+                          cadastros do mesmo nome têm ruas diferentes, é ele
+                          que responde se são duas unidades ou a mesma. */}
+                      {c.endereco && (
+                        <>
+                          <span aria-hidden className="opacity-40">·</span>
+                          <span className="truncate">{c.endereco}</span>
                         </>
                       )}
                       {c.website && (

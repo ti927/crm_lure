@@ -92,6 +92,7 @@ export function DialogoCadastro({
                       {local(d.cidade, d.uf)}
                     </span>
                   )}
+                  {d.endereco && <span className="truncate">{d.endereco}</span>}
                   {d.website && (
                     <span className="inline-flex items-center gap-1">
                       <Globe className="size-3" aria-hidden />

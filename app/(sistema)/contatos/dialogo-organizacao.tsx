@@ -15,6 +15,7 @@ export type OrganizacaoEdicao = {
   nome: string;
   cidade: string;
   uf: string;
+  endereco: string;
   website: string;
   bubbleId: string;
 };
@@ -40,6 +41,7 @@ export function DialogoOrganizacao({
   const caixaDialogo = useFocoDialogo<HTMLDivElement>();
   const [cidade, setCidade] = useState(edicao?.cidade ?? "");
   const [uf, setUf] = useState(edicao?.uf ?? "");
+  const [endereco, setEndereco] = useState(edicao?.endereco ?? "");
   const [website, setWebsite] = useState(edicao?.website ?? "");
   const [bubbleId, setBubbleId] = useState(edicao?.bubbleId ?? "");
   const [salvando, setSalvando] = useState(false);
@@ -56,7 +58,7 @@ export function DialogoOrganizacao({
   async function salvar() {
     setErro(null);
     setSalvando(true);
-    const dados: DadosOrganizacao = { nome, cidade, uf, website, bubbleId };
+    const dados: DadosOrganizacao = { nome, cidade, uf, endereco, website, bubbleId };
     const r = edicao
       ? await editarOrganizacao(edicao.id, dados)
       : await criarOrganizacao(dados);
@@ -145,6 +147,26 @@ export function DialogoOrganizacao({
                 ))}
               </select>
             </div>
+          </div>
+          {/* ⚠️ Depois de cidade e UF, e não antes: o dado que existe em
+              1.035 cadastros vem primeiro; o logradouro, que existe em 21,
+              vem depois. Ordem de formulário é ordem de importância, e
+              nesta base o endereço postal é a exceção. */}
+          <div>
+            <label htmlFor="org-endereco" className={rotulo}>
+              Logradouro
+            </label>
+            <input
+              id="org-endereco"
+              type="text"
+              value={endereco}
+              onChange={(e) => setEndereco(e.target.value)}
+              placeholder="Rua, número, bairro"
+              className={campo}
+            />
+            <p className="text-text-muted mt-1 text-xs">
+              Não repita cidade e UF: elas têm campo próprio acima.
+            </p>
           </div>
           <div>
             <label htmlFor="org-site" className={rotulo}>
