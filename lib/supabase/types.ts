@@ -639,6 +639,7 @@ export type Database = {
           criado_em: string
           id: string
           nome: string
+          uf: string | null
           website: string | null
         }
         Insert: {
@@ -647,6 +648,7 @@ export type Database = {
           criado_em?: string
           id?: string
           nome: string
+          uf?: string | null
           website?: string | null
         }
         Update: {
@@ -655,6 +657,7 @@ export type Database = {
           criado_em?: string
           id?: string
           nome?: string
+          uf?: string | null
           website?: string | null
         }
         Relationships: []
@@ -990,7 +993,19 @@ export type Database = {
         }
         Returns: { id: string; data: string }[]
       }
-      conta_organizacoes_agrupadas: { Args: { termo?: string | null }; Returns: number }
+      conta_organizacoes_agrupadas: {
+        Args: {
+          p_termo?: string | null
+          p_uf?: string | null
+          p_cidade?: string | null
+          p_sem_local?: boolean
+        }
+        Returns: number
+      }
+      locais_das_organizacoes: {
+        Args: Record<string, never>
+        Returns: { uf: string | null; cidade: string | null; quantidade: number }[]
+      }
       sou_desenvolvedor: { Args: Record<string, never>; Returns: boolean }
       fusao_detalhe_cadastro: { Args: { p_id: string }; Returns: Json }
       fusao_conta_grupos: { Args: { termo?: string | null }; Returns: number }
@@ -1004,6 +1019,7 @@ export type Database = {
           id: string
           nome: string
           cidade: string | null
+          uf: string | null
           website: string | null
           bubble_id: string | null
           criado_em: string
@@ -1041,13 +1057,21 @@ export type Database = {
         }[]
       }
       organizacoes_agrupadas: {
-        Args: { termo?: string | null; limite?: number; deslocamento?: number }
+        Args: {
+          p_termo?: string | null
+          p_limite?: number
+          p_deslocamento?: number
+          p_uf?: string | null
+          p_cidade?: string | null
+          p_sem_local?: boolean
+        }
         Returns: {
           chave: string
           nome: string
           quantidade: number
           representante_id: string
           cidade: string | null
+          uf: string | null
           website: string | null
           negocios: number
           titulos: string[] | null
@@ -1061,11 +1085,17 @@ export type Database = {
         }[]
       }
       organizacoes_do_grupo: {
-        Args: { chave_grupo: string }
+        Args: {
+          p_chave_grupo: string
+          p_uf?: string | null
+          p_cidade?: string | null
+          p_sem_local?: boolean
+        }
         Returns: {
           id: string
           nome: string
           cidade: string | null
+          uf: string | null
           website: string | null
           negocios: number
           titulos: string[] | null

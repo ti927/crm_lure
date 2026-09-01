@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { local } from "@/lib/formato";
 import type { Database } from "@/lib/supabase/types";
 
 type NovaAtividade = Database["public"]["Tables"]["atividade"]["Insert"];
@@ -156,7 +157,9 @@ export async function buscarVinculos(termo: string): Promise<Candidato[]> {
       .select("id, titulo, organizacao(nome)")
       .ilike("titulo", filtro)
       .limit(6),
-    supabase.from("organizacao").select("id, nome, cidade").ilike("nome", filtro).limit(6),
+    // ⚠️ `uf` junto: é justamente aqui, escolhendo entre seis cadastros
+    // de mesmo nome, que "Goiânia" e "Franca" precisam dizer o estado.
+    supabase.from("organizacao").select("id, nome, cidade, uf").ilike("nome", filtro).limit(6),
     supabase
       .from("pessoa")
       .select("id, nome, pessoa_organizacao(organizacao(nome))")
@@ -179,7 +182,7 @@ export async function buscarVinculos(termo: string): Promise<Candidato[]> {
       tipo: "organizacao",
       id: o.id,
       rotulo: o.nome,
-      detalhe: o.cidade,
+      detalhe: local(o.cidade, o.uf),
     });
   }
   for (const p of pessoas ?? []) {

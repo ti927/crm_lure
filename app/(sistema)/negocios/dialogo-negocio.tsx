@@ -74,7 +74,7 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsave
    */
   async function criarOrgComNome(nome: string) {
     setCriandoOrg(true);
-    const r = await criarOrganizacao({ nome, cidade: "", website: "", bubbleId: "" });
+    const r = await criarOrganizacao({ nome, cidade: "", uf: "", website: "", bubbleId: "" });
     setCriandoOrg(false);
     if (r?.erro) return setErro(r.erro);
     if (r.id) {

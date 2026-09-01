@@ -11,7 +11,12 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { data as fdata } from "@/lib/formato";
+import { data as fdata, local } from "@/lib/formato";
+// ⚠️ Importado com OUTRO nome: `Local` já é o componente da coluna de
+// local logo abaixo, e a prop `local` sombrearia o formatador `local()`
+// de `lib/formato`. Três coisas diferentes com o mesmo nome no mesmo
+// arquivo é como se troca uma pela outra sem o compilador reclamar.
+import type { Local as Recorte } from "./consulta";
 import { EtiquetaContagem } from "@/components/dominio/etiqueta-contagem";
 
 /** Item da amostra de atividades — vem em `jsonb` para carregar o estado. */
@@ -48,6 +53,7 @@ export type Grupo = Contagens & {
   quantidade: number;
   representante_id: string;
   cidade: string | null;
+  uf: string | null;
   website: string | null;
 };
 
@@ -55,6 +61,7 @@ type Irmao = Contagens & {
   id: string;
   nome: string;
   cidade: string | null;
+  uf: string | null;
   website: string | null;
 };
 
@@ -73,7 +80,7 @@ type Irmao = Contagens & {
  * Os irmãos são buscados sob demanda, ao expandir — carregar todos de
  * antemão traria de volta as 2.889 linhas que o agrupamento evitou.
  */
-export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
+export function LinhaGrupo({ grupo, recorte }: { grupo: Grupo; recorte: Recorte }) {
   const [aberto, setAberto] = useState(false);
   const [irmaos, setIrmaos] = useState<Irmao[] | null>(null);
   const [carregando, setCarregando] = useState(false);
@@ -86,8 +93,14 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
     if (abrindo && irmaos === null) {
       setCarregando(true);
       const supabase = createClient();
+      // ⚠️ O MESMO recorte da lista. Sem ele o crachá do grupo diria 3
+      // e a expansão mostraria 18 — e a divergência faz duvidar dos
+      // dois números, não só do errado.
       const { data } = await supabase.rpc("organizacoes_do_grupo", {
-        chave_grupo: grupo.chave,
+        p_chave_grupo: grupo.chave,
+        p_uf: recorte.uf,
+        p_cidade: recorte.cidade,
+        p_sem_local: recorte.semLocal,
       });
       setIrmaos((data ?? []) as Irmao[]);
       setCarregando(false);
@@ -104,8 +117,9 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
           <Building2 className="text-text-muted size-4 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1">
             <span className="text-md block truncate font-medium">{grupo.nome}</span>
-            <Referencia cidade={grupo.cidade} titulos={grupo.titulos} />
+            <Referencia cidade={grupo.cidade} uf={grupo.uf} titulos={grupo.titulos} />
           </span>
+          <Local cidade={grupo.cidade} uf={grupo.uf} />
           <Contagens item={grupo} />
         </Link>
       </li>
@@ -134,8 +148,9 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
               {grupo.quantidade}
             </span>
           </span>
-          <Referencia cidade={grupo.cidade} titulos={grupo.titulos} />
+          <Referencia cidade={grupo.cidade} uf={grupo.uf} titulos={grupo.titulos} />
         </span>
+        <Local cidade={grupo.cidade} uf={grupo.uf} />
         <Contagens item={grupo} />
       </button>
 
@@ -152,8 +167,9 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
               >
                 <span className="min-w-0 flex-1">
                   <span className="text-md block truncate">{o.nome}</span>
-                  <Referencia cidade={o.cidade} titulos={o.titulos} />
+                  <Referencia cidade={o.cidade} uf={o.uf} titulos={o.titulos} />
                 </span>
+                <Local cidade={o.cidade} uf={o.uf} />
                 <Contagens item={o} />
               </Link>
             </li>
@@ -165,27 +181,73 @@ export function LinhaGrupo({ grupo }: { grupo: Grupo }) {
 }
 
 /**
- * A linha de referência sob o nome: cidade, quando existe, e os títulos
- * dos negócios. Com "Sicoob Credseguro" repetido seis vezes e cidade
- * vazia, é o negócio que diz qual cadastro é qual.
+ * O local, em COLUNA PRÓPRIA — a partir de `md`.
+ *
+ * ⚠️ Antes a cidade morava dentro da linha de referência, espremida
+ * entre os títulos dos negócios. Duas coisas quebravam ali: ela não
+ * alinhava de uma linha para a outra, então percorrer a lista procurando
+ * quem é de Anápolis exigia ler cada linha inteira; e, sendo a primeira
+ * de uma fila que compartilha `flex-wrap`, um título de negócio comprido
+ * a empurrava para fora da vista. Um lugar fixo resolve as duas.
+ *
+ * ⚠️ O `<span>` é renderizado mesmo VAZIO. É o que mantém as contagens
+ * da direita alinhadas de cima a baixo — 2.309 das 2.903 organizações
+ * não têm endereço, e uma coluna que só existe quando tem conteúdo faria
+ * a lista sacudir a cada linha. Vazio é vazio: não leva travessão, que
+ * em quatro de cada cinco linhas seria só ruído.
+ *
+ * ⚠️ Some no celular (`hidden md:flex`), onde não há largura para uma
+ * quarta coluna. Lá o local continua na linha de referência, que é a
+ * mesma informação numa forma que cabe — não é omissão.
+ */
+function Local({ cidade, uf }: { cidade: string | null; uf: string | null }) {
+  return (
+    <span className="text-text-muted hidden w-44 shrink-0 truncate text-sm md:block">
+      {local(cidade, uf)}
+    </span>
+  );
+}
+
+/**
+ * A linha de referência sob o nome: o local — só no celular, onde não há
+ * coluna para ele — e os títulos dos negócios. Com "Sicoob Credseguro"
+ * repetido seis vezes e cidade vazia, é o negócio que diz qual cadastro
+ * é qual.
  */
 function Referencia({
   cidade,
+  uf,
   titulos,
 }: {
   cidade: string | null;
+  uf: string | null;
   titulos: string[] | null;
 }) {
   // ⚠️ Só os dois primeiros. A amostra do servidor subiu para 6 porque a
   // dica de tela dos negócios usa a mesma lista; aqui, seis títulos numa
   // linha de 44px voltariam a empurrar o nome da organização para fora.
   const lista = (titulos?.filter(Boolean) ?? []).slice(0, 2);
-  if (!cidade && lista.length === 0) return null;
+  const onde = local(cidade, uf);
+  if (!onde && lista.length === 0) return null;
 
   return (
-    <span className="text-text-muted mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 text-sm">
-      {cidade && <span className="truncate">{cidade}</span>}
-      {cidade && lista.length > 0 && <span aria-hidden className="opacity-40">·</span>}
+    <span
+      className={`text-text-muted mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 text-sm ${
+        // ⚠️ Sem título de negócio, esta linha só tem o local — que a
+        // partir de `md` vive na coluna. Escondê-la inteira evita uma
+        // faixa vazia de 2px sob o nome em toda linha do desktop.
+        lista.length === 0 ? "md:hidden" : ""
+      }`}
+    >
+      {/* ⚠️ `md:hidden` no local E no separador: a partir de `md` ele vive
+          na coluna própria, e repeti-lo aqui mostraria a mesma cidade
+          duas vezes na mesma linha. */}
+      {onde && <span className="truncate md:hidden">{onde}</span>}
+      {onde && lista.length > 0 && (
+        <span aria-hidden className="opacity-40 md:hidden">
+          ·
+        </span>
+      )}
       {lista.map((t, i) => (
         <span key={i} className="inline-flex min-w-0 items-center gap-1">
           <Briefcase className="size-3 shrink-0 opacity-60" aria-hidden />

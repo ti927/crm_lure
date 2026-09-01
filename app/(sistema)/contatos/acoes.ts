@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { normalizaUf } from "@/lib/uf";
 
 /* ---------- organização ---------- */
 
 export type DadosOrganizacao = {
   nome: string;
   cidade: string;
+  /** Sigla de duas letras, ou string vazia. Normalizada no servidor. */
+  uf: string;
   website: string;
   bubbleId: string;
 };
@@ -22,6 +25,10 @@ export async function criarOrganizacao(d: DadosOrganizacao) {
     .insert({
       nome,
       cidade: d.cidade.trim() || null,
+      // ⚠️ Normalizada no SERVIDOR, e não confiando na lista da tela: a
+      // ação é chamável direto, e a restrição do banco recusaria com uma
+      // mensagem de Postgres no lugar de um cadastro salvo.
+      uf: normalizaUf(d.uf),
       website: d.website.trim() || null,
       bubble_id: d.bubbleId.trim() || null,
     })
@@ -43,6 +50,7 @@ export async function editarOrganizacao(id: string, d: DadosOrganizacao) {
     .update({
       nome,
       cidade: d.cidade.trim() || null,
+      uf: normalizaUf(d.uf),
       website: d.website.trim() || null,
       bubble_id: d.bubbleId.trim() || null,
     })

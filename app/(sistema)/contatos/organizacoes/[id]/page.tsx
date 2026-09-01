@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, Globe, Boxes, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { real, dataHora } from "@/lib/formato";
+import { real, dataHora, local } from "@/lib/formato";
 import { EtiquetaStatus, EtiquetaEtapa } from "@/components/dominio/etiquetas";
 import { CabecalhoOrganizacao } from "./cabecalho-organizacao";
 import {
@@ -29,7 +29,7 @@ export default async function FichaOrganizacao({
 
   const { data: org } = await supabase
     .from("organizacao")
-    .select("id, nome, cidade, website, bubble_id")
+    .select("id, nome, cidade, uf, website, bubble_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -134,6 +134,7 @@ export default async function FichaOrganizacao({
             id: org.id,
             nome: org.nome,
             cidade: org.cidade ?? "",
+            uf: org.uf ?? "",
             website: org.website ?? "",
             bubbleId: org.bubble_id ?? "",
           }}
@@ -148,7 +149,7 @@ export default async function FichaOrganizacao({
             <dl className="flex flex-col gap-2 text-md">
               <div className="flex items-center gap-2">
                 <MapPin className="text-text-muted size-4 shrink-0" aria-hidden />
-                <span>{org.cidade || "—"}</span>
+                <span>{local(org.cidade, org.uf) ?? "—"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Globe className="text-text-muted size-4 shrink-0" aria-hidden />

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Crown, Eye, Loader2, TriangleAlert } from "lucide-react";
-import { data as fdata } from "@/lib/formato";
+import { data as fdata, local } from "@/lib/formato";
 import { useAviso } from "@/components/dominio/avisos";
 import { previaFusao, fundirOrganizacao, type Previa } from "./acoes";
 import { DialogoCadastro } from "./dialogo-cadastro";
@@ -12,6 +12,7 @@ export type Cadastro = {
   id: string;
   nome: string;
   cidade: string | null;
+  uf: string | null;
   website: string | null;
   bubble_id: string | null;
   criado_em: string;
@@ -149,10 +150,10 @@ export function PainelGrupo({
                       <span className="font-mono text-xs">{c.id.slice(0, 8)}</span>
                       <span aria-hidden className="opacity-40">·</span>
                       <span>criado {fdata(c.criado_em)}</span>
-                      {c.cidade && (
+                      {local(c.cidade, c.uf) && (
                         <>
                           <span aria-hidden className="opacity-40">·</span>
-                          <span>{c.cidade}</span>
+                          <span>{local(c.cidade, c.uf)}</span>
                         </>
                       )}
                       {c.website && (

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { useAviso } from "@/components/dominio/avisos";
+import { UFS } from "@/lib/uf";
 import {
   criarOrganizacao,
   editarOrganizacao,
@@ -13,13 +14,20 @@ export type OrganizacaoEdicao = {
   id: string;
   nome: string;
   cidade: string;
+  uf: string;
   website: string;
   bubbleId: string;
 };
 
 /**
- * Criar ou editar organização (B-090): nome, cidade, website e o
+ * Criar ou editar organização (B-090): nome, cidade, UF, website e o
  * identificador do Bubble. Só o nome é obrigatório (schema).
+ *
+ * ⚠️ A UF é LISTA FECHADA, e não texto livre. Foi o texto livre que
+ * deixou "Goiânia" e "Goiânia, GO" conviverem como cidades diferentes na
+ * base — o defeito que a migration da UF teve que desfazer. Com 27
+ * opções, escolher é mais rápido que digitar, e "go", "Go" e "GO " não
+ * chegam a existir.
  */
 export function DialogoOrganizacao({
   edicao,
@@ -31,6 +39,7 @@ export function DialogoOrganizacao({
   const [nome, setNome] = useState(edicao?.nome ?? "");
   const caixaDialogo = useFocoDialogo<HTMLDivElement>();
   const [cidade, setCidade] = useState(edicao?.cidade ?? "");
+  const [uf, setUf] = useState(edicao?.uf ?? "");
   const [website, setWebsite] = useState(edicao?.website ?? "");
   const [bubbleId, setBubbleId] = useState(edicao?.bubbleId ?? "");
   const [salvando, setSalvando] = useState(false);
@@ -47,7 +56,7 @@ export function DialogoOrganizacao({
   async function salvar() {
     setErro(null);
     setSalvando(true);
-    const dados: DadosOrganizacao = { nome, cidade, website, bubbleId };
+    const dados: DadosOrganizacao = { nome, cidade, uf, website, bubbleId };
     const r = edicao
       ? await editarOrganizacao(edicao.id, dados)
       : await criarOrganizacao(dados);
@@ -92,17 +101,50 @@ export function DialogoOrganizacao({
               className={campo}
             />
           </div>
-          <div>
-            <label htmlFor="org-cidade" className={rotulo}>
-              Cidade
-            </label>
-            <input
-              id="org-cidade"
-              type="text"
-              value={cidade}
-              onChange={(e) => setCidade(e.target.value)}
-              className={campo}
-            />
+          {/* Cidade e UF na mesma linha: são um endereço só, e separá-los
+              em duas linhas faria a UF parecer outro assunto. A cidade
+              cresce, a UF tem largura fixa — 27 siglas de duas letras não
+              precisam de mais. */}
+          <div className="flex gap-3">
+            <div className="min-w-0 flex-1">
+              <label htmlFor="org-cidade" className={rotulo}>
+                Cidade
+              </label>
+              <input
+                id="org-cidade"
+                type="text"
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                className={campo}
+              />
+            </div>
+            {/* ⚠️ A sigla vem PRIMEIRO no rótulo, e é por isso que a
+                largura pode ser curta: fechado, o seletor corta o nome do
+                estado pela direita ("MS · Mato Grosso do S…") e a sigla,
+                que é o que se lê depois de escolher, nunca some. Aberto,
+                a lista mostra os 27 por extenso — que é quando o nome
+                serve para alguma coisa. */}
+            <div className="w-32 shrink-0">
+              <label htmlFor="org-uf" className={rotulo}>
+                UF
+              </label>
+              <select
+                id="org-uf"
+                value={uf}
+                onChange={(e) => setUf(e.target.value)}
+                className={campo}
+              >
+                {/* O vazio é opção legítima e a primeira: 2.309 das 2.903
+                    organizações não têm endereço, e a base tem um cadastro
+                    em Luanda, que não tem UF nenhuma. */}
+                <option value="">—</option>
+                {UFS.map(([sigla, nome]) => (
+                  <option key={sigla} value={sigla}>
+                    {sigla} · {nome}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
             <label htmlFor="org-site" className={rotulo}>

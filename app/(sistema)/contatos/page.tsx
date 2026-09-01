@@ -12,9 +12,65 @@ import {
   POR_PAGINA,
   parseFiltros,
   limparIlike,
+  localParaValor,
+  temLocal,
   type Busca,
   type LinhaPessoa,
+  type Locais,
 } from "./consulta";
+
+/**
+ * Agrupa o que `locais_das_organizacoes()` devolve — uma linha por par
+ * (uf, cidade) — na forma que o seletor precisa: estados, e dentro de
+ * cada um suas cidades.
+ *
+ * ⚠️ Feito AQUI e não no banco: o banco já entregou tudo numa viagem só,
+ * e transformar 69 linhas em objeto é trabalho de milissegundos. Pedir
+ * ao Postgres um `jsonb` aninhado só para poupar isto seria complicar a
+ * função para economizar nada.
+ *
+ * ⚠️ O total da UF inclui os cadastros SEM cidade, e por isso pode ser
+ * maior que a soma das cidades listadas. Não é erro de conta: "GO" tem
+ * cadastros que só sabem o estado, e a opção do estado inteiro é o que
+ * alcança todos eles.
+ */
+function agrupaLocais(
+  linhas: { uf: string | null; cidade: string | null; quantidade: number }[]
+): Locais {
+  const porUf = new Map<string, { total: number; cidades: { nome: string; quantidade: number }[] }>();
+  const semUf: { nome: string; quantidade: number }[] = [];
+  let semLocal = 0;
+
+  for (const l of linhas) {
+    const n = Number(l.quantidade);
+    if (!l.uf) {
+      // A linha sem UF e sem cidade é a contagem de quem não tem
+      // endereço — vem da mesma consulta, de propósito.
+      if (l.cidade) semUf.push({ nome: l.cidade, quantidade: n });
+      else semLocal += n;
+      continue;
+    }
+    const atual = porUf.get(l.uf) ?? { total: 0, cidades: [] };
+    atual.total += n;
+    if (l.cidade) atual.cidades.push({ nome: l.cidade, quantidade: n });
+    porUf.set(l.uf, atual);
+  }
+
+  return {
+    // ⚠️ Estados por PESO, e não em ordem alfabética: 971 dos 1.025
+    // cadastros são de Goiás, e uma lista alfabética poria "AL" com um
+    // cadastro acima do estado que responde por 95% da base.
+    ufs: [...porUf]
+      .map(([uf, v]) => ({
+        uf,
+        total: v.total,
+        cidades: v.cidades.sort((a, b) => b.quantidade - a.quantidade),
+      }))
+      .sort((a, b) => b.total - a.total),
+    semUf: semUf.sort((a, b) => b.quantidade - a.quantidade),
+    semLocal,
+  };
+}
 
 export default async function PaginaContatos({
   searchParams,
@@ -43,6 +99,8 @@ export default async function PaginaContatos({
   let cartoes: React.ReactNode = null;
   /** Organizações: lista de grupos expansíveis, que serve celular e desktop. */
   let listaAgrupada: React.ReactNode = null;
+  /** O menu do filtro de local. Nulo na aba Pessoas, que não tem endereço. */
+  let locais: Locais | null = null;
 
   if (filtros.aba === "organizacoes") {
     /*
@@ -56,19 +114,37 @@ export default async function PaginaContatos({
      * expansíveis, não uma tabela de dez colunas.
      */
     const termo = filtros.busca ? limparIlike(filtros.busca) : null;
-    const [{ data: grupos }, { data: qtd }] = await Promise.all([
+    const recorte = {
+      p_uf: filtros.local.uf,
+      p_cidade: filtros.local.cidade,
+      p_sem_local: filtros.local.semLocal,
+    };
+    // ⚠️ Três idas ao banco em PARALELO, não em sequência: cada viagem ao
+    // pooler custa ~150 ms, e encadeá-las somaria meio segundo à tela.
+    // A lista dos locais não depende do recorte — ela é o menu, e um
+    // menu que encolhe conforme o que já está filtrado tranca o usuário
+    // na primeira escolha.
+    const [{ data: grupos }, { data: qtd }, { data: locaisCrus }] = await Promise.all([
       supabase.rpc("organizacoes_agrupadas", {
-        termo,
-        limite: POR_PAGINA,
-        deslocamento: inicio,
+        p_termo: termo,
+        p_limite: POR_PAGINA,
+        p_deslocamento: inicio,
+        ...recorte,
       }),
-      supabase.rpc("conta_organizacoes_agrupadas", { termo }),
+      supabase.rpc("conta_organizacoes_agrupadas", { p_termo: termo, ...recorte }),
+      supabase.rpc("locais_das_organizacoes"),
     ]);
     total = qtd ?? 0;
+    locais = agrupaLocais(locaisCrus ?? []);
+
     listaAgrupada = (
       <ul>
         {(grupos ?? []).map((g) => (
-          <LinhaGrupo key={g.chave} grupo={g as Grupo} />
+          // ⚠️ O recorte desce para a linha porque expandir o grupo faz
+          // OUTRA consulta, do cliente. Sem ele, o crachá diria 3 e a
+          // expansão mostraria 18 — e o usuário deixaria de confiar nos
+          // dois números.
+          <LinhaGrupo key={g.chave} grupo={g as Grupo} recorte={filtros.local} />
         ))}
       </ul>
     );
@@ -162,6 +238,7 @@ export default async function PaginaContatos({
     const q = new URLSearchParams();
     if (filtros.aba === "pessoas") q.set("aba", "pessoas");
     if (filtros.busca) q.set("busca", filtros.busca);
+    if (temLocal(filtros.local)) q.set("local", localParaValor(filtros.local));
     return q.toString();
   })();
 
@@ -172,19 +249,30 @@ export default async function PaginaContatos({
     // rola. É o que faz o cabeçalho grudado ficar parado e o rodapé
     // aparecer depois da última linha (ver `tabela-dados.tsx`).
     <div className="flex min-w-0 flex-col">
-      <BarraContatos aba={filtros.aba} total={total} />
+      <BarraContatos aba={filtros.aba} total={total} locais={locais} />
 
       {total === 0 ? (
+        // ⚠️ O vazio precisa dizer QUAL recorte esvaziou. "Nenhuma
+        // organização" numa base de 2.903 se lê como defeito; a mesma
+        // tela dizendo "nenhuma em Anápolis com esse nome" é resposta.
         <div className="px-4 py-16 text-center">
           <p className="text-text-secondary text-md font-medium">
-            {filtros.busca
-              ? "Nenhum contato corresponde à busca."
-              : filtros.aba === "organizacoes"
-                ? "Nenhuma organização."
-                : "Nenhuma pessoa."}
+            {filtros.busca && temLocal(filtros.local)
+              ? "Nenhum contato corresponde à busca neste local."
+              : temLocal(filtros.local)
+                ? "Nenhuma organização neste local."
+                : filtros.busca
+                  ? "Nenhum contato corresponde à busca."
+                  : filtros.aba === "organizacoes"
+                    ? "Nenhuma organização."
+                    : "Nenhuma pessoa."}
           </p>
           <p className="text-text-muted mt-1 text-sm">
-            {filtros.busca ? "Ajuste ou limpe a busca." : "Crie o primeiro no botão acima."}
+            {temLocal(filtros.local)
+              ? "Troque o local ou volte para “Todos os locais”."
+              : filtros.busca
+                ? "Ajuste ou limpe a busca."
+                : "Crie o primeiro no botão acima."}
           </p>
         </div>
       ) : (

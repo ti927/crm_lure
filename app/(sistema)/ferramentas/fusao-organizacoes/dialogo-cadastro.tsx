@@ -12,7 +12,7 @@ import {
   Phone,
   X,
 } from "lucide-react";
-import { real, data as fdata, dataHora, linkWhatsApp } from "@/lib/formato";
+import { real, data as fdata, dataHora, linkWhatsApp, local } from "@/lib/formato";
 import { EtiquetaStatus } from "@/components/dominio/etiquetas";
 import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { detalheDoCadastro, type DetalheCadastro } from "./acoes";
@@ -86,10 +86,10 @@ export function DialogoCadastro({
                 <p className="text-text-muted mt-0.5 flex flex-wrap items-center gap-x-3 text-sm">
                   <span className="font-mono text-xs">{d.id.slice(0, 8)}</span>
                   <span>criado {fdata(d.criado_em)}</span>
-                  {d.cidade && (
+                  {local(d.cidade, d.uf) && (
                     <span className="inline-flex items-center gap-1">
                       <MapPin className="size-3" aria-hidden />
-                      {d.cidade}
+                      {local(d.cidade, d.uf)}
                     </span>
                   )}
                   {d.website && (

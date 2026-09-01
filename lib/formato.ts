@@ -42,6 +42,35 @@ export function texto(v: string | null | undefined): string {
 }
 
 /**
+ * Cidade e UF numa linha só: "Goiania, GO".
+ *
+ * ⚠️ Uma funcao unica para os cinco lugares que mostram o endereco —
+ * lista de contatos, ficha da organizacao, seletor de organizacao das
+ * atividades e as duas telas da fusao. Foi a colagem feita a mao que
+ * produziu "Goiania, GO" gravado DENTRO do campo cidade, e foi ela que a
+ * migration da UF teve que desfazer.
+ *
+ * Os tres estados possiveis, e nenhum deles e string vazia:
+ *   cidade e UF  -> "Goiania, GO"
+ *   so a cidade  -> "Goiania"        (endereco de fora do Brasil, por exemplo)
+ *   so a UF      -> "GO"             (raro, mas dizer o estado e melhor que calar)
+ *   nenhum dos dois -> null
+ *
+ * ⚠️ Devolve `null`, e nao o travessao de `texto()`: quem chama decide se
+ * o vazio vira "—" numa ficha ou some de uma lista. Numa lista, um
+ * travessao por linha e ruido em 2.309 das 2.903 organizacoes.
+ */
+export function local(
+  cidade: string | null | undefined,
+  uf: string | null | undefined
+): string | null {
+  const c = cidade?.trim() || null;
+  const u = uf?.trim() || null;
+  if (c && u) return `${c}, ${u}`;
+  return c ?? u ?? null;
+}
+
+/**
  * Data com hora, para a linha do tempo — onde a ordem dos acontecimentos
  * no mesmo dia importa.
  *
