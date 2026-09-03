@@ -1,11 +1,11 @@
-﻿# 00 — Status e Retomada (v3.3)
+﻿# 00 — Status e Retomada (v3.4)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v3.3 |
-| **Última atualização** | 27/08/2026 — Sessão 13 |
+| **Versão** | v3.4 |
+| **Última atualização** | 03/09/2026 — Sessão 15 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -32,10 +32,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v3.3.md` |
+| `00-status-e-retomada-v3.4.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.24.md` |
+| `03-log-de-decisoes-v0.28.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -43,7 +43,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `09-arquitetura-tecnica-v0.10.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.19.md` *(vai para a raiz do repositório como `CLAUDE.md`)* |
+| `12-claude-md-v0.23.md` *(espelho do `CLAUDE.md` da raiz — ⚠️ a raiz é a que vale)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
@@ -97,7 +97,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ## 4. ONDE ESTAMOS
 
 **Fase:** **F10, a virada — em andamento.** **F0 a F9 concluídas** — a F8 saiu de "adiada" (D-124) e foi construída em 20/08. Falta o dia de operação real dos sócios.
-**Perguntas respondidas:** 80 · 12 blocos · **145 decisões** · 153 requisitos · 126 itens de backlog
+**Perguntas respondidas:** 80 · 12 blocos · **165 decisões** · 153 requisitos · 126 itens de backlog
 
 ✅ **Não há mais contagem regressiva** (D-125, 19/08/2026). Os dados estão no Supabase desde 17/08, conferidos — a virada é decidida por prontidão, não por data.
 
@@ -116,7 +116,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | **F1 — Extração** | ✅ **fechada.** P-020 e P-021 encerradas. Dados brutos em `dados/pipedrive/`, fora do git |
 | **F2 — Carga** | ✅ **rodou em 17/08**, conferida pelas dez verificações do Doc 14 §8 |
 | **F3 — Lista** | ✅ **fechada 18/08.** Filtro nas dez colunas, indicador de coluna filtrada, persistência por usuário, exportação CSV e lista virtualizada — ver 4.2 sobre a verificação visual que falta |
-| **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações, trava nos três caminhos** |
+| **F4 — Detalhe** | ✅ **três zonas, linha do tempo, anotações** — a trava caiu na D-145. **Anexos desde 03/09** (D-163): arquivo ou link na coluna da direita, balde privado, URL assinada de 5 min |
 | **F5 — Kanban** | ✅ seção própria em `/kanban`, arrastar-e-soltar, carregamento por partes, filtro por responsável e **trava de desfecho (D-047)** funcionando |
 | **F9 — Mobile** | ✅ **construída 18/08.** Lista de negócios em cartões (B-110), filtros em gaveta própria (B-111), Kanban uma etapa por vez com seletor e **sem arrastar** (B-112), ficha empilhada (B-113), marcar concluída (B-114). Navegação lateral vira gaveta no celular |
 | **F8 — Automações** | ✅ **construída 20/08.** Sino no cabeçalho com contador, lista agrupada e marcar como lida; painel `/notificacoes` com os quatro blocos; follow-up ao ganhar nos quatro caminhos de Ganho. Alertas **derivados na leitura**, sem agendador — a entidade Notificação não virou tabela. Uma migração, duas tabelas, duas funções. Doc 15 v0.3 |
@@ -138,6 +138,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `scripts/carga-changelog.mjs` | **Carrega o histórico do Pipedrive no log** (D-129). Ensaia por padrão; `--aplicar` grava. Recusa rodar duas vezes |
 | `scripts/carga-fechamento.mjs` | **Preenche `negocio.fechado_em`** com `won_time`/`lost_time` da extração (D-131). Ensaia por padrão |
 | `scripts/verifica-virada.mjs` | **Mede os sete critérios da D-098 contra a base real.** Somente leitura — pode rodar com os sócios usando. Sai com código 1 se houver falha técnica. Reexecutar na véspera do desligamento |
+| `scripts/ve-telas.mjs` | **`npm run telas`** — emite sessão local e grava captura das telas num Chromium sem interface (D-153). Recusa qualquer destino fora de `localhost`; a sessão é de usuário real, então **leitura apenas** |
+| `scripts/recupera-enderecos.mjs` | Recupera do snapshot o endereço que a carga descartou (D-160, D-162). Ensaia por padrão |
+| `scripts/lib/html-para-texto.mjs` | ⚠️ **A única conversão de HTML para texto do projeto** (D-165). Usada pela carga, pela sincronização e pelo reparo — as três **têm** que usar a mesma, senão a sincronização deixa de reconhecer o que já carregou |
+| `scripts/recupera-texto-html.mjs` | **`npm run recupera-texto`** — repara o texto que a carga estragou ao converter o HTML do Pipedrive (D-165, C-15). Ensaia por padrão; `--aplicar` grava. **Idempotente**: rodar duas vezes não faz mal |
 
 ⚠️ **A carga é reversível enquanto ninguém estiver usando o sistema**: `evento_negocio` tem `on delete cascade` no negócio. Deixa de ser no instante em que os sócios começarem a trabalhar, porque aí evento real e evento de carga se misturam.
 
@@ -389,21 +393,23 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 
 ## 6. PAINEL DE DOCUMENTOS DA BIBLIOTECA
 
+⚠️ **Esta tabela estava defasada em cinco das dezesseis linhas em 03/09** — dava o Doc 03 em v0.19 quando o arquivo em disco era v0.27, e o Doc 09 em v0.6 quando era v0.10. **A versão faz parte do nome do arquivo**, então uma tabela desatualizada aqui vira link quebrado no `README.md` — foi exatamente o que aconteceu com `03-log-de-decisoes-v0.24.md`, apontado no README e inexistente em disco desde a sessão 14. Ao fechar sessão, confira esta tabela contra `ls docs/`. ⚠️ **O mesmo vale para o espelho do Doc 12:** `docs/12-claude-md-*.md` é cópia do `CLAUDE.md` da raiz e estava **quatro versões atrás** em 03/09 — a raiz é a que o agente carrega, então o espelho envelhece sem que nada acuse.
+
 | # | Documento | Versão | Status | Quando será criado |
 |---|---|---|---|---|
-| 00 | Status e Retomada | v2.7 | vivo | — |
+| 00 | Status e Retomada | v3.4 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.19 | vivo — **145 decisões** | — |
+| 03 | Log de Decisões | v0.28 | vivo — **165 decisões** | — |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
-| 08 | UI e Design System | v0.1 | rascunho — **aguarda validação** | criado 13/08 |
-| 09 | Arquitetura Técnica | v0.6 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-05** | atualizado 17/08 |
+| 08 | UI e Design System | v0.2 | rascunho — **aguarda validação** | atualizado 27/08 |
+| 09 | Arquitetura Técnica | v0.10 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-15** | atualizado 03/09 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.12 | vivo — **na raiz do repositório** | atualizado 20/08, sessão 11 |
+| 12 | CLAUDE.md | v0.23 | vivo — **na raiz do repositório**; `docs/12-claude-md-v0.23.md` é espelho | atualizado 03/09, sessão 15 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 15 | Plano da Central de Notificações | v0.3 | ✅ **construído** — os sete passos de pé | atualizado 20/08 |
@@ -479,6 +485,8 @@ Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-0
 | ~~P-032~~ | ~~Desabilitar o provedor Email~~ | — | ✅ **encerrada 17/08.** `email: false` verificado na base |
 | *(era)* | *Provedor Email* | segurança | Hoje ativo com cadastro aberto. Como a chave anônima é pública, qualquer pessoa cria conta por e-mail e senha. Não vê dado nenhum — a RLS barra quem não é do domínio, verificado — mas polui `auth.users` e contraria D-050 |
 
+| P-051 | **Os botões de anexo aparecem no celular, onde a fase 1 é só consulta (D-097)** | UX | **Criada 03/09.** Segui o que a ficha já fazia — o formulário de anotação e o "Agendar atividade" também aparecem lá —, então a incoerência é anterior aos anexos e vale para os três. Se o maestro quiser coerência estrita, é esconder os controles abaixo de `md` e manter as listas |
+| P-052 | **Duas anotações da extração não têm par no banco** | dados | **Criada 03/09.** Apareceram nos dois ensaios do `recupera-texto-html.mjs`, e são anteriores a esta sessão: a carga de 17/08 as descartou por algum motivo não investigado. São 2 de 928 — não bloqueia nada, mas é a única lacuna conhecida entre a extração e o banco |
 | P-033 | Curar os 107 motivos de perda | qualidade | 12 ativos, 95 inativos. Edição pelo painel do Supabase |
 | ~~P-034~~ | ~~Conferir as telas nos dois temas~~ | — | ✅ **encerrada 19/08** pelo maestro, agora incluindo as telas das sessões 07 a 09: "as telas para ambos os temas estão esteticamente agradáveis e ótimas". Era a dívida mais antiga do projeto — a regra 4 do `CLAUDE.md` estava em aberto desde a sessão 05 |
 | P-035 | Plano Hobby da Vercel para uso comercial | risco | Contraria os termos de uso |
@@ -526,11 +534,14 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 | 11 | 20/08/2026 | **A F8 saiu do papel.** As três perguntas que bloqueavam a central de notificações desde 18/08 foram respondidas (**D-139** a **D-141**), mais uma quarta que a medição levantou (**D-142**). O limite de "negócio parado" e a antecedência do lembrete deixaram de ser constante do sistema e viraram **escolha do usuário em degraus** — o que mudou o modelo de dados, não só o número: o `check` da tabela passa a guardar os degraus e o padrão precisa morar no banco. **Medição contra a base real antes de decidir**, e não depois: a curva do alerta de parado é quase plana (79 negócios a 30 dias, 52 a 90), a distribuição é concentrada num só responsável, e há **139 atividades vencidas herdadas** — o sino de uma sócia nasce marcando 96, e o maestro decidiu mostrar (D-142). O teto de desempenho do plano foi verificado por `explain (analyze)`: **1,65 ms**, contra os ~200 ms temidos; os 151 ms observados eram rede. **E a F8 foi construída na mesma sessão**, os sete passos do Doc 15 §6: migração com as duas tabelas e a função de derivação, sino no cabeçalho, marcar como lida, painel `/notificacoes` e follow-up ao ganhar. Tudo verificado contra a base real em transação com `rollback`, sem gravar nada. **Doc 15 a v0.3.** **P-014, P-027, P-036 e P-043 encerradas; P-042 aberta.** | ⭐ **Falta marcar o dia de operação real dos sócios.** E ver o sino e o painel **nos dois temas** — o OAuth impede o agente |
 | 12 | 21/08/2026 | **A biblioteca voltou a bater com o repositório, e três coisas invisíveis apareceram.** A sessão 11 terminou **sem commitar**: o Doc 00 v2.7 inteiro estava na árvore de trabalho, o `git mv` apenas *staged*, e o `README.md` apontava para um arquivo que já não existia — **link quebrado num repositório público**. Três contradições herdadas da **D-145** corrigidas: a seção 4 dizia "F8 adiada", o critério 4 dizia "trava de desfecho", e os 3 negócios legados eram tratados como exceção quando viraram o estado legítimo. ⚠️ **O verificador oficial da virada media uma regra revogada** — procurava negócio em Aguardando Contrato sem desfecho e chamava aquilo de "A TRAVA FUROU". Reescrito para medir o que existe, mais a **dispersão das perdas por etapa**, que é como se detecta pelo dado se alguém religou o empurrão que a D-145 tirou. O Kanban carregava **código morto** da trava: `pendente` nunca mais era preenchido, então aquele `DialogoDesfecho` não renderizava jamais. **C-11** — o campo de **cargo** era um input transparente sem borda; existia, gravava, e um usuário real não o achou. A primeira correção errou para o outro lado (acrescentou um rótulo que repetia o nome da organização) e o maestro corrigiu o rumo: **a tinta vai para a borda, não para um rótulo novo.** ✅ **Conferido em tela pelo maestro e aprovado** — primeira verificação visual do agente em várias sessões. **D-146**: o rodapé da marca deixou de morar no pé e passou a rolar com o conteúdo, devolvendo ~41px a toda tela. **Quatro commits, todos empurrados.** | ⭐ **O critério 2 continua sendo o que falta** — os sócios já cadastram, mas o log não recebe evento desde 18/08. P-046 (push) e P-049 (as duas barras) abertas |
 | 13 | 27/08/2026 | **Três telas passaram a abrir no recorte de quem abre, e o funil coube na tela.** Terceira sincronização com o Pipedrive: **36 registros novos entraram** (2 pessoas, 33 atividades, 1 anotação) e o log ficou intacto — conferido por medição, não por fé. ⚠️ O alarme do próprio script era um **número escrito à mão** (9 eventos, de 20/08) e gritava toda vez que alguém usava o sistema; virou medição de antes-e-depois, porque alarme que sempre toca deixa de ser alarme. **D-147** — busca no Kanban por título e organização, saindo de uma função no banco: a **C-04** não deixa alcançar coluna vinculada num `or`, e a saída de dois passos teria teto silencioso sobre 2.897 organizações. **D-148** — as seis colunas **dividem a largura** em vez de somarem ~1.840px, com **piso de 160px** para que apertar nunca vire ilegível; era preciso arrastar para o lado justamente para chegar onde estão 74% da base. **D-149** — Kanban, Atividades e Lista abrem em "só os meus", com a preferência ganhando **três estados**: nulo é "nunca escolhi", vazio é "escolhi ver tudo", e sem essa distinção o botão "Limpar" seria desfeito pelo próprio padrão. Duas preferências sobradas de teste foram zeradas com autorização, para os seis usuários começarem do mesmo lugar. Verificado por `tsc`, `eslint`, `next build` e pelas **sete rotas por `curl`** com o `proxy.ts` aberto e restaurado — o método da 4.8, que é o único que pega erro de serialização. ⚠️ **Segunda metade: o maestro abriu a tela e o quadro estava quebrado.** Cartão passava acima dos nomes das etapas e rolar levava os rótulos embora (**C-12**). Duas causas somadas, e nenhuma era o `sticky` em si: a faixa de `padding` acima do ponto de trava, e o **segundo scroll** que o rodapé da D-146 criara no `main` — a P-049, prevista em 21/08 e nunca vista. A faixa de rótulos saiu da rolagem dos cartões, e a **D-150 revogou a D-146**: o rodapé voltou à coluna externa, largura inteira, por baixo da sidebar. **P-049 encerrada.** A lição: **`sticky` gruda no scrollport mais próximo** — havendo dois scrolls aninhados, grudar no de dentro não protege quando é o de fora que se move. ⚠️ **Terceira metade: o agente passou a enxergar, e a sessão mudou de natureza.** Com a **D-153** (`npm run telas`), tudo daí em diante foi conferido em tela: a **C-13** (três ações de vínculo com `uuid` invertidos, duas mentindo em silêncio há semanas), a **C-14** (linha fantasma sobre o cabeçalho grudado), a linha de filtro que o maestro chamou de desleixada (Doc 08 §6.1), as contagens com dica de tela na lista de organizações (**D-155**), e a **ferramenta de fusão de organizações** (**D-156**), restrita a Julio e Fabio, com a trava no banco e nenhuma fusão executada. ⚠️ **Um erro de leitura vale registro:** o pop-up e a paginação foram pedidos **dentro da ferramenta de fusão** — a pista era "27 páginas", que é 668 grupos de 25 em 25 — e foram construídos na Lista e no Kanban. Corrigido no mesmo dia: **D-157 revertida**, **D-159** no lugar certo. | ⭐ **Falta marcar o dia de operação real dos sócios.** P-046 (push) segue aberta. Da fusão, faltam duas definições: o critério de qual cadastro permanece, e se vale construir o **desfazer** antes de fundir em volume — os ids já são guardados para isso |
+| 14 | 01/09/2026 | **O endereço, e um pedaço da carga que ninguém tinha notado faltar.** ⚠️ **Esta sessão não chegou a ser registrada aqui** — as decisões entraram no Doc 03 e no `CLAUDE.md`, e o Doc 00 ficou parado na sessão 13; a linha abaixo foi reconstituída em 03/09 a partir do changelog do `CLAUDE.md` v0.20 a v0.22. **D-160** — a organização ganha `uf` em coluna própria e o endereço é recuperado do snapshot: **864 organizações tinham endereço no Pipedrive e a carga gravou só `address_locality`**, vazio em 281 delas. Cidade sai de 594 para 1.017, UF de 0 para 1.025. ⚠️ **182 das 423 cidades recuperadas são herança entre homônimos** — decisão do maestro com a alternativa medida. **D-161** — filtro por localização na lista de Contatos, com a regra que ele cobrou: **em lista agrupada, o filtro entra em TRÊS funções** (listagem, contagem e expansão), e filtrar só uma faz dois números da mesma tela se contradizerem. **D-162**, de uma pergunta do maestro ("os endereços do Pipedrive são só cidade-UF?"): sim, **97,2%** — mas os outros 24 foram digitados à mão, e **12 estavam sem cidade nenhuma** com a cidade legível na origem. Entra `organizacao.endereco` em texto livre. ⚠️ A lição: **conservadorismo vira perda quando o dado está à vista.** | Doc 00 não atualizado — corrigido na sessão 15 |
+| 15 | 03/09/2026 | **Três pedidos, e o do meio era o único que era o que parecia.** (a) O maestro relatou que **"a parte de copiar e colar não está funcionando"** com o print de uma anotação salpicada de `&nbsp;`. **Não era o copiar e colar** — o caminho de escrita está limpo; era a carga de 17/08, com 17 dias de idade: `texto(content.replace(/<[^>]+>/g, " "))` trocou **toda tag por um espaço, `<br>` inclusive**, e `texto(a.note)` **nem chegou a tirar tag**, deixando 2.007 descrições com `<div>` e `<span style=…>` crus no banco. Reconvertido **da origem** e não só limpo (**D-165**, **C-15**): 319 anotações + 2.150 descrições, zero entidades e zero tags restantes, 198 anotações e 1.599 atividades com as quebras de linha de volta. (b) **Anexos do negócio** (**D-163**), pedido nominal da Daniela para registrar a proposta enviada: arquivo ou link, balde privado, URL assinada de 5 min. (c) **Fundir duplicadas para todo o domínio** (**D-164**), revogando a restrição da D-156. ⚠️ **Três armadilhas que o caminho cobrou:** `sincroniza-novos.mjs` reconhece anotação por `texto = corpo`, então consertar o banco sem consertar o script faria a próxima sincronização **reinserir as 928 em silêncio**; `<[^>]*>` come `<dho@eneserra.com.br>`, que existe na base, e comeria `a < b > c`; e liberar `funde_organizacao` sem liberar a política que ela escreve por dentro faria a fusão passar e a transação inteira cair — abrir a porta e deixar a corrente. ⚠️ **O corte por data que eu tinha posto no reparo estava errado** e deixou 25 atividades de fora: data separa "primeira leva" de "segunda", não "veio do Pipedrive" de "foi digitado aqui". Tudo conferido em tela nos dois temas; anexo ensaiado ponta a ponta com sessão **não-desenvolvedor**; fusão ensaiada em transação com `rollback` por Rafael Saia. Doc 00 a v3.4, Doc 03 a v0.28, Doc 09 (C-15), `CLAUDE.md` a v0.23. **Um commit, empurrado.** | ⭐ **O critério 2 continua sendo o que falta** — os dois sócios operarem um dia inteiro sem abrir o Pipedrive. P-051 e P-052 abertas |
 
 ---
 
 ## Changelog
 
+- **v3.4** — 03/09/2026 — **Fim da sessão 15, e o Doc 00 volta a existir.** ⚠️ **A sessão 14 (01/09) nunca foi registrada aqui** — as decisões D-160 a D-162 entraram no Doc 03 e no `CLAUDE.md`, e este documento ficou parado na sessão 13; a linha dela foi reconstituída na seção 10 a partir do changelog do `CLAUDE.md`. É a segunda vez que isso acontece (a sessão 12 corrigiu o mesmo da sessão 11), e o sintoma é sempre o mesmo: **o painel da seção 6 apodrece e vira link quebrado no `README.md`** — `03-log-de-decisoes-v0.24.md` estava apontado lá e não existia em disco. Painel corrigido em cinco linhas e com aviso escrito. Da sessão 15 entram **três decisões** (**D-163** anexos do negócio, **D-164** fusão para todo o domínio, **D-165** reconversão do HTML do Pipedrive) e **uma correção** (**C-15**). ⚠️ A lição da sessão: **"copiar e colar não funciona" era dado sujo com 17 dias, não escrita quebrada** — e o sintoma dos dois é indistinguível, então a primeira medição tem que ser *isto entrou hoje ou veio da carga?*. **P-051 e P-052 abertas.** Doc 03 a v0.28 (**165 decisões**), Doc 09 com a C-15, `CLAUDE.md` a v0.23. **Um commit, empurrado.**
 - **v3.3** — 27/08/2026 — **Fim da sessão 13, de verdade.** Fecha a sessão mais longa do projeto: **doze decisões** (D-147 a D-159, com a D-150 substituída pela D-151 e a **D-157 revertida no mesmo dia**), **três correções** (C-12, C-13, C-14) e uma pendência aberta e encerrada no mesmo dia (P-050). O divisor de águas foi a **D-153**: o agente passou a abrir as telas e olhar, e daí em diante os defeitos encontrados foram todos do tipo que nenhuma verificação anterior pegava. ⚠️ **A ferramenta de fusão (D-156) está de pé e NENHUMA fusão foi executada** — a base segue com 2.898 organizações e zero registros em `fusao_organizacao`. Doc 03 a v0.24 (**159 decisões**), Doc 08 a v0.2, Doc 09 a v0.10, `CLAUDE.md` a v0.19.
 - **v3.2** — 27/08/2026 — **Fim da sessão 13: o agente passou a enxergar.** **D-153** — `scripts/ve-telas.mjs` emite sessão local e grava captura das telas num Chromium sem interface, nos dois temas e com rolagem. O que era verificável antes ia até `build` + `curl`, que lê HTML e não vê pixel. Resultado imediato: a **D-148, a D-149 e a D-151 foram confirmadas EM TELA** (o Kanban do Rafael abre com 205 dos 308, a Lista com 757 dos 2.462, os rótulos ficam ao rolar, as dez colunas cabem), e apareceram dois defeitos que o HTML não mostrava — a **C-14** (linha fantasma por cima do cabeçalho grudado) e a **P-050** (297 telefones corrompidos na origem), **encerrada no mesmo dia pela D-154**: ficam como estão, porque os dígitos se perderam no Pipedrive e telefone não é dado relevante nesta operação. Doc 03 a v0.24 (**154 decisões**), Doc 09 a v0.10.
 - **v3.1** — 27/08/2026 — **Fim da sessão 13.** Fecha o que a v3.0 abriu no meio da sessão. O maestro abriu o Kanban e o achou quebrado: **C-12** (Doc 09 v0.8) — cartão acima dos rótulos das etapas, e rótulos sumindo ao rolar. A faixa de rótulos saiu da rolagem dos cartões, e a **D-150 revogou a D-146**: o rodapé voltou à coluna externa, largura inteira, por baixo da sidebar. **P-049 encerrada** — ela era a segunda causa da C-12, e o que a fechou foi ver em tela o que estava escrito como "consequência assumida" desde 21/08. Doc 03 a v0.22 (**150 decisões**), Doc 09 a v0.8.
