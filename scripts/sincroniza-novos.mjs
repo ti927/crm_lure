@@ -23,6 +23,7 @@ import { readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { htmlParaTexto } from "./lib/html-para-texto.mjs";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ANTIGA = join(RAIZ, "dados/pipedrive-snapshot-17-08");
@@ -466,7 +467,7 @@ try {
           c.inicio,
           c.fim,
           usuarioPorPd.get(c.a.user_id) ?? null,
-          texto(c.a.note),
+          htmlParaTexto(c.a.note),
           Boolean(c.a.done),
         ],
       );
@@ -480,7 +481,11 @@ try {
 
   /* ================= 5. anotacoes ================= */
   for (const n of notasNovas) {
-    const corpo = texto(String(n.content ?? "").replace(/<[^>]+>/g, " "));
+    // ⚠️ **A conversao aqui e a MESMA de `carga-migracao.mjs`, e tem que
+    // continuar sendo.** E por `texto = corpo` que uma anotacao ja
+    // carregada e reconhecida: se as duas divergirem, nenhuma anotacao
+    // migrada casa e a sincronizacao insere as 928 de novo, em silencio.
+    const corpo = htmlParaTexto(n.content);
     if (!corpo) continue;
     const ja = await uma(
       `select id from anotacao where texto = $1 and criado_em = $2`,

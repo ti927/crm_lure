@@ -6,7 +6,7 @@
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
 | **Versão** | v0.10 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-14 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-15 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -459,6 +459,25 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 ⚠️ **C-02 é o mais grave dos quatro** e o mais silencioso: só aparece depois da carga, que é exatamente o momento em que menos se quer descobrir um defeito. Com D-101 a carga roda em produção, então este era o defeito com maior chance de estragar a virada.
 
 > **Como C-04 foi encontrada, sem poder consultar dado nenhum.** Erro de sintaxe do PostgREST (`PGRST100`) e erro de relacionamento (`PGRST200`) acontecem **antes** da checagem de permissão; `42501` só aparece quando a consulta já foi entendida. Isso permite validar a forma de uma consulta contra a base real usando apenas a chave anônima, sem ter acesso a linha nenhuma: se volta `42501`, a sintaxe está correta. Vale para toda a construção enquanto o login não existir.
+
+#### C-15 — o HTML do Pipedrive nunca foi convertido para texto (03/09/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-15** | Anotações e descrições de atividade migradas apareciam com **`&nbsp;` literal** no meio do texto, e o que na origem eram cinco linhas virava **um blob de uma linha só**. O maestro descreveu como "a parte de copiar e colar não está funcionando" | Duas linhas da carga de 17/08. `anotacao`: `texto(content.replace(/<[^>]+>/g, " "))` — **toda tag virou um espaço, `<br>` inclusive**, e entidade ficou literal. `atividade`: `texto(a.note)` — **nem chegou a tirar tag**; 2.007 descrições guardavam `<div>`, `<ol>` e `<span style=…>` crus | `scripts/lib/html-para-texto.mjs`, conversão única, usada pela carga, pela sincronização e pelo reparo. `scripts/recupera-texto-html.mjs` reconstituiu **319 anotações** e **2.125 descrições** |
+
+⚠️ **Não era o copiar-e-colar, e o relato apontava para o lugar errado.** O caminho de escrita do sistema está limpo: quem cola num `<textarea>` cola texto puro, e `criarAnotacao` grava o que recebe. O defeito era de **dado**, e tinha 17 dias. A lição não é que o relato estava errado — é que **o sintoma de um dado sujo é indistinguível do sintoma de uma escrita quebrada**, e a primeira medição tem que ser "isto entrou hoje ou veio da carga?".
+
+⚠️ **As duas tabelas se consertam por caminhos diferentes, e a razão é o que a carga destruiu.** Em `atividade.descricao` o HTML está **inteiro** no banco — a conversão sai do próprio valor gravado. Em `anotacao.texto` as tags **foram apagadas**: o `<br>` já é um espaço, e nada no banco distingue esse espaço de um espaço de verdade. A única fonte que ainda sabe é `dados/pipedrive/notes.json`, e por isso a anotação é reconstituída da origem, casando pelo texto **na forma velha** mais o instante de criação.
+
+⚠️ **O passo que faltaria sozinho: corrigir os scripts ANTES do banco.** `sincroniza-novos.mjs` reconhece uma anotação já carregada por `texto = corpo`. Consertar o texto no banco sem consertar a conversão do script faria a próxima sincronização não casar **nenhuma** das 928 anotações migradas e inserir todas de novo — sem erro, sem aviso, com o defeito só aparecendo como base duplicada semanas depois.
+
+⚠️ **A ordem da conversão é tag primeiro, entidade depois.** Invertida, `&lt;dho@eneserra.com.br&gt;` — um e-mail entre sinais de menor e maior, escapado, que **existe na base** — vira uma tag e desaparece.
+
+⚠️ **Quebra de linha não sobrevive ao `texto()` das cargas**, que colapsa `\s+` num espaço só e apaga `
+` junto. A normalização de branco tem que acontecer **dentro** de cada linha, nunca através delas — senão a conversão desfaz o próprio trabalho na última linha.
+
+⚠️ **O cerco do reparo importa tanto quanto a conversão.** A anotação só entra se casar com uma linha da extração; a atividade, só se for anterior ao fim da carga **e** de fato contiver tag ou entidade. Sem isso, o `<[^>]*>` da conversão comeria um `a < b > c` digitado à mão por alguém neste sistema.
 
 ### 3.10 Índices — atendimento a R-006
 

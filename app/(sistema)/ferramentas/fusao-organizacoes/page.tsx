@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { AlertTriangle, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { dataHora } from "@/lib/formato";
@@ -7,21 +6,24 @@ import { PainelGrupo, type Cadastro } from "./painel-grupo";
 import { Paginacao } from "@/components/dominio/paginacao";
 
 /**
- * Ferramenta de fusão de organizações duplicadas — **só desenvolvedores**
- * (D-156).
+ * Ferramenta de fusão de organizações duplicadas — **para todo o
+ * domínio**.
  *
  * ⚠️ **Isto altera o escopo do MVP**, onde "mesclagem de duplicados"
  * estava na lista do que não se constrói e a D-121 registrou que o
- * agrupamento da Lista é apresentação, não fusão. Entra por decisão
- * explícita do maestro, como ferramenta de manutenção enquanto a base é
- * limpa: 668 grupos, 1.204 cadastros que desapareceriam se todos fossem
- * fundidos.
+ * agrupamento da Lista é apresentação, não fusão. Entrou pela D-156, como
+ * ferramenta trancada em duas pessoas.
  *
- * ⚠️ **`notFound()`, e não uma tela de "sem permissão".** Para quem não é
- * desenvolvedor, esta rota não existe — anunciar que existe uma
- * ferramenta que apaga cadastros, e que você não pode usá-la, só cria a
- * pergunta. A recusa que importa está no banco, dentro de
- * `funde_organizacao`.
+ * ⚠️ **A tranca saiu**, por decisão do maestro: revoga a restrição da
+ * D-156, não a decisão inteira. O `notFound()` que escondia a rota de
+ * quem não era desenvolvedor saiu junto — ele existia para não anunciar
+ * uma ferramenta que ia recusar quem clicasse, e agora ela não recusa
+ * mais ninguém do domínio. O que decide se duas "Sicoob Credseguro" são
+ * a mesma empresa é quem atende a conta.
+ *
+ * ⚠️ **O que NÃO mudou é o que segurava o risco:** uma duplicada por
+ * vez, prévia obrigatória antes, rastro em `fusao_organizacao` com os
+ * ids de tudo que se moveu, e a recusa morando no banco e não na tela.
  */
 type Busca = Record<string, string | string[] | undefined>;
 const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -39,8 +41,6 @@ export default async function PaginaFusao({
   const pagina = Math.max(1, Number(um(p.pagina) ?? 1) || 1);
 
   const supabase = await createClient();
-  const { data: dev } = await supabase.rpc("sou_desenvolvedor");
-  if (dev !== true) notFound();
 
   const [{ data: grupos }, { data: total }, { data: historico }] = await Promise.all([
     supabase.rpc("fusao_grupos", {
@@ -92,8 +92,8 @@ export default async function PaginaFusao({
       <div className="border-border border-b px-4 py-3">
         <h1 className="text-xl font-semibold tracking-tight">Fundir duplicadas</h1>
         <p className="text-text-muted text-sm">
-          {(total ?? 0).toLocaleString("pt-BR")} grupos com nome repetido · ferramenta
-          de manutenção, restrita aos desenvolvedores
+          {(total ?? 0).toLocaleString("pt-BR")} grupos com nome repetido · ferramenta de
+          manutenção
         </p>
       </div>
 

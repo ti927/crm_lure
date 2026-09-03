@@ -6,6 +6,7 @@ import { Cabecalho } from "./cabecalho";
 import { ZonaDados } from "./zona-dados";
 import { ZonaTempo, type ItemTempo } from "./zona-tempo";
 import { ZonaLateral } from "./zona-lateral";
+import type { Anexo } from "./anexos";
 
 /**
  * F4 — detalhe do negócio, em três zonas (D-057, B-050).
@@ -74,6 +75,7 @@ export default async function PaginaNegocio({
     { data: anotacoes },
     { data: atividades },
     { data: pessoas },
+    { data: anexos },
   ] = await Promise.all([
     supabase.from("etapa").select("id, nome, ordem").order("ordem"),
     supabase.from("usuario").select("id, nome, foto_url").eq("ativo", true).order("nome"),
@@ -100,6 +102,14 @@ export default async function PaginaNegocio({
       .from("negocio_pessoa")
       .select("pessoa(id, nome, forma_contato(tipo, valor), pessoa_organizacao(cargo))")
       .eq("negocio_id", id),
+    // ⚠️ `caminho` NÃO vem para a tela. O balde é privado e o endereço é
+    // assinado a cada clique; mandar o caminho ao navegador só daria a
+    // ele um dado que não sabe usar.
+    supabase
+      .from("anexo_negocio")
+      .select("id, tipo, nome, url, tamanho, criado_em, usuario(nome)")
+      .eq("negocio_id", id)
+      .order("criado_em", { ascending: false }),
   ]);
 
   /*
@@ -194,6 +204,7 @@ export default async function PaginaNegocio({
           organizacao={negocio.organizacao}
           pessoas={(pessoas ?? []).map((p) => p.pessoa).filter(Boolean)}
           atividades={atividades ?? []}
+          anexos={(anexos ?? []) as Anexo[]}
         />
       </div>
     </div>

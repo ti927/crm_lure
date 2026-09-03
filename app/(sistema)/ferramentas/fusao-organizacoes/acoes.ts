@@ -4,17 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * ⚠️ A trava de verdade está no BANCO, dentro de `funde_organizacao`, e
- * foi verificada usuário a usuário: Julio e Fabio passam, os outros
- * quatro recebem `insufficient_privilege`. Estas checagens aqui existem
- * para o erro chegar em português e a tela nem ser montada — não são
- * elas que protegem.
+ * ⚠️ **A checagem de desenvolvedor SAIU daqui e do banco.** Ela existia
+ * pela D-156, que trancou a fusão em Julio e Fabio enquanto a base era
+ * limpa; por decisão do maestro a ferramenta passa a valer para todo o
+ * domínio. A recusa continua no BANCO, dentro de `funde_organizacao` —
+ * o que mudou é o tamanho dela, de `sou_desenvolvedor()` para
+ * `pertence_ao_dominio()`. Nunca foi a tela que protegia.
  */
-async function exigeDesenvolvedor() {
-  const supabase = await createClient();
-  const { data } = await supabase.rpc("sou_desenvolvedor");
-  return { supabase, dev: data === true };
-}
 
 export type Previa = {
   principal: { id: string; nome: string };
@@ -31,8 +27,7 @@ export type Previa = {
 };
 
 export async function previaFusao(principalId: string, duplicadaId: string) {
-  const { supabase, dev } = await exigeDesenvolvedor();
-  if (!dev) return { erro: "Esta ferramenta é restrita aos desenvolvedores." };
+  const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("previa_fusao_organizacao", {
     p_principal: principalId,
@@ -51,8 +46,7 @@ export async function previaFusao(principalId: string, duplicadaId: string) {
  * A operação não tem desfazer.
  */
 export async function fundirOrganizacao(principalId: string, duplicadaId: string) {
-  const { supabase, dev } = await exigeDesenvolvedor();
-  if (!dev) return { erro: "Esta ferramenta é restrita aos desenvolvedores." };
+  const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("funde_organizacao", {
     p_principal: principalId,
@@ -113,8 +107,7 @@ export type DetalheCadastro = {
  * a conferência é fazer com que se confira menos.
  */
 export async function detalheDoCadastro(id: string) {
-  const { supabase, dev } = await exigeDesenvolvedor();
-  if (!dev) return { erro: "Esta ferramenta é restrita aos desenvolvedores." };
+  const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("fusao_detalhe_cadastro", { p_id: id });
   if (error) return { erro: error.message };

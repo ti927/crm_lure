@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "telas": "node scripts/ve-telas.mjs"
+    "telas": "node scripts/ve-telas.mjs",
+    "recupera-texto": "node scripts/recupera-texto-html.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

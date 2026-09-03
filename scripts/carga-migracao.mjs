@@ -19,6 +19,7 @@ import { readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { htmlParaTexto } from "./lib/html-para-texto.mjs";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DADOS = join(RAIZ, "dados", "pipedrive");
@@ -326,7 +327,9 @@ try {
       inicio,
       fim,
       usuarioPorPd.get(a.user_id) ?? null,
-      texto(a.note),
+      // Idem: `texto(a.note)` gravava o HTML CRU — 2.125 descricoes
+      // com `<div>`, `<ol>` e `<span style=…>` no banco.
+      htmlParaTexto(a.note),
       Boolean(a.done),
     ]);
   }
@@ -342,7 +345,12 @@ try {
   const notas = await ler("notes");
   const linhasNota = [];
   for (const n of notas) {
-    const corpo = texto(String(n.content ?? "").replace(/<[^>]+>/g, " "));
+    // ⚠️ NAO use `texto(...replace(/<[^>]+>/g, " "))`. Era assim ate a
+    // carga de 17/08, e custou 319 anotacoes: toda tag virava um espaco,
+    // `<br>` inclusive, entao cinco contatos em cinco linhas viravam um
+    // blob so — e `&nbsp;` ficava literal no banco. Consertado por
+    // `scripts/recupera-texto-html.mjs`.
+    const corpo = htmlParaTexto(n.content);
     if (!corpo) continue;
     linhasNota.push([
       n.deal_id ? negocioPorPd.get(n.deal_id) ?? null : null,

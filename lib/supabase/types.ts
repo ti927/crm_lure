@@ -86,6 +86,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      anexo_negocio: {
+        Row: {
+          autor_id: string | null
+          caminho: string | null
+          criado_em: string
+          id: string
+          mime: string | null
+          negocio_id: string
+          nome: string
+          tamanho: number | null
+          tipo: string
+          url: string | null
+        }
+        Insert: {
+          autor_id?: string | null
+          caminho?: string | null
+          criado_em?: string
+          id?: string
+          mime?: string | null
+          negocio_id: string
+          nome: string
+          tamanho?: number | null
+          tipo: string
+          url?: string | null
+        }
+        Update: {
+          autor_id?: string | null
+          caminho?: string | null
+          criado_em?: string
+          id?: string
+          mime?: string | null
+          negocio_id?: string
+          nome?: string
+          tamanho?: number | null
+          tipo?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anexo_negocio_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anexo_negocio_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anotacao: {
         Row: {
           autor_id: string | null

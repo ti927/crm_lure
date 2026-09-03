@@ -13,6 +13,7 @@ import {
   vincularPessoa,
   desvincularPessoa,
 } from "./acoes";
+import { Anexos, type Anexo } from "./anexos";
 
 type Contato = { tipo: string; valor: string };
 type Pessoa = {
@@ -36,11 +37,13 @@ export function ZonaLateral({
   organizacao,
   pessoas,
   atividades,
+  anexos,
 }: {
   negocioId: string;
   organizacao: { id: string; nome: string; cidade?: string | null } | null;
   pessoas: Pessoa[];
   atividades: Atividade[];
+  anexos: Anexo[];
 }) {
   const router = useRouter();
   const avisar = useAviso();
@@ -89,7 +92,7 @@ export function ZonaLateral({
 
   return (
     <section
-      aria-label="Pessoas e atividades"
+      aria-label="Pessoas, atividades e anexos"
       className="border-border bg-surface flex flex-col gap-5 overflow-y-auto border-l p-4"
     >
       <div>
@@ -212,6 +215,13 @@ export function ZonaLateral({
           </ul>
         )}
       </div>
+
+      {/* ⚠️ Entre Pessoas e Atividades, e não no fim da coluna. São
+          poucos anexos por negócio, então o bloco quase não empurra o que
+          vem depois — enquanto Atividades cresce sem teto, e pôr os
+          anexos abaixo dela os deixaria fora da tela justamente nos
+          negócios antigos, que são os que têm proposta enviada. */}
+      <Anexos negocioId={negocioId} anexos={anexos} />
 
       <div>
         <h2 className="text-text-muted mb-2 text-xs font-semibold uppercase tracking-caps">
