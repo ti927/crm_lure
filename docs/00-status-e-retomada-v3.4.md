@@ -35,7 +35,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `00-status-e-retomada-v3.4.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.28.md` |
+| `03-log-de-decisoes-v0.29.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -43,7 +43,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `09-arquitetura-tecnica-v0.10.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.23.md` *(espelho do `CLAUDE.md` da raiz — ⚠️ a raiz é a que vale)* |
+| `12-claude-md-v0.24.md` *(espelho do `CLAUDE.md` da raiz — ⚠️ a raiz é a que vale)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
@@ -400,7 +400,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 00 | Status e Retomada | v3.4 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.28 | vivo — **165 decisões** | — |
+| 03 | Log de Decisões | v0.29 | vivo — **166 decisões** | atualizado 08/09, sessão 16 |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
@@ -409,7 +409,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 09 | Arquitetura Técnica | v0.10 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-15** | atualizado 03/09 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.23 | vivo — **na raiz do repositório**; `docs/12-claude-md-v0.23.md` é espelho | atualizado 03/09, sessão 15 |
+| 12 | CLAUDE.md | v0.24 | vivo — **na raiz do repositório**; `docs/12-claude-md-v0.24.md` é espelho, **em dia** | atualizado 08/09, sessão 16 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 15 | Plano da Central de Notificações | v0.3 | ✅ **construído** — os sete passos de pé | atualizado 20/08 |

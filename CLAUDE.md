@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.23 · 03/09/2026
+> Documento 12 da biblioteca do projeto · v0.24 · 08/09/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 165 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 166 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 9. **Filtro de tela abre no recorte de quem abriu, e a preferência tem TRÊS estados** (D-149). `usuario.preferencia_kanban`, `preferencia_atividades` e `preferencia_lista_negocios` guardam a querystring. **Nulo** = nunca escolheu → abre em "só os meus". **Preenchido** = volta igual. **Vazio** = escolheu ver tudo, e o padrão **não** volta por cima. ⚠️ Tratar nulo e vazio como a mesma coisa faz o botão "Limpar" ser desfeito pelo próprio padrão no carregamento seguinte — parece defeito e é regra mal escrita. O que se guarda é **curto de propósito**: termo de busca, dia em foco e mês ficam de fora, porque são pergunta de agora e não escolha de trabalho.
 
@@ -87,6 +87,8 @@ Ela caiu porque contrariava a realidade: *Aguardando Contrato* é uma espera leg
 ⚠️ **O quadro cabe numa tela só, e tem piso** (D-148). As seis colunas dividem a largura (`flex-1 basis-0`) em vez de somarem ~1.840px — mas com **`min-w-40` (160px) de piso**, e o piso é a parte que importa: abaixo dele a rolagem lateral volta **de propósito**, porque apertar até ficar ilegível troca um incômodo por um defeito. Se acrescentar coisa ao cartão, confira que ainda cabe em 160px; a última linha usa `flex-wrap` justamente para quebrar em vez de vazar.
 
 ⚠️ **A busca do Kanban sai de `kanban_coluna`, no banco** (D-147) — e a paginação da coluna foi junto para lá. Não a reescreva como consulta do PostgREST: a **C-04** recusa coluna vinculada dentro de `or`, e o cartão mostra o nome da organização. A saída de dois passos (ids em `in`) tem teto de URL sobre 2.897 organizações e devolveria resultado incompleto **calado**.
+
+⚠️ **O total somado da coluna sai do BANCO, nunca do que está na tela** (D-166). O cabeçalho das duas últimas etapas mostra o valor somado ao passar o mouse, e a coluna chega paginada de 20 em 20: somar os cartões carregados daria o total dos **vinte primeiros** com toda a aparência de ser o da etapa. `kanban_coluna` devolve `soma` e `com_valor` por `over ()`, que roda **antes** do `offset/limit`, na mesma ida ao banco — seis etapas já são seis consultas em paralelo, e uma soma separada dobraria para doze. ⚠️ **Duas etapas e não seis, porque valor só existe depois da proposta:** Cold Lead tem 141 negócios abertos e 3 com valor. ⚠️ **A dica diz quantos cartões têm valor**, senão a soma mente por omissão — é a D-161 outra vez. ⚠️ **Arrastar move o valor junto** no estado local, senão a soma contradiz os cartões que deveriam explicá-la. ⚠️ **No celular o total é escrito**, não hover (C-11), e a frase que o explica mora numa função só (`detalheDoTotal`).
 
 ---
 
@@ -245,7 +247,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **162 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **166 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -256,6 +258,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.24** — 08/09/2026 — **Sessão 16: o Kanban passa a dizer quanto vale cada coluna.** A **D-166** põe o valor somado da etapa no hover do cabeçalho das duas últimas colunas, com a contagem de quantos cartões têm valor, acompanhando o filtro em uso — e escrito numa faixa no celular, onde não há hover. ⚠️ Fica a regra que ela cobrou: **soma de coluna sai do banco, nunca do que está na tela.** A coluna chega paginada de 20 em 20 e "Proposta Enviada" tem 1.168 negócios; somar os cartões carregados daria o total dos vinte primeiros com toda a aparência de ser o da etapa, e número errado com cara de certo é o pior defeito possível num total. ⚠️ E a dica diz **quantos cartões têm valor** porque sem isso ela mente por omissão: Cold Lead tem 141 negócios abertos e 3 com valor, Proposta Enviada tem 45 e 43. **166 decisões.**
 - **v0.23** — 03/09/2026 — **Três pedidos, e o do meio era o único que parecia ser o que era.** (a) O maestro relatou que "copiar e colar não está funcionando" e mandou o print de uma anotação salpicada de `&nbsp;`: **não era o copiar-e-colar** — o caminho de escrita está limpo — era a carga de 17/08, que trocou toda tag por um espaço e deixou entidade literal. **319 anotações e 2.125 descrições de atividade** reconstituídas (**D-165**), com a conversão virando função única. (b) Entram os **anexos do negócio** (**D-163**), arquivo ou link, pedido nominal da Daniela para registrar a proposta enviada — paridade com o Files do Pipedrive. (c) A **fusão de duplicadas abre para todo o domínio** (**D-164**), revogando a restrição da D-156. ⚠️ Ficam três regras: **uma conversão de HTML só**, e mudá-la de um lado sem o outro faz a sincronização reinserir 928 anotações em silêncio; **arquivo não sobe por Server Action** (teto de 1 MB); e **liberar uma função sem liberar a política que ela escreve por dentro é meia-correção** — a fusão passaria e o rastro derrubaria a transação. **165 decisões.**
 - **v0.22** — 01/09/2026 — **Uma pergunta do maestro achou o que a D-160 tinha deixado passar.** "Os endereços do Pipedrive são só cidade-UF?" — sim, **97,2%** (840 de 864), e os 56 CEPs de lá são de município, não de rua. Mas os outros **24 foram digitados à mão**, e o reconhecimento da D-160 só entendia "Cidade, UF": **12 estavam sem cidade nenhuma** com a cidade escrita e legível na origem. A **D-162** abre `organizacao.endereco` (texto livre, uma coluna e não sete — 13 cadastros não justificam um formulário que 2.890 deixariam vazio) e troca a expressão regular por **dicionário de cidades**. ⚠️ Fica a regra: **conservadorismo vira perda quando o dado está à vista** — recusar palpite é certo, recusar o que está escrito não é. E duas armadilhas pegas no ensaio: limpeza sensível a acento fazia "Goiania" virar logradouro, e o estado por extenso fazia "Bahia, Brasil" virar endereço. **162 decisões.**
 - **v0.21** — 01/09/2026 — **A lista de Contatos ganha filtro por localização (D-161)** — seletor único com três recortes: estado inteiro, cidade e **sem endereço** (1.877 organizações, a maioria da base, e o único caminho até elas para preencher o que falta). ⚠️ Fica a regra que este filtro cobrou: **em lista agrupada, filtro entra em TRÊS funções ao mesmo tempo** — a lista, a contagem que alimenta a paginação e a expansão do grupo. Filtrar só uma faz a paginação anunciar 7 páginas e a lista mostrar 5, ou o crachá dizer 3 e abrir mostrar 18 — e **dois números que se contradizem na mesma tela não desacreditam o errado, desacreditam os dois**. O predicado mora numa função só (`organizacao_no_recorte`) porque `where` repetido em três lugares é como eles divergem no dia em que alguém corrigir um. **161 decisões.**
