@@ -1112,6 +1112,8 @@ export type Database = {
           usuario_nome: string | null
           usuario_foto: string | null
           total: number
+          soma: number
+          com_valor: number
         }[]
       }
       organizacoes_agrupadas: {

@@ -7,7 +7,12 @@ import { real } from "@/lib/formato";
 import { EtiquetaStatus, faixaDaEtapa } from "@/components/dominio/etiquetas";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { maisDaEtapa } from "./acoes";
-import type { ColunaEtapa, Cartao } from "./consulta";
+import {
+  mostraTotalSomado,
+  detalheDoTotal,
+  type ColunaEtapa,
+  type Cartao,
+} from "./consulta";
 
 const POR_VEZ = 20;
 
@@ -39,9 +44,15 @@ export function KanbanMobile({
 
   if (colunas.length === 0) return null;
 
-  const coluna = colunas[Math.min(indice, colunas.length - 1)];
+  const atual = Math.min(indice, colunas.length - 1);
+  const coluna = colunas[atual];
   const cartoes = [...coluna.cartoes, ...(extras[coluna.id] ?? [])];
   const faltam = coluna.total - cartoes.length;
+
+  // ⚠️ No celular o total é ESCRITO, não uma dica de hover — aqui não
+  // existe hover (C-11). É a mesma informação da faixa do computador,
+  // pela única porta que o toque tem.
+  const comTotal = mostraTotalSomado(atual, colunas.length);
 
   async function carregarMais() {
     setCarregando(true);
@@ -101,6 +112,22 @@ export function KanbanMobile({
           <ChevronRight className="size-4" aria-hidden />
         </button>
       </div>
+
+      {comTotal && (
+        <div className="border-border bg-surface-sunken flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2">
+          <span className="min-w-0">
+            <span className="text-text-muted tracking-caps block text-2xs font-semibold uppercase">
+              Total da etapa
+            </span>
+            <span className="text-text-secondary block text-xs">
+              {detalheDoTotal(coluna.total, coluna.comValor)}
+            </span>
+          </span>
+          <span className="tabular text-md shrink-0 font-semibold">
+            {real(coluna.soma)}
+          </span>
+        </div>
+      )}
 
       {erro && (
         <p role="alert" className="text-danger-ink px-4 py-2 text-sm">

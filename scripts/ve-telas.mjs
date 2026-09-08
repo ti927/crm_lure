@@ -25,6 +25,7 @@
  *   node scripts/ve-telas.mjs
  *   node scripts/ve-telas.mjs --rotas /kanban,/negocios --tema ambos
  *   node scripts/ve-telas.mjs --como rafael.saia@lureconsultoria.com.br
+ *   node scripts/ve-telas.mjs --clicar '[aria-label="Próxima etapa"]' --clicar-vezes 5
  */
 
 import { readFile, mkdir } from "node:fs/promises";
@@ -72,6 +73,15 @@ const APONTAR = arg("apontar", "");
  * antes do clique nao prova nada sobre ele.
  */
 const CLICAR = arg("clicar", "");
+/**
+ * Quantas vezes clicar no seletor de `--clicar`.
+ *
+ * ⚠️ Existe porque nem todo estado de tela e alcancavel pela URL. O
+ * Kanban do celular guarda a etapa em estado local e anda de uma em uma
+ * pelas setas: sem repetir o clique, so a PRIMEIRA etapa pode ser
+ * capturada, e o que se quer olhar mora na ultima.
+ */
+const CLICAR_VEZES = Math.max(1, Number(arg("clicar-vezes", "1")));
 const ALTURA = Number(arg("altura", "900"));
 const ROTAS = arg(
   "rotas",
@@ -267,8 +277,11 @@ try {
       if (CLICAR) {
         const alvo = pagina.locator(CLICAR).first();
         if (await alvo.count()) {
-          await alvo.click();
-          await pagina.waitForTimeout(900);
+          for (let i = 0; i < CLICAR_VEZES; i++) {
+            await alvo.click();
+            await pagina.waitForTimeout(CLICAR_VEZES > 1 ? 250 : 900);
+          }
+          if (CLICAR_VEZES > 1) await pagina.waitForTimeout(700);
         } else {
           console.log(`  ⚠️  nada casou com "${CLICAR}" em ${rota}`);
         }

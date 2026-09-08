@@ -9,6 +9,8 @@ import {
   buscaCrua,
   paraCartao,
   totalDaColuna,
+  somaDaColuna,
+  comValorDaColuna,
   type ColunaEtapa,
   type Busca,
 } from "./consulta";
@@ -101,6 +103,10 @@ export default async function PaginaKanban({
       return {
         ...e,
         total: totalDaColuna(linhas),
+        // A soma vem do banco pela mesma ida, e e da coluna inteira. Ver
+        // a nota em `consulta.ts`: somar `cartoes` daria a fatia.
+        soma: somaDaColuna(linhas),
+        comValor: comValorDaColuna(linhas),
         cartoes: linhas.map(paraCartao),
       };
     })

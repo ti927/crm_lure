@@ -25,6 +25,15 @@ export type ColunaEtapa = {
   nome: string;
   ordem: number;
   total: number;
+  /**
+   * Valor somado da coluna INTEIRA, no recorte que estiver valendo — nao
+   * da fatia carregada. Vem de `kanban_coluna`, por window function que
+   * roda antes do offset/limit; somar `cartoes` aqui daria o total dos
+   * 20 primeiros com cara de total da etapa.
+   */
+  soma: number;
+  /** Quantos desses negocios tem valor diferente de zero. */
+  comValor: number;
   cartoes: Cartao[];
 };
 
@@ -59,6 +68,57 @@ export function paraCartao(l: LinhaKanban): Cartao {
  */
 export function totalDaColuna(linhas: LinhaKanban[]): number {
   return Number(linhas[0]?.total ?? 0);
+}
+
+/**
+ * A soma e a contagem com valor viajam repetidas em toda linha, porque
+ * sao window functions — ler a primeira basta. `Number()` porque
+ * `numeric` pode chegar como texto dependendo da versao do PostgREST, e
+ * `"1000" + "2000"` seria concatenacao silenciosa.
+ */
+export function somaDaColuna(linhas: LinhaKanban[]): number {
+  return Number(linhas[0]?.soma ?? 0);
+}
+
+export function comValorDaColuna(linhas: LinhaKanban[]): number {
+  return Number(linhas[0]?.com_valor ?? 0);
+}
+
+/**
+ * Quantas colunas, contadas do FIM do funil, mostram o total somado.
+ *
+ * ⚠️ Duas, por pedido — e o pedido tem razao de ser no dado: valor so
+ * passa a existir quando a proposta e feita. Na base de hoje, Cold Lead
+ * tem 141 negocios abertos e 3 com valor; Proposta Enviada tem 45 e 43.
+ * Somar as primeiras etapas exibiria um numero que nao significa nada.
+ *
+ * ⚠️ Mora aqui, e nao no quadro, porque o Kanban do celular precisa
+ * responder a MESMA pergunta. Duas telas decidindo isso por conta
+ * propria e como elas divergem no dia em que alguem mudar o numero.
+ */
+export const COLUNAS_COM_TOTAL = 2;
+
+export function mostraTotalSomado(indice: number, quantasColunas: number): boolean {
+  return indice >= quantasColunas - COLUNAS_COM_TOTAL;
+}
+
+/**
+ * A frase que impede a soma de mentir por omissao.
+ *
+ * ⚠️ Funcao unica porque o computador e o celular mostram o MESMO total
+ * e precisam explica-lo do mesmo jeito. Duas redacoes divergem no dia em
+ * que alguem corrigir uma — e a D-161 ja registrou o que acontece quando
+ * dois numeros da mesma tela nao se explicam: nenhum dos dois e
+ * acreditado, nem o certo.
+ */
+export function detalheDoTotal(total: number, comValor: number): string {
+  const n = total.toLocaleString("pt-BR");
+  if (total === 0) return "Nenhum negócio aberto nesta etapa.";
+  if (comValor === 0) return `Nenhum dos ${n} negócios tem valor preenchido.`;
+  if (comValor === total) {
+    return `Todos os ${n} ${total === 1 ? "negócio tem" : "negócios têm"} valor.`;
+  }
+  return `${comValor.toLocaleString("pt-BR")} de ${n} negócios têm valor; o resto está zerado.`;
 }
 
 export type Busca = Record<string, string | string[] | undefined>;

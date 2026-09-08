@@ -22,8 +22,9 @@ import { real } from "@/lib/formato";
 import { EtiquetaStatus, faixaDaEtapa } from "@/components/dominio/etiquetas";
 import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { moverNegocio, maisDaEtapa } from "./acoes";
+import { TotalDaEtapa } from "./total-da-etapa";
 import type { Desfecho } from "./constantes";
-import type { Cartao, ColunaEtapa } from "./consulta";
+import { mostraTotalSomado, type Cartao, type ColunaEtapa } from "./consulta";
 
 const POR_VEZ = 20;
 
@@ -131,7 +132,16 @@ function CartaoNegocio({
  * `truncate` com `title` porque "Apresentação Realizada" não cabe em
  * 160px, e cortar em silêncio seria perder o nome da etapa.
  */
-function RotuloEtapa({ coluna }: { coluna: ColunaEtapa }) {
+function RotuloEtapa({
+  coluna,
+  comTotal,
+  filtrado,
+}: {
+  coluna: ColunaEtapa;
+  /** Esta etapa mostra o valor somado ao passar o mouse? */
+  comTotal: boolean;
+  filtrado: boolean;
+}) {
   return (
     <div
       className={`${LARGURA_COLUNA} border-border flex items-baseline justify-between gap-1 border-b px-1 pb-1.5`}
@@ -139,9 +149,23 @@ function RotuloEtapa({ coluna }: { coluna: ColunaEtapa }) {
       <h2 className="truncate text-sm font-semibold" title={coluna.nome}>
         {coluna.nome}
       </h2>
-      <span className="text-text-muted tabular shrink-0 text-xs">
-        {coluna.total.toLocaleString("pt-BR")}
-      </span>
+      {/* ⚠️ O gatilho da dica OCUPA O LUGAR do número, não se soma a ele:
+          o piso da coluna é 160px (D-148) e o nome da etapa já disputa
+          cada pixel com "Apresentação Realizada". O que entra de novo é
+          um Σ de 12px. */}
+      {comTotal ? (
+        <TotalDaEtapa
+          nome={coluna.nome}
+          total={coluna.total}
+          soma={coluna.soma}
+          comValor={coluna.comValor}
+          filtrado={filtrado}
+        />
+      ) : (
+        <span className="text-text-muted tabular shrink-0 text-xs">
+          {coluna.total.toLocaleString("pt-BR")}
+        </span>
+      )}
     </div>
   );
 }
@@ -222,6 +246,11 @@ export function Quadro({
   const buscando = Boolean(termo);
   const vazio = colunas.every((c) => c.total === 0);
 
+  // A dica do total precisa dizer se o número que mostra é da etapa
+  // inteira ou do recorte — sem isso, filtrar pareceria fazer dinheiro
+  // sumir.
+  const filtrado = Boolean(termo || responsavelId);
+
   // ⚠️ Sai do ESTADO, e não das colunas iniciais: "Mais 20" acrescenta
   // cartões e é justamente aí que a barra de rolagem vertical aparece ou
   // muda de tamanho. Medindo o que chegou do servidor, a faixa de
@@ -255,16 +284,31 @@ export function Quadro({
       const cartao = antes.flatMap((c) => c.cartoes).find((c) => c.id === cartaoId);
       if (!cartao) return antes;
 
+      // ⚠️ O valor do cartão viaja com ele. Sem isto, arrastar um negócio
+      // de R$ 178.500 para fora de "Proposta Enviada" tirava o cartão da
+      // tela e deixava o dinheiro na soma até o próximo carregamento —
+      // um total que contradiz os cartões que o explicam.
+      const v = Number(cartao.valor ?? 0);
+      const conta = v !== 0 ? 1 : 0;
+
       return antes.map((col) => {
         if (col.cartoes.some((c) => c.id === cartaoId)) {
           return {
             ...col,
             total: col.total - 1,
+            soma: col.soma - v,
+            comValor: col.comValor - conta,
             cartoes: col.cartoes.filter((c) => c.id !== cartaoId),
           };
         }
         if (col.id === destinoId) {
-          return { ...col, total: col.total + 1, cartoes: [cartao, ...col.cartoes] };
+          return {
+            ...col,
+            total: col.total + 1,
+            soma: col.soma + v,
+            comValor: col.comValor + conta,
+            cartoes: [cartao, ...col.cartoes],
+          };
         }
         return col;
       });
@@ -358,8 +402,13 @@ export function Quadro({
           ref={rotulosRef}
           className={`${FAIXA} bg-background sticky top-0 z-20 shrink-0 overflow-x-hidden pt-2`}
         >
-          {colunas.map((c) => (
-            <RotuloEtapa key={c.id} coluna={c} />
+          {colunas.map((c, i) => (
+            <RotuloEtapa
+              key={c.id}
+              coluna={c}
+              comTotal={mostraTotalSomado(i, colunas.length)}
+              filtrado={filtrado}
+            />
           ))}
         </div>
 
