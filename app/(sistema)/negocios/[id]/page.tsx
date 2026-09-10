@@ -158,7 +158,14 @@ export default async function PaginaNegocio({
   ].sort((a, b) => (a.quando < b.quando ? 1 : -1));
 
   return (
-    <div className="flex h-full min-w-0 flex-col">
+    /* ⚠️ ALTURA FIXA SÓ NO COMPUTADOR (D-151, pela porta do celular).
+       A ficha é um quadro de três painéis quando há largura para três
+       painéis. Empilhada num telefone ela deixa de ser quadro e vira
+       página: `h-full` amarraria as três zonas à altura da janela, e o
+       cabeçalho — que no celular quebra em três fileiras de etapas —
+       comeria mais da metade dela, sobrando uma tira para cada zona. Sem
+       `h-full`, o conteúdo cresce e quem rola é o `main`, uma vez só. */
+    <div className="flex min-w-0 flex-col lg:h-full">
       <div className="border-border shrink-0 border-b px-4 py-3">
         <Link
           href={voltarPara}
@@ -181,7 +188,14 @@ export default async function PaginaNegocio({
         />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-px overflow-y-auto lg:grid-cols-[20rem_minmax(0,1fr)_20rem] lg:overflow-hidden">
+      {/* ⚠️ NENHUMA ROLAGEM PRÓPRIA NO CELULAR. Aqui havia um
+          `overflow-y-auto` e cada zona tinha o seu: três caixas de
+          rolagem dentro de uma caixa de rolagem, dentro do `main` que já
+          rola. Empilhadas em 390px isso dava uma tira de dois centímetros
+          por zona, cada uma com barra própria, tapando o que devia
+          mostrar. É a C-12 outra vez: a pergunta não é *se* algo rola, é
+          *qual* container rola — e no celular a resposta é o `main`. */}
+      <div className="grid grid-cols-1 gap-px lg:min-h-0 lg:flex-1 lg:grid-cols-[20rem_minmax(0,1fr)_20rem] lg:overflow-hidden">
         <ZonaDados
           negocio={negocio}
           etapas={etapas ?? []}

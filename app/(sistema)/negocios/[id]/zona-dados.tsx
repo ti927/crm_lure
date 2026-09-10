@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check, Pencil } from "lucide-react";
 import { real, data } from "@/lib/formato";
-import { UsuarioComFoto } from "@/components/dominio/avatar-usuario";
+import { AvatarUsuario } from "@/components/dominio/avatar-usuario";
 import { editarCampo } from "./acoes";
 
 type Opcao = { id: string; nome: string };
@@ -46,7 +46,7 @@ export function ZonaDados({
   return (
     <section
       aria-label="Dados do negócio"
-      className="border-border bg-surface flex flex-col gap-px overflow-y-auto border-r p-4"
+      className="border-border bg-surface flex flex-col gap-px p-4 lg:overflow-y-auto lg:border-r"
     >
       <h2 className="text-text-muted mb-2 text-xs font-semibold uppercase tracking-caps">
         Detalhes
@@ -75,9 +75,14 @@ export function ZonaDados({
         rotulo="Responsável"
         atual={negocio.responsavel_id}
         opcoes={usuarios}
+        // ⚠️ SÓ a foto. `UsuarioComFoto` escreve o nome ao lado dela, e o
+        // `select` ao lado já mostra o mesmo nome — no computador isso
+        // passava despercebido porque a coluna de 20rem truncava o nome
+        // da esquerda até sobrar nada; em 390px sobra espaço para os dois
+        // e o campo dizia "Daniela Daniela".
         exibicao={
           negocio.usuario ? (
-            <UsuarioComFoto
+            <AvatarUsuario
               nome={negocio.usuario.nome}
               foto={negocio.usuario.foto_url}
               tamanho="sm"

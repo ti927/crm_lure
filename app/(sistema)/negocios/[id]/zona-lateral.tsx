@@ -93,7 +93,7 @@ export function ZonaLateral({
   return (
     <section
       aria-label="Pessoas, atividades e anexos"
-      className="border-border bg-surface flex flex-col gap-5 overflow-y-auto border-l p-4"
+      className="border-border bg-surface flex flex-col gap-5 p-4 lg:overflow-y-auto lg:border-l"
     >
       <div>
         <h2 className="text-text-muted mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-caps">

@@ -120,7 +120,14 @@ export default async function FichaOrganizacao({
   const secao = "text-text-muted mb-2 text-xs font-semibold uppercase tracking-caps";
 
   return (
-    <div className="flex h-full min-w-0 flex-col">
+    /* ⚠️ ALTURA FIXA SÓ NO COMPUTADOR (D-151, pela porta do celular).
+       A ficha é um quadro de três painéis quando há largura para três
+       painéis. Empilhada num telefone ela deixa de ser quadro e vira
+       página: `h-full` amarraria as três zonas à altura da janela, e o
+       cabeçalho — que no celular quebra em três fileiras de etapas —
+       comeria mais da metade dela, sobrando uma tira para cada zona. Sem
+       `h-full`, o conteúdo cresce e quem rola é o `main`, uma vez só. */
+    <div className="flex min-w-0 flex-col lg:h-full">
       <div className="border-border shrink-0 border-b px-4 py-3">
         <Link
           href="/contatos"
@@ -142,9 +149,10 @@ export default async function FichaOrganizacao({
         />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-px overflow-y-auto lg:grid-cols-[20rem_minmax(0,1fr)] lg:overflow-hidden">
+      {/* Ver a nota da ficha do negócio: no celular nada rola por dentro. */}
+      <div className="grid grid-cols-1 gap-px lg:min-h-0 lg:flex-1 lg:grid-cols-[20rem_minmax(0,1fr)] lg:overflow-hidden">
         {/* Coluna esquerda: dados + pessoas */}
-        <div className="bg-surface flex flex-col gap-5 overflow-y-auto border-r-0 p-4 lg:border-r lg:border-border">
+        <div className="bg-surface flex flex-col gap-5 p-4 lg:overflow-y-auto lg:border-r lg:border-border">
           <div>
             <h2 className={secao}>Dados</h2>
             <dl className="flex flex-col gap-2 text-md">
@@ -194,7 +202,7 @@ export default async function FichaOrganizacao({
         </div>
 
         {/* Coluna direita: histórico derivado */}
-        <div className="flex flex-col gap-6 overflow-y-auto p-4">
+        <div className="flex flex-col gap-6 p-4 lg:overflow-y-auto">
           <section>
             <h2 className={secao}>Negócios {negocios && negocios.length > 0 && `(${negocios.length})`}</h2>
             {!negocios || negocios.length === 0 ? (

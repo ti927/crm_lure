@@ -170,7 +170,7 @@ export function ZonaTempo({
         />
       )}
 
-      <ol className="min-h-0 flex-1 overflow-y-auto p-3">
+      <ol className="p-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         {visiveis.map((i, indice) => (
           <ItemDaLinha
             key={i.id}
