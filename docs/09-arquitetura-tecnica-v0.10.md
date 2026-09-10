@@ -6,7 +6,7 @@
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
 | **Versão** | v0.10 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-15 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-16 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -478,6 +478,20 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 ` junto. A normalização de branco tem que acontecer **dentro** de cada linha, nunca através delas — senão a conversão desfaz o próprio trabalho na última linha.
 
 ⚠️ **O cerco do reparo importa tanto quanto a conversão.** A anotação só entra se casar com uma linha da extração; a atividade, só se for anterior ao fim da carga **e** de fato contiver tag ou entidade. Sem isso, o `<[^>]*>` da conversão comeria um `a < b > c` digitado à mão por alguém neste sistema.
+
+#### C-16 — a ficha era um quadro de altura fixa também no celular (10/09/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-16** | Na ficha do negócio aberta no telefone, **Detalhes**, **Linha do Tempo** e a coluna lateral ficavam em tiras de cerca de dois centímetros, cada uma com barra de rolagem própria, tapando o que deviam mostrar. O relato do maestro: *"alguns grupos ficam limitados… por outros serem de tamanhos rígidos e outros de rolagem, não dando tamanho suficiente para navegar e tampando informações"* | **Três containers de rolagem aninhados dentro do `main`, que já rola.** O `grid` da ficha tinha `overflow-y-auto` e cada uma das três zonas tinha o seu. Em 390px o cabeçalho quebra a barra de etapas em **três fileiras** e come metade da janela; o que sobra do `h-full` é repartido por três caixas | Toda rolagem interna passou a ser `lg:`. Abaixo disso a página **cresce** e o `main` rola uma vez só. As fichas de **organização** e **pessoa** tinham o defeito idêntico e foram corrigidas junto |
+
+⚠️ **É a C-12 por uma terceira porta, e a pergunta é sempre a mesma:** não é *se* algo rola, é **qual** container rola. Lá eram os rótulos do Kanban `sticky` dentro do quadro enquanto quem subia era a página; aqui são três caixas de rolagem dentro de uma caixa de rolagem dentro do `main`. A resposta no celular é sempre o `main`.
+
+⚠️ **A regra já existia escrita — só não tinha sido aplicada às fichas.** A **D-151** estabeleceu que as telas de lista não rolam por dentro, e Lista e Contatos usam `flex min-w-0 flex-col`, **sem `h-full`**. As três fichas ficaram com `h-full` e rolagem interna em todo tamanho de tela, porque no computador isso é o desenho certo: três painéis lado a lado, cada um rolando por conta própria. O erro não foi o `h-full`; foi ele **não ter sido condicionado à largura**.
+
+⚠️ **Corrigir uma das três fichas deixaria as outras duas mentindo do mesmo jeito.** `negocios/[id]`, `contatos/organizacoes/[id]` e `contatos/pessoas/[id]` tinham o mesmo `overflow-y-auto` no mesmo lugar. Ao mexer em rolagem de ficha, mexa nas três — é o mesmo raciocínio da **D-161** para o filtro em lista agrupada.
+
+⚠️ **Um defeito que o próprio conserto revelou, e que estava lá desde sempre:** o campo **Responsável** passou a dizer "Daniela Daniela". `UsuarioComFoto` escreve o nome ao lado da foto e o `<select>` ao lado mostra o mesmo nome — no computador a coluna de 20rem truncava o da esquerda até sobrar nada, e ninguém via. **Defeito escondido por truncamento não está corrigido, está fora de vista**, e reaparece na primeira largura diferente. O campo passa a receber só o `AvatarUsuario`.
 
 ### 3.10 Índices — atendimento a R-006
 

@@ -406,7 +406,7 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.2 | rascunho — **aguarda validação** | atualizado 27/08 |
-| 09 | Arquitetura Técnica | v0.10 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-15** | atualizado 03/09 |
+| 09 | Arquitetura Técnica | v0.10 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-16** | atualizado 10/09, sessão 16 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
 | 12 | CLAUDE.md | v0.24 | vivo — **na raiz do repositório**; `docs/12-claude-md-v0.24.md` é espelho, **em dia** | atualizado 08/09, sessão 16 |
