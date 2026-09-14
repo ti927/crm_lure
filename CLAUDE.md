@@ -1,7 +1,7 @@
 ﻿# CLAUDE.md — CRM Lure
 
 > Contexto permanente do desenvolvimento. **Leia este arquivo inteiro antes de qualquer tarefa.**
-> Documento 12 da biblioteca do projeto · v0.24 · 08/09/2026
+> Documento 12 da biblioteca do projeto · v0.25 · 14/09/2026
 
 ---
 
@@ -23,7 +23,7 @@ CRM próprio de uma consultoria empresarial, substituindo o Pipedrive. Construí
 4. **Todo componente novo é verificado nos dois temas**, claro e escuro. É critério de aceite, não detalhe.
 5. **Nenhum segredo em variável `NEXT_PUBLIC_`.** Token do Bubble e chave de serviço só no servidor.
 6. **Arquivos em UTF-8 com BOM. CSV sempre com separador ponto-e-vírgula.** ⚠️ **Exceção: arquivos `.css` não levam BOM** — um BOM antes de `@import` quebra o parser do Tailwind com "Invalid dangling combinator in selector", e o erro aponta para o arquivo gerado, não para a causa.
-7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 166 decisões registradas no Doc 03 — provavelmente a resposta existe.
+7. **Não tome decisão de produto sozinho.** Se faltar definição, pergunte. O projeto tem 169 decisões registradas no Doc 03 — provavelmente a resposta existe.
 8. **Há um ambiente só.** O projeto do Supabase é o definitivo — o que guarda os dados (D-101, D-106). Não existe banco de desenvolvimento nem de ensaio: `npm run dev` aponta para a base real.
 9. **Filtro de tela abre no recorte de quem abriu, e a preferência tem TRÊS estados** (D-149). `usuario.preferencia_kanban`, `preferencia_atividades` e `preferencia_lista_negocios` guardam a querystring. **Nulo** = nunca escolheu → abre em "só os meus". **Preenchido** = volta igual. **Vazio** = escolheu ver tudo, e o padrão **não** volta por cima. ⚠️ Tratar nulo e vazio como a mesma coisa faz o botão "Limpar" ser desfeito pelo próprio padrão no carregamento seguinte — parece defeito e é regra mal escrita. O que se guarda é **curto de propósito**: termo de busca, dia em foco e mês ficam de fora, porque são pergunta de agora e não escolha de trabalho.
 
@@ -185,6 +185,14 @@ Manual da **Lure** (BR/BAUEN, 2015). Princípio: **preto e branco de base, cor p
 
 ⚠️ *(histórico)* **Manipulador de evento não atravessa a fronteira servidor→cliente.** Montar JSX num Server Component e entregá-lo a um Client Component é padrão útil e usado aqui (a tabela virtualizada recebe as linhas prontas), mas qualquer `onClick`, `onChange`, `onSubmit` ou `onBlur` nesse JSX **derruba a rota inteira** na serialização. Foi o que quebrou a aba Pessoas (C-06, Doc 09 §3.11). Depois de mexer numa página desse tipo, varra os Server Components à procura desses atributos.
 
+⚠️ **BUSCA: o campo NÃO depende da rede; só o resultado dele depende** (D-167, C-17). `CampoBusca` ressincronizava o texto digitado com o valor que voltava da URL — e a URL é o que a busca anterior escreveu —, então quem continuava digitando via as letras serem **engolidas** quando a resposta chegava. O campo distingue o **eco da própria busca** de uma mudança vinda de fora; só adota a URL no segundo caso. Vale para todo controle de entrada que espelha estado de servidor.
+
+⚠️ **Busca vai a `nome_busca` / `titulo_busca`, nunca a `nome` / `titulo`** (D-167). São colunas **geradas** — sem acento, minúsculas, com índice trigram — e o termo é normalizado por `termoDeBusca()` em `lib/formato.ts`. ⚠️ **As duas são um PAR:** divergindo, a busca não dá erro, só deixa de achar — é a D-165 outra vez. ⚠️ Coluna gerada é o **único** campo novo em `organizacao` que não obriga a mexer na fusão: o banco recusa escrita nela. ⚠️ Piso de **2 letras** em toda busca que vai ao servidor: "a" casa com 3.980 pessoas e 2.274 organizações.
+
+⚠️ **O custo de uma tela é NÚMERO DE IDAS AO BANCO, e agora está medido** (D-167). Contra a base real: **uma ida ao PostgREST ~180 ms; seis em série 938 ms; seis em paralelo 263 ms; a consulta em si < 11 ms.** Antes de otimizar consulta, conte as ondas seriais — o Kanban tinha seis. ⚠️ Use `supabase.rpc("usuario_atual")` no lugar de `auth.getUser()` + busca por `auth_id`: resolve pelo JWT numa ida, e continua casando por `auth_id` como a D-109 exige.
+
+⚠️ **Nome igual prova MENOS em pessoa do que em organização** (D-169). Seis "Sicoob Credseguro" são a mesma empresa; **"Gustavo" aparece 20 vezes** e são vinte pessoas de vinte empresas. A fusão de contatos põe a **organização** de cada cadastro em primeiro plano e avisa em vermelho quando o nome tem uma palavra só. ⚠️ As **cinco** chaves para `pessoa` são `on delete cascade` — mover primeiro, apagar por último.
+
 ⚠️ **Nome de classe do Tailwind nunca pode ser montado em tempo de execução.** O v4 varre o código à procura de literais; `bg-status-${x}` simplesmente não é gerado, e a cor some sem erro nenhum. Escreva as classes por extenso em mapas — é o que `components/dominio/etiquetas.tsx` faz.
 
 ---
@@ -247,7 +255,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 | # | Documento | Para quê |
 |---|---|---|
 | 00 | Status e Retomada | Onde o projeto está |
-| 03 | Log de Decisões | **166 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | Log de Decisões | **169 decisões com justificativa.** Consulte antes de perguntar |
 | 06 | Modelo de Domínio | Entidades e regras, conceitual |
 | 08 | UI e Design System | Cores, tipografia, densidade |
 | 09 | **Arquitetura Técnica** | Schema físico, gatilhos, políticas |
@@ -258,6 +266,7 @@ O Pipedrive só é desligado quando tudo isto for verdade:
 
 ## Changelog
 
+- **v0.25** — 14/09/2026 — **Sessão 17: a busca, e o que medir mudou.** Sete pedidos do maestro, e a medição corrigiu o diagnóstico de todos: **uma ida ao PostgREST custa ~180 ms e a consulta em si menos de 11 ms** — o custo é ida-e-volta, e o Kanban fazia **seis idas em série a cada tecla**. A **D-167** traz busca sem acento e indexada (colunas geradas), piso de duas letras, e o conserto do campo que **comia letras** porque dependia da rede (**C-17**). A **D-168** põe "Novo negócio" na ficha da organização e faz nome repetido **avisar antes de criar**. A **D-169** abre a aba Contatos na ferramenta de fusão e o apagar contato pela ficha. ⚠️ Três regras novas: **o campo de busca não depende da rede**; **o custo de uma tela é número de idas, não peso de consulta**; e **nome igual prova menos em pessoa do que em empresa** — "Gustavo" está 20 vezes na base, e são vinte pessoas. **169 decisões.**
 - **v0.24** — 08/09/2026 — **Sessão 16: o Kanban passa a dizer quanto vale cada coluna.** A **D-166** põe o valor somado da etapa no hover do cabeçalho das duas últimas colunas, com a contagem de quantos cartões têm valor, acompanhando o filtro em uso — e escrito numa faixa no celular, onde não há hover. ⚠️ Fica a regra que ela cobrou: **soma de coluna sai do banco, nunca do que está na tela.** A coluna chega paginada de 20 em 20 e "Proposta Enviada" tem 1.168 negócios; somar os cartões carregados daria o total dos vinte primeiros com toda a aparência de ser o da etapa, e número errado com cara de certo é o pior defeito possível num total. ⚠️ E a dica diz **quantos cartões têm valor** porque sem isso ela mente por omissão: Cold Lead tem 141 negócios abertos e 3 com valor, Proposta Enviada tem 45 e 43. **166 decisões.**
 - **v0.23** — 03/09/2026 — **Três pedidos, e o do meio era o único que parecia ser o que era.** (a) O maestro relatou que "copiar e colar não está funcionando" e mandou o print de uma anotação salpicada de `&nbsp;`: **não era o copiar-e-colar** — o caminho de escrita está limpo — era a carga de 17/08, que trocou toda tag por um espaço e deixou entidade literal. **319 anotações e 2.125 descrições de atividade** reconstituídas (**D-165**), com a conversão virando função única. (b) Entram os **anexos do negócio** (**D-163**), arquivo ou link, pedido nominal da Daniela para registrar a proposta enviada — paridade com o Files do Pipedrive. (c) A **fusão de duplicadas abre para todo o domínio** (**D-164**), revogando a restrição da D-156. ⚠️ Ficam três regras: **uma conversão de HTML só**, e mudá-la de um lado sem o outro faz a sincronização reinserir 928 anotações em silêncio; **arquivo não sobe por Server Action** (teto de 1 MB); e **liberar uma função sem liberar a política que ela escreve por dentro é meia-correção** — a fusão passaria e o rastro derrubaria a transação. **165 decisões.**
 - **v0.22** — 01/09/2026 — **Uma pergunta do maestro achou o que a D-160 tinha deixado passar.** "Os endereços do Pipedrive são só cidade-UF?" — sim, **97,2%** (840 de 864), e os 56 CEPs de lá são de município, não de rua. Mas os outros **24 foram digitados à mão**, e o reconhecimento da D-160 só entendia "Cidade, UF": **12 estavam sem cidade nenhuma** com a cidade escrita e legível na origem. A **D-162** abre `organizacao.endereco` (texto livre, uma coluna e não sete — 13 cadastros não justificam um formulário que 2.890 deixariam vazio) e troca a expressão regular por **dicionário de cidades**. ⚠️ Fica a regra: **conservadorismo vira perda quando o dado está à vista** — recusar palpite é certo, recusar o que está escrito não é. E duas armadilhas pegas no ensaio: limpeza sensível a acento fazia "Goiania" virar logradouro, e o estado por extenso fazia "Bahia, Brasil" virar endereço. **162 decisões.**

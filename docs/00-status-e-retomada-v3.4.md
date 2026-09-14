@@ -35,7 +35,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `00-status-e-retomada-v3.4.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.29.md` |
+| `03-log-de-decisoes-v0.30.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -43,7 +43,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `09-arquitetura-tecnica-v0.10.md` |
 | `10-plano-de-fases-de-construcao-v0.2.md` |
 | `11-backlog-e-criterios-de-aceite-v0.3.md` |
-| `12-claude-md-v0.24.md` *(espelho do `CLAUDE.md` da raiz — ⚠️ a raiz é a que vale)* |
+| `12-claude-md-v0.25.md` *(espelho do `CLAUDE.md` da raiz — ⚠️ a raiz é a que vale)* |
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
@@ -400,16 +400,16 @@ Legenda: ⚪ não iniciado · 🔵 em andamento · 🟢 concluído · 🟡 pende
 | 00 | Status e Retomada | v3.4 | vivo | — |
 | 01 | Plano de Execução | v0.3 | validado — **consultoria encerrada na Fase 6** | — |
 | 02 | Roteiro de Entrevistas | v1.1 | **concluído** — revisões entram como nota | — |
-| 03 | Log de Decisões | v0.29 | vivo — **166 decisões** | atualizado 08/09, sessão 16 |
+| 03 | Log de Decisões | v0.30 | vivo — **169 decisões** | atualizado 14/09, sessão 17 |
 | 04 | Visão de Produto | v0.1 | rascunho | criado 13/08 |
 | 05 | Requisitos Funcionais | v0.1 | rascunho — 153 requisitos | criado 13/08 |
 | 06 | Modelo de Domínio | v0.5 | ✅ **validado** | — |
 | 07 | UX — Fluxos e Arquitetura de Informação | — | **único não criado** | Material acumulado nos Docs 05, 08 e 11. Escrever se as telas exigirem detalhamento maior |
 | 08 | UI e Design System | v0.2 | rascunho — **aguarda validação** | atualizado 27/08 |
-| 09 | Arquitetura Técnica | v0.10 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-16** | atualizado 10/09, sessão 16 |
+| 09 | Arquitetura Técnica | v0.10 | rascunho — **schema no ar**; **seção 3.11 com as correções C-01 a C-17** | atualizado 14/09, sessão 17 |
 | 10 | Plano de Fases de Construção | v0.2 | rascunho — 11 fases | atualizado 14/08 |
 | 11 | Backlog e Critérios de Aceite | v0.3 | rascunho — 126 itens | atualizado 14/08 |
-| 12 | CLAUDE.md | v0.24 | vivo — **na raiz do repositório**; `docs/12-claude-md-v0.24.md` é espelho, **em dia** | atualizado 08/09, sessão 16 |
+| 12 | CLAUDE.md | v0.25 | vivo — **na raiz do repositório**; `docs/12-claude-md-v0.25.md` é espelho, **em dia** | atualizado 14/09, sessão 17 |
 | 13 | Glossário | v0.1 | rascunho | criado 13/08 |
 | 14 | Migração do Pipedrive | v0.2 | rascunho — mapeamento completo | atualizado 14/08 |
 | 15 | Plano da Central de Notificações | v0.3 | ✅ **construído** — os sete passos de pé | atualizado 20/08 |
@@ -487,6 +487,7 @@ Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-0
 
 | P-051 | **Os botões de anexo aparecem no celular, onde a fase 1 é só consulta (D-097)** | UX | **Criada 03/09.** Segui o que a ficha já fazia — o formulário de anotação e o "Agendar atividade" também aparecem lá —, então a incoerência é anterior aos anexos e vale para os três. Se o maestro quiser coerência estrita, é esconder os controles abaixo de `md` e manter as listas |
 | P-052 | **Duas anotações da extração não têm par no banco** | dados | **Criada 03/09.** Apareceram nos dois ensaios do `recupera-texto-html.mjs`, e são anteriores a esta sessão: a carga de 17/08 as descartou por algum motivo não investigado. São 2 de 928 — não bloqueia nada, mas é a única lacuna conhecida entre a extração e o banco |
+| P-053 | **Hospedar o banco na região BRASIL do Supabase** | infra | **Criada 14/09, pedido do maestro** — *"coloque como próxima fase também para hospedar no supabase brasil para que não tenhamos esse atraso de busca"*. ⚠️ **A medição desta sessão é a evidência:** uma ida vazia ao PostgREST custa **~180 ms** desta máquina, e a consulta em si **menos de 11 ms** — 95% é rede. Latência assim é compatível com região nos EUA; em região brasileira a mesma ida cairia para a casa de 20–30 ms, e o ganho seria **em toda tela de uma vez**, não numa consulta. ⚠️ **Exige projeto NOVO:** o Supabase não muda a região de um projeto existente, então é criar outro e migrar a base inteira — schema por `supabase db push` (o repositório é a descrição confiável, D-101) e dados por `pg_dump`/restore. ⚠️ **Mexe na D-101 e na regra 8:** haveria, por algumas horas, duas bases na nuvem, e é o único momento do projeto em que isso aconteceria. Precisa de janela combinada, backup verificado antes, e troca das três variáveis na Vercel. ⚠️ **Confirmar a região atual antes de planejar** — a latência é indício forte, não prova. |
 | P-033 | Curar os 107 motivos de perda | qualidade | 12 ativos, 95 inativos. Edição pelo painel do Supabase |
 | ~~P-034~~ | ~~Conferir as telas nos dois temas~~ | — | ✅ **encerrada 19/08** pelo maestro, agora incluindo as telas das sessões 07 a 09: "as telas para ambos os temas estão esteticamente agradáveis e ótimas". Era a dívida mais antiga do projeto — a regra 4 do `CLAUDE.md` estava em aberto desde a sessão 05 |
 | P-035 | Plano Hobby da Vercel para uso comercial | risco | Contraria os termos de uso |

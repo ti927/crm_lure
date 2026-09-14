@@ -6,7 +6,7 @@
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
 | **Versão** | v0.10 |
 | **Data** | 14/08/2026 |
-| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-16 |
+| **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-17 |
 
 > Este documento traduz o **Doc 06 (conceitual)** em estrutura física sobre Supabase. Ele é, junto do Doc 12, o que o Claude Code lê antes da primeira linha de código.
 >
@@ -492,6 +492,18 @@ Quatro coisas descritas neste documento **não funcionam como estavam escritas**
 ⚠️ **Corrigir uma das três fichas deixaria as outras duas mentindo do mesmo jeito.** `negocios/[id]`, `contatos/organizacoes/[id]` e `contatos/pessoas/[id]` tinham o mesmo `overflow-y-auto` no mesmo lugar. Ao mexer em rolagem de ficha, mexa nas três — é o mesmo raciocínio da **D-161** para o filtro em lista agrupada.
 
 ⚠️ **Um defeito que o próprio conserto revelou, e que estava lá desde sempre:** o campo **Responsável** passou a dizer "Daniela Daniela". `UsuarioComFoto` escreve o nome ao lado da foto e o `<select>` ao lado mostra o mesmo nome — no computador a coluna de 20rem truncava o da esquerda até sobrar nada, e ninguém via. **Defeito escondido por truncamento não está corrigido, está fora de vista**, e reaparece na primeira largura diferente. O campo passa a receber só o `AvatarUsuario`.
+
+#### C-17 — o campo de busca comia letras porque dependia da rede (14/09/2026)
+
+| Onde | Sintoma | Causa | Correção |
+|---|---|---|---|
+| **C-17** | Digitando na busca, letras **sumiam**. O relato do maestro: *"não fique comendo as letras"*, com a receita do defeito na mesma frase — *"um campo de busca não deveria depender de rede, apenas o resultado dele"* | `CampoBusca` ressincronizava o texto digitado com o `valor` que voltava da URL: `if (valor !== valorDaUrl) setTexto(valor)`. A URL é o que a busca de 350 ms atrás escreveu — então, quando a resposta chegava, o campo **voltava ao termo antigo** e tudo que tinha sido digitado durante a navegação era descartado | O campo passa a distinguir o **eco da própria busca** de uma mudança vinda de fora. `enviado` guarda o último termo que ele mandou buscar: se a URL chega com ele, é eco e o texto não se toca; se chega com outra coisa (voltar do navegador, "Limpar", troca de aba), aí sim adota |
+
+⚠️ **Quanto mais lenta a rede, mais letras sumiam** — e é isso que torna o defeito difícil de acreditar quando relatado. Numa máquina rápida ele quase não aparece; com ~180 ms de ida ao banco e 350 ms de espera, a janela em que o campo estava "desatualizado" chegava a meio segundo por tecla.
+
+⚠️ **A regra que fica é mais larga que a correção:** *o campo não depende da rede; só o resultado dele depende.* Todo controle de entrada que espelha estado do servidor tem esta armadilha — a entrada é do usuário, o servidor só confirma. Espelhar de volta o que ele já digitou é sempre perda de informação, nunca ganho.
+
+⚠️ **O `react-hooks/refs` empurrou para a solução certa.** A primeira versão guardava `enviado` num `useRef` e o lia durante o render; a regra recusou, com a razão escrita no próprio erro — ref não agenda renderização, então a comparação seria feita contra algo que a tela ainda não viu. Virou estado, que é o que a decisão de render exigia.
 
 ### 3.10 Índices — atendimento a R-006
 
