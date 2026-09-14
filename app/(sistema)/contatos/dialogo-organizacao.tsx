@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { useAviso } from "@/components/dominio/avisos";
 import { UFS } from "@/lib/uf";
+import { local } from "@/lib/formato";
 import {
   criarOrganizacao,
   editarOrganizacao,
   type DadosOrganizacao,
+  type Homonima,
 } from "./acoes";
 
 export type OrganizacaoEdicao = {
@@ -46,6 +48,12 @@ export function DialogoOrganizacao({
   const [bubbleId, setBubbleId] = useState(edicao?.bubbleId ?? "");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  /**
+   * Cadastros de mesmo nome que já existem. Enquanto houver algum aqui,
+   * o botão muda de "Salvar" para "Criar mesmo assim" — o aviso não
+   * proíbe, ele obriga a olhar.
+   */
+  const [duplicadas, setDuplicadas] = useState<Homonima[] | null>(null);
   const avisar = useAviso();
 
   useEffect(() => {
@@ -55,17 +63,34 @@ export function DialogoOrganizacao({
     return () => document.removeEventListener("keydown", naTecla);
   }, [aoFechar]);
 
-  async function salvar() {
+  async function salvar(confirmado = false) {
     setErro(null);
     setSalvando(true);
     const dados: DadosOrganizacao = { nome, cidade, uf, endereco, website, bubbleId };
     const r = edicao
       ? await editarOrganizacao(edicao.id, dados)
-      : await criarOrganizacao(dados);
+      : await criarOrganizacao(dados, { confirmado });
     setSalvando(false);
     if (r?.erro) return setErro(r.erro);
+
+    // A ação recusa a primeira tentativa quando já existe cadastro com o
+    // mesmo nome, e devolve quais são. Nada foi gravado ainda.
+    const achadas = (r as { duplicadas?: Homonima[] }).duplicadas;
+    if (achadas?.length) {
+      setNomeAvisado(nome);
+      return setDuplicadas(achadas);
+    }
+
     avisar(edicao ? "Organização atualizada." : "Organização criada.");
     aoFechar({ mudou: true, id: edicao?.id ?? (r as { id?: string }).id });
+  }
+
+  /* Trocar o nome depois do aviso desfaz o aviso: ele falava de outro
+     nome, e deixá-lo na tela faria a próxima confirmação passar por cima
+     de uma checagem que já não vale. */
+  const [nomeAvisado, setNomeAvisado] = useState("");
+  if (duplicadas && nome !== nomeAvisado && nomeAvisado !== "") {
+    setDuplicadas(null);
   }
 
   const rotulo = "text-text-secondary mb-1 block text-sm font-medium";
@@ -205,6 +230,39 @@ export function DialogoOrganizacao({
           </p>
         )}
 
+        {/* ⚠️ O aviso mostra CIDADE e UF de cada cadastro, e não só o
+            nome: a pergunta que ele precisa responder é "é a mesma
+            empresa?", e nome igual sozinho não responde — "Elmo
+            Engenharia" está nove vezes na base. É a mesma razão da
+            D-159 na ferramenta de fusão. */}
+        {duplicadas && duplicadas.length > 0 && (
+          <div
+            role="alert"
+            className="border-warning bg-warning-bg mt-3 rounded-md border p-3"
+          >
+            <p className="text-md font-semibold">
+              {duplicadas.length === 1
+                ? "Já existe uma organização com este nome."
+                : `Já existem ${duplicadas.length} organizações com este nome.`}
+            </p>
+            <ul className="text-text-secondary mt-2 flex flex-col gap-1 text-sm">
+              {duplicadas.map((o) => (
+                <li key={o.id} className="flex min-w-0 items-baseline gap-2">
+                  <span className="truncate font-medium">{o.nome}</span>
+                  <span className="text-text-muted shrink-0 text-xs">
+                    {local(o.cidade, o.uf) || "sem local"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-text-muted mt-2 text-xs">
+              41% dos cadastros desta base já são nome repetido. Se for a
+              mesma empresa, cancele e use a existente — duplicar agora
+              custa uma fusão depois.
+            </p>
+          </div>
+        )}
+
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
@@ -215,11 +273,15 @@ export function DialogoOrganizacao({
           </button>
           <button
             type="button"
-            onClick={() => void salvar()}
+            onClick={() => void salvar(Boolean(duplicadas))}
             disabled={salvando || !nome.trim()}
             className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active rounded-md px-4 text-md font-semibold disabled:opacity-40"
           >
-            {salvando ? "Salvando…" : "Salvar"}
+            {salvando
+              ? "Salvando…"
+              : duplicadas
+                ? "Criar mesmo assim"
+                : "Salvar"}
           </button>
         </div>
       </div>

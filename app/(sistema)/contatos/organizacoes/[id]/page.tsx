@@ -14,6 +14,7 @@ import {
   type AtividadeDaOrg,
 } from "./atividades-da-organizacao";
 import { hojeBrasilia } from "@/app/(sistema)/atividades/consulta";
+import { BotaoNovoNegocio } from "@/app/(sistema)/negocios/botao-novo-negocio";
 
 function comEsquema(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -27,28 +28,39 @@ export default async function FichaOrganizacao({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: org } = await supabase
-    .from("organizacao")
-    .select("id, nome, cidade, uf, endereco, website, bubble_id")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (!org) notFound();
-
-  const {
-    data: { user: logado },
-  } = await supabase.auth.getUser();
-
-  // Ficha + histórico derivado (B-093), tudo em paralelo.
+  /**
+   * Ficha + histórico derivado (B-093) + as listas do "Novo negócio",
+   * TUDO numa onda só.
+   *
+   * ⚠️ Eram três ondas em série: o cadastro, depois `auth.getUser()`,
+   * depois o resto. Medido nesta base, cada ida ao PostgREST custa ~180
+   * ms e a consulta em si menos de 11 ms — as duas primeiras ondas eram
+   * ~360 ms de espera pura. O cadastro entra na onda junto: se ele não
+   * existir, sete consultas se perdem, e isso acontece quando alguém
+   * digita um id inválido, não quando alguém abre uma ficha.
+   *
+   * ⚠️ `usuario_atual()` no lugar de `auth.getUser()` + busca por
+   * `auth_id`: resolve pelo JWT dentro do banco, numa ida, e continua
+   * casando por `auth_id` lá dentro — a D-109 de pé e a C-05 evitada.
+   */
   const [
+    { data: org },
     { data: vinculos },
     { data: negocios },
     { data: atividades },
     { data: anotacoes },
     { data: tipos },
     { data: usuarios },
-    { data: eu },
+    { data: euId },
+    { data: etapas },
+    { data: origens },
+    { data: produtos },
   ] = await Promise.all([
+    supabase
+      .from("organizacao")
+      .select("id, nome, cidade, uf, endereco, website, bubble_id")
+      .eq("id", id)
+      .maybeSingle(),
     supabase
       .from("pessoa_organizacao")
       .select("cargo, pessoa(id, nome, forma_contato(tipo, valor))")
@@ -88,12 +100,15 @@ export default async function FichaOrganizacao({
     // diferentes, e comparar com o errado deixaria "minhas pendentes"
     // vazio exatamente para quem veio da carga — os sócios —, sem erro
     // nenhum na tela. É a armadilha da C-05.
-    supabase
-      .from("usuario")
-      .select("id")
-      .eq("auth_id", logado?.id ?? "")
-      .maybeSingle(),
+    supabase.rpc("usuario_atual"),
+    // As três listas que o diálogo de "Novo negócio" precisa. Viajam de
+    // graça: já estão na onda que a tela ia esperar de qualquer jeito.
+    supabase.from("etapa").select("id, nome, ordem").order("ordem"),
+    supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase.from("produto").select("id, nome").order("nome"),
   ]);
+
+  if (!org) notFound();
 
   const pessoas: PessoaVinculada[] = (vinculos ?? [])
     .filter((v) => v.pessoa)
@@ -204,7 +219,27 @@ export default async function FichaOrganizacao({
         {/* Coluna direita: histórico derivado */}
         <div className="flex flex-col gap-6 p-4 lg:overflow-y-auto">
           <section>
-            <h2 className={secao}>Negócios {negocios && negocios.length > 0 && `(${negocios.length})`}</h2>
+            {/* ⚠️ O botão vive AQUI, no cabeçalho da seção de negócios, e
+                não no topo da ficha: é onde a pergunta "que negócios esta
+                empresa tem?" está sendo respondida, e é de lá que nasce a
+                vontade de abrir mais um. A organização já vai travada no
+                diálogo — quem clica daqui já disse de quem é o negócio, e
+                reabrir a busca numa base com 41% de nomes repetidos seria
+                convidar a errar de cadastro. */}
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 className="text-text-muted text-xs font-semibold uppercase tracking-caps">
+                Negócios {negocios && negocios.length > 0 && `(${negocios.length})`}
+              </h2>
+              <BotaoNovoNegocio
+                etapas={etapas ?? []}
+                usuarios={usuarios ?? []}
+                origens={origens ?? []}
+                produtos={produtos ?? []}
+                responsavelPadrao={euId ?? null}
+                organizacaoFixa={{ id: org.id, nome: org.nome }}
+                rotulo="Novo negócio"
+              />
+            </div>
             {!negocios || negocios.length === 0 ? (
               <p className="text-text-muted text-sm">Nenhum negócio.</p>
             ) : (
@@ -236,7 +271,7 @@ export default async function FichaOrganizacao({
             atividades={atividadesDaOrg}
             tipos={tipos ?? []}
             usuarios={usuarios ?? []}
-            euId={eu?.id ?? null}
+            euId={euId ?? null}
             hoje={hojeBrasilia()}
           />
 

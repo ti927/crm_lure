@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Phone, Mail, X, UserPlus } from "lucide-react";
+import { Phone, Mail, X, UserPlus, Trash2 } from "lucide-react";
 import { linkWhatsApp } from "@/lib/formato";
 import { SeletorAsync } from "../../seletor-async";
 import { useAviso } from "@/components/dominio/avisos";
@@ -13,6 +13,7 @@ import {
   vincularOrganizacao,
   desvincularOrganizacao,
   editarCargo,
+  excluirPessoa,
 } from "../../acoes";
 
 export type PessoaVinculada = {
@@ -38,6 +39,30 @@ export function PessoasDaOrganizacao({
   const [erro, setErro] = useState<string | null>(null);
   const avisar = useAviso();
   const [adicionando, setAdicionando] = useState(false);
+  /**
+   * A pessoa que está prestes a ser APAGADA, não desvinculada.
+   *
+   * ⚠️ Desvincular e apagar viraram duas ações separadas, e a separação é
+   * o ponto: o X sempre removeu só o vínculo — o contato continuava
+   * existindo com o resto da história dele —, e quem queria o cadastro
+   * fora tinha de abrir a ficha da pessoa para achar o Excluir. Apagar
+   * não tem volta, então continua exigindo confirmação escrita, como na
+   * ficha.
+   */
+  const [apagando, setApagando] = useState<PessoaVinculada | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
+
+  async function apagar(pessoa: PessoaVinculada) {
+    setExcluindo(true);
+    const r = await excluirPessoa(pessoa.id);
+    setExcluindo(false);
+    setApagando(null);
+    if (r?.erro) return setErro(r.erro);
+    // B-094: a exclusão leva junto vínculos e formas de contato, por
+    // cascata no banco.
+    avisar(`${pessoa.nome} foi apagada.`);
+    router.refresh();
+  }
 
   /**
    * ⚠️ A ordem dos argumentos é (pessoaId, organizacaoId) — e ESTAS TRÊS
@@ -121,6 +146,48 @@ export function PessoasDaOrganizacao({
 
       {erro && <p className="text-danger-ink mb-2 text-sm">{erro}</p>}
 
+      {apagando && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(e) => e.target === e.currentTarget && setApagando(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="border-border bg-surface w-full max-w-md rounded-lg border p-5 shadow-xl"
+          >
+            <h2 className="text-lg font-semibold">Apagar contato?</h2>
+            <p className="text-text-secondary mt-1 text-md">
+              <span className="font-medium">{apagando.nome}</span> será apagada da
+              base inteira, junto dos vínculos com todas as organizações e das
+              formas de contato. Não há como desfazer.
+            </p>
+            {/* Sem esta linha, quem só queria tirar a pessoa DESTA
+                organização descobriria a diferença depois de apagar. */}
+            <p className="text-text-muted mt-2 text-sm">
+              Para tirá-la apenas desta organização, cancele e use o ✕ ao lado.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setApagando(null)}
+                className="h-control-md text-text-secondary hover:bg-surface-hover rounded-md px-3 text-md font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void apagar(apagando)}
+                disabled={excluindo}
+                className="h-control-md bg-danger text-text-inverse rounded-md px-4 text-md font-semibold disabled:opacity-50"
+              >
+                {excluindo ? "Apagando…" : "Apagar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {pessoas.length === 0 ? (
         <p className="text-text-muted text-sm">Nenhuma pessoa vinculada.</p>
       ) : (
@@ -134,14 +201,32 @@ export function PessoasDaOrganizacao({
                 >
                   {p.nome}
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => void remover(p.id)}
-                  aria-label={`Desvincular ${p.nome}`}
-                  className="text-text-muted hover:text-danger-ink shrink-0 rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <X className="size-3.5" aria-hidden />
-                </button>
+                {/* ⚠️ DUAS ações, e a diferença entre elas é o que precisa
+                    ficar claro: o X tira a pessoa DESTA organização e o
+                    cadastro continua existindo; a lixeira apaga o contato
+                    da base. `title` em ambos porque ícone sozinho não
+                    distingue "remover daqui" de "apagar de vez", e errar
+                    entre os dois só se descobre depois. */}
+                <span className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => void remover(p.id)}
+                    title="Desvincular desta organização"
+                    aria-label={`Desvincular ${p.nome} desta organização`}
+                    className="text-text-muted hover:text-text rounded p-0.5"
+                  >
+                    <X className="size-3.5" aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setApagando(p)}
+                    title="Apagar contato"
+                    aria-label={`Apagar o contato ${p.nome}`}
+                    className="text-text-muted hover:text-danger-ink rounded p-0.5"
+                  >
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </button>
+                </span>
               </div>
 
               {/* ⚠️ Ver a nota gêmea em organizacoes-da-pessoa.tsx (C-11):

@@ -403,6 +403,51 @@ export type Database = {
         }
         Relationships: []
       }
+      fusao_pessoa: {
+        Row: {
+          autor_id: string | null
+          criado_em: string
+          duplicada_id: string
+          duplicada_nome: string
+          id: string
+          movidos: Json
+          principal_id: string
+        }
+        Insert: {
+          autor_id?: string | null
+          criado_em?: string
+          duplicada_id: string
+          duplicada_nome: string
+          id?: string
+          movidos: Json
+          principal_id: string
+        }
+        Update: {
+          autor_id?: string | null
+          criado_em?: string
+          duplicada_id?: string
+          duplicada_nome?: string
+          id?: string
+          movidos?: Json
+          principal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fusao_pessoa_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fusao_pessoa_principal_id_fkey"
+            columns: ["principal_id"]
+            isOneToOne: false
+            referencedRelation: "pessoa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fusao_organizacao: {
         Row: {
           adotados: Json
@@ -1092,6 +1137,41 @@ export type Database = {
           atividades: number
           anotacoes: number
         }[]
+      }
+      fusao_conta_grupos_pessoa: { Args: { p_termo?: string | null }; Returns: number }
+      fusao_grupos_pessoa: {
+        Args: { p_termo?: string | null; p_limite?: number; p_deslocamento?: number }
+        Returns: {
+          chave: string
+          nome: string
+          quantidade: number
+          contatos: number
+          vinculos: number
+          negocios: number
+          atividades: number
+        }[]
+      }
+      fusao_cadastros_pessoa: {
+        Args: { p_chave: string }
+        Returns: {
+          id: string
+          nome: string
+          criado_em: string
+          contatos: string[] | null
+          organizacoes: string[] | null
+          negocios: string[] | null
+          atividades: number
+          anotacoes: number
+          peso: number
+        }[]
+      }
+      previa_fusao_pessoa: {
+        Args: { p_principal: string; p_duplicada: string }
+        Returns: Json
+      }
+      funde_pessoa: {
+        Args: { p_principal: string; p_duplicada: string }
+        Returns: Json
       }
       previa_fusao_organizacao: {
         Args: { p_principal: string; p_duplicada: string }

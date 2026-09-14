@@ -5,8 +5,13 @@ import { useRouter } from "next/navigation";
 import { Building2, X } from "lucide-react";
 import { useFocoDialogo } from "@/components/dominio/usar-foco-dialogo";
 import { useAviso } from "@/components/dominio/avisos";
+import { local } from "@/lib/formato";
 import { SeletorAsync, type ItemBusca } from "@/app/(sistema)/contatos/seletor-async";
-import { buscarOrganizacoes, criarOrganizacao } from "@/app/(sistema)/contatos/acoes";
+import {
+  buscarOrganizacoes,
+  criarOrganizacao,
+  type Homonima,
+} from "@/app/(sistema)/contatos/acoes";
 import { criarNegocio, type DadosNegocio } from "./acoes";
 
 type Opcao = { id: string; nome: string };
@@ -22,12 +27,28 @@ type Etapa = { id: string; nome: string; ordem: number };
  * D-047). O bloco de Ganho/Perdido que este formulário revelava ao
  * escolher "Aguardando Contrato" saiu junto — ver a nota no corpo.
  */
-export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsavelPadrao, aoFechar }: {
+export function DialogoNegocio({
+  etapas,
+  usuarios,
+  origens,
+  produtos,
+  responsavelPadrao,
+  organizacaoFixa,
+  aoFechar,
+}: {
   etapas: Etapa[];
   usuarios: Opcao[];
   origens: Opcao[];
   produtos: Opcao[];
   responsavelPadrao?: string | null;
+  /**
+   * Organização já decidida, quando o diálogo abre de DENTRO da ficha
+   * dela. Aqui o campo deixa de ser pergunta: quem clicou em "Novo
+   * negócio" na ficha da "Sementes Veneza" já disse de quem é o negócio,
+   * e reabrir a busca convidaria a escolher a organização errada — numa
+   * base em que 41% dos nomes se repetem, esse erro é barato de cometer.
+   */
+  organizacaoFixa?: { id: string; nome: string } | null;
   aoFechar: () => void;
 }) {
   const router = useRouter();
@@ -35,7 +56,9 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsave
   const caixaDialogo = useFocoDialogo<HTMLDivElement>();
 
   const [titulo, setTitulo] = useState("");
-  const [organizacao, setOrganizacao] = useState<ItemBusca | null>(null);
+  const [organizacao, setOrganizacao] = useState<ItemBusca | null>(
+    organizacaoFixa ? { id: organizacaoFixa.id, nome: organizacaoFixa.nome } : null
+  );
   // A primeira etapa da ordem é Cold Lead: é onde todo contato novo
   // nasce, e é o caminho que precisa ser o mais curto.
   const [etapaId, setEtapaId] = useState(etapas[0]?.id ?? "");
@@ -47,6 +70,14 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsave
 
   const [salvando, setSalvando] = useState(false);
   const [criandoOrg, setCriandoOrg] = useState(false);
+  /** Cadastros de mesmo nome achados ao tentar criar — ver `criarOrgComNome`. */
+  const [orgsHomonimas, setOrgsHomonimas] = useState<Homonima[] | null>(null);
+  /**
+   * ⚠️ O nome como a pessoa DIGITOU. "Criar mesmo assim" tem que criar o
+   * que ela escreveu — o cadastro homônimo pode diferir em acento ou
+   * caixa, e é exatamente por isso que ele casou com o dela.
+   */
+  const [nomeTentado, setNomeTentado] = useState("");
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,13 +103,32 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsave
    * Contatos, cadastrar e voltar quebraria justamente o fluxo que este
    * diálogo veio consertar — registrar um lead que acabou de ligar.
    */
-  async function criarOrgComNome(nome: string) {
+  async function criarOrgComNome(nome: string, confirmado = false) {
     setCriandoOrg(true);
-    const r = await criarOrganizacao({ nome, cidade: "", uf: "", endereco: "", website: "", bubbleId: "" });
+    const r = await criarOrganizacao(
+      { nome, cidade: "", uf: "", endereco: "", website: "", bubbleId: "" },
+      { confirmado }
+    );
     setCriandoOrg(false);
     if (r?.erro) return setErro(r.erro);
-    if (r.id) {
-      setOrganizacao({ id: r.id, nome });
+
+    /**
+     * ⚠️ A ação recusa a primeira tentativa quando já existe cadastro de
+     * mesmo nome. ESTE é o caminho apressado — quem está registrando um
+     * lead que acabou de ligar — e por isso é onde a duplicata nasce.
+     * Aqui o aviso não vira diálogo dentro de diálogo: ele OFERECE a
+     * organização que já existe, porque em nove de cada dez vezes é
+     * exatamente ela que a pessoa queria.
+     */
+    const achadas = (r as { duplicadas?: Homonima[] }).duplicadas;
+    if (achadas?.length) {
+      setNomeTentado(nome);
+      return setOrgsHomonimas(achadas);
+    }
+
+    const id = (r as { id?: string }).id;
+    if (id) {
+      setOrganizacao({ id, nome });
       avisar(`Organização "${nome}" criada.`);
     }
   }
@@ -160,14 +210,18 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsave
               <div className="border-border bg-surface-sunken flex h-control-md items-center gap-2 rounded-md border px-2.5">
                 <Building2 className="text-text-muted size-4 shrink-0" aria-hidden />
                 <span className="text-md min-w-0 flex-1 truncate">{organizacao.nome}</span>
-                <button
-                  type="button"
-                  onClick={() => setOrganizacao(null)}
-                  aria-label="Trocar organização"
-                  className="hover:bg-surface-hover shrink-0 rounded p-1 opacity-60 hover:opacity-100"
-                >
-                  <X className="size-3.5" aria-hidden />
-                </button>
+                {/* Sem o X quando a organização veio da ficha: ali ela não
+                    é escolha, é o contexto de onde o clique partiu. */}
+                {!organizacaoFixa && (
+                  <button
+                    type="button"
+                    onClick={() => setOrganizacao(null)}
+                    aria-label="Trocar organização"
+                    className="hover:bg-surface-hover shrink-0 rounded p-1 opacity-60 hover:opacity-100"
+                  >
+                    <X className="size-3.5" aria-hidden />
+                  </button>
+                )}
               </div>
             ) : (
               <>
@@ -183,6 +237,50 @@ export function DialogoNegocio({ etapas, usuarios, origens, produtos, responsave
                     ? "Criando organização…"
                     : "Procure antes de criar — 41% dos cadastros da base já são nome repetido."}
                 </p>
+
+                {orgsHomonimas && orgsHomonimas.length > 0 && (
+                  <div
+                    role="alert"
+                    className="border-warning bg-warning-bg mt-2 rounded-md border p-2.5"
+                  >
+                    <p className="text-sm font-semibold">
+                      {orgsHomonimas.length === 1
+                        ? "Esta organização já existe."
+                        : `Já existem ${orgsHomonimas.length} com este nome.`}
+                    </p>
+                    <ul className="mt-1.5 flex flex-col gap-1">
+                      {orgsHomonimas.map((o) => (
+                        <li key={o.id}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOrganizacao({ id: o.id, nome: o.nome });
+                              setOrgsHomonimas(null);
+                            }}
+                            className="hover:bg-surface-hover flex w-full min-w-0 items-baseline gap-2 rounded px-1.5 py-1 text-left"
+                          >
+                            <span className="text-md min-w-0 flex-1 truncate font-medium">
+                              {o.nome}
+                            </span>
+                            <span className="text-text-muted shrink-0 text-xs">
+                              {local(o.cidade, o.uf) || "usar esta"}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOrgsHomonimas(null);
+                        void criarOrgComNome(nomeTentado, true);
+                      }}
+                      className="text-text-secondary hover:text-text mt-1.5 px-1.5 text-xs underline"
+                    >
+                      Criar outra com o mesmo nome
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>

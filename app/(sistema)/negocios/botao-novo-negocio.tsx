@@ -22,12 +22,17 @@ export function BotaoNovoNegocio({
   origens,
   produtos,
   responsavelPadrao,
+  organizacaoFixa,
+  rotulo = "Novo negócio",
 }: {
   etapas: Etapa[];
   usuarios: Opcao[];
   origens: Opcao[];
   produtos: Opcao[];
   responsavelPadrao?: string | null;
+  /** Preenchida quando o botão vive na ficha de uma organização. */
+  organizacaoFixa?: { id: string; nome: string } | null;
+  rotulo?: string;
 }) {
   const [aberto, setAberto] = useState(false);
 
@@ -39,7 +44,7 @@ export function BotaoNovoNegocio({
         className="h-control-md bg-brand text-brand-on hover:bg-brand-hover active:bg-brand-active inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-semibold transition-transform hover:-translate-y-px"
       >
         <Plus className="size-3.5" aria-hidden />
-        Novo negócio
+        {rotulo}
       </button>
 
       {aberto && (
@@ -49,6 +54,7 @@ export function BotaoNovoNegocio({
           origens={origens}
           produtos={produtos}
           responsavelPadrao={responsavelPadrao}
+          organizacaoFixa={organizacaoFixa}
           aoFechar={() => setAberto(false)}
         />
       )}

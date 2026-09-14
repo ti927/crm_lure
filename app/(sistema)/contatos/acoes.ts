@@ -18,9 +18,60 @@ export type DadosOrganizacao = {
   bubbleId: string;
 };
 
-export async function criarOrganizacao(d: DadosOrganizacao) {
+/** Um cadastro que já existe com o mesmo nome — o que o aviso mostra. */
+export type Homonima = { id: string; nome: string; cidade: string | null; uf: string | null };
+
+/**
+ * Cadastros com o MESMO nome, ignorando acento e caixa.
+ *
+ * ⚠️ Nome igual, e não nome parecido. "Sicoob Credseguro" e "Sicoob
+ * Credisul" são empresas diferentes, e um aviso que dispara em cima de
+ * parecença vira barulho — avisado toda vez, ninguém lê na vez que
+ * importa. `nome_busca` é a coluna gerada: "Elmo Engenharia" e "ELMO
+ * ENGENHARIA" caem no mesmo valor, que é exatamente o caso que a base
+ * tem 668 vezes.
+ */
+export async function organizacoesComMesmoNome(nome: string): Promise<Homonima[]> {
+  const alvo = termoDeBusca(nome);
+  if (!alvo) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("organizacao")
+    .select("id, nome, cidade, uf")
+    .eq("nome_busca", alvo)
+    .order("nome")
+    .limit(10);
+
+  return data ?? [];
+}
+
+/**
+ * Cria uma organização.
+ *
+ * ⚠️ RECUSA NA PRIMEIRA TENTATIVA quando já existe cadastro de mesmo
+ * nome, e devolve quais são. Não é trava: `confirmado` passa por cima.
+ * O ponto é que a pessoa VEJA a lista antes, porque a base tem **1.195
+ * das 2.889 organizações duplicadas por nome** — 41% — e cada uma
+ * nasceu de alguém que não sabia que a outra existia.
+ *
+ * ⚠️ A checagem mora na AÇÃO, e não no formulário, porque existem DOIS
+ * caminhos que criam organização: o diálogo dos Contatos e o "Criar
+ * organização …" de dentro do diálogo de negócio. Regra que vale num
+ * caminho só não é regra — e o segundo caminho é justamente o apressado,
+ * onde a duplicata nasce.
+ */
+export async function criarOrganizacao(
+  d: DadosOrganizacao,
+  opcoes?: { confirmado?: boolean }
+) {
   const nome = d.nome.trim();
   if (!nome) return { erro: "O nome é obrigatório." };
+
+  if (!opcoes?.confirmado) {
+    const jaExistem = await organizacoesComMesmoNome(nome);
+    if (jaExistem.length > 0) return { duplicadas: jaExistem };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
