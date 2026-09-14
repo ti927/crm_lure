@@ -33,16 +33,6 @@ export default async function PaginaKanban({
   const p = await searchParams;
   const supabase = await createClient();
 
-  const {
-    data: { user: logado },
-  } = await supabase.auth.getUser();
-
-  const { data: eu } = await supabase
-    .from("usuario")
-    .select("id, preferencia_kanban")
-    .eq("auth_id", logado?.id ?? "")
-    .maybeSingle();
-
   /**
    * Visita "crua" (sem nenhum parametro reconhecido): e aqui que o
    * quadro decide em que recorte abrir.
@@ -62,7 +52,24 @@ export default async function PaginaKanban({
    * e o botao pareceria quebrado — foi o laco que a B-045 ja tinha
    * evitado na Lista, pelo mesmo caminho.
    */
+  /**
+   * ⚠️ As DUAS idas ao banco que a preferencia custa acontecem so aqui
+   * dentro, e nao mais no topo da funcao. Elas so importam na visita
+   * crua — que termina em redirecionamento —, e no caminho normal (o de
+   * toda busca, todo filtro, toda volta ao quadro) eram 360 ms gastos
+   * para ler uma coluna cujo valor ninguem ia usar.
+   */
   if (buscaCrua(p)) {
+    const {
+      data: { user: logado },
+    } = await supabase.auth.getUser();
+
+    const { data: eu } = await supabase
+      .from("usuario")
+      .select("id, preferencia_kanban")
+      .eq("auth_id", logado?.id ?? "")
+      .maybeSingle();
+
     if (eu?.preferencia_kanban) redirect(`/kanban?${eu.preferencia_kanban}`);
     if (eu && eu.preferencia_kanban === null) {
       redirect(`/kanban?responsavel=${eu.id}`);
@@ -71,10 +78,32 @@ export default async function PaginaKanban({
 
   const filtros = parseFiltros(p);
 
-  const { data: etapas } = await supabase
-    .from("etapa")
-    .select("id, nome, ordem")
-    .order("ordem");
+  /**
+   * ⚠️ ONDA 1: tudo que nao depende de mais nada.
+   *
+   * Medido contra a base real: uma ida ao PostgREST custa ~180 ms, e a
+   * consulta em si, menos de 11 ms. Esta tela fazia SEIS ondas em serie
+   * — sessao, usuario, etapas, colunas, usuarios, listas — e gastava
+   * perto de um segundo so esperando. Nenhuma das quatro abaixo depende
+   * das outras; so as colunas dependem das etapas, e por isso ficam na
+   * onda seguinte.
+   */
+  const [
+    { data: etapas },
+    { data: usuarios },
+    { data: origens },
+    { data: produtos },
+    { data: euId },
+  ] = await Promise.all([
+    supabase.from("etapa").select("id, nome, ordem").order("ordem"),
+    supabase.from("usuario").select("id, nome, foto_url").eq("ativo", true).order("nome"),
+    supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
+    supabase.from("produto").select("id, nome").order("nome"),
+    // Resolve o usuario pelo JWT, dentro do banco, numa ida — sem
+    // `auth.getUser()` antes. Casa por `auth_id` la dentro, respeitando
+    // a D-109 e sem repetir a confusao de ids da C-05.
+    supabase.rpc("usuario_atual"),
+  ]);
 
   /**
    * Uma consulta por etapa, em paralelo: cada uma traz sua fatia e sua
@@ -112,19 +141,6 @@ export default async function PaginaKanban({
     })
   );
 
-  const { data: usuarios } = await supabase
-    .from("usuario")
-    .select("id, nome, foto_url")
-    .eq("ativo", true)
-    .order("nome");
-
-  // As listas que o diálogo de criação precisa. Quem está logado já veio
-  // acima, para o negócio nascer no nome de quem cadastra.
-  const [{ data: origens }, { data: produtos }] = await Promise.all([
-    supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
-    supabase.from("produto").select("id, nome").order("nome"),
-  ]);
-
   const total = colunas.reduce((s, c) => s + c.total, 0);
 
   // A chave amarra o estado do quadro ao recorte: trocar de responsável
@@ -151,7 +167,7 @@ export default async function PaginaKanban({
             usuarios={usuarios ?? []}
             origens={origens ?? []}
             produtos={produtos ?? []}
-            responsavelPadrao={eu?.id ?? null}
+            responsavelPadrao={euId ?? null}
           />
         </div>
       </div>

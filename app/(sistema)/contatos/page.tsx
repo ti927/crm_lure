@@ -153,7 +153,13 @@ export default async function PaginaContatos({
       .from("pessoa")
       .select(SELECAO_PESSOA, { count: "exact" })
       .order("nome");
-    if (filtros.busca) consulta = consulta.ilike("nome", `%${limparIlike(filtros.busca)}%`);
+    // ⚠️ `nome_busca`, não `nome`: a coluna gerada guarda o nome sem
+    // acento e em minúsculas, e é ela que tem índice trigram. Procurar
+    // "jose" achava 44 pessoas contra as 55 que existem — as escritas
+    // "Jose" e "José" eram duas bases diferentes para quem buscava.
+    if (filtros.busca) {
+      consulta = consulta.ilike("nome_busca", `%${limparIlike(filtros.busca)}%`);
+    }
 
     const { data, count } = await consulta
       .range(inicio, inicio + POR_PAGINA - 1)

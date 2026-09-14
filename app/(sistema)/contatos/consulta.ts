@@ -5,6 +5,8 @@
  * servidor; a base inteira nunca vai para o navegador.
  */
 
+import { termoDeBusca } from "@/lib/formato";
+
 export type Aba = "organizacoes" | "pessoas";
 
 export type LinhaOrganizacao = {
@@ -131,9 +133,18 @@ export type Locais = {
   semLocal: number;
 };
 
-/** Remove os caracteres que o PostgREST lê como sintaxe de filtro. */
+/**
+ * O termo pronto para busca: sem acento, em minúsculas e sem sintaxe de
+ * filtro. Delega para `termoDeBusca`, em `lib/formato.ts`.
+ *
+ * ⚠️ Havia uma cópia desta limpeza AQUI e outra no módulo irmão, e as
+ * duas só coincidiam por sorte. Com a busca sem acento entrando nas duas
+ * telas ao mesmo tempo, manter duas definições era escolher o dia em que
+ * elas passariam a discordar — e busca que discorda não acusa erro, só
+ * deixa de achar.
+ */
 export function limparIlike(termo: string): string {
-  return termo.replace(/[%,()]/g, " ");
+  return termoDeBusca(termo);
 }
 
 

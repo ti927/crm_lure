@@ -527,6 +527,8 @@ export type Database = {
           responsavel_id: string | null
           status: Database["public"]["Enums"]["status_negocio"]
           titulo: string
+          /** Gerada pelo banco: o titulo sem acento e em minusculas. So leitura. */
+          titulo_busca: string | null
           valor: number | null
         }
         Insert: {
@@ -694,6 +696,8 @@ export type Database = {
           endereco: string | null
           id: string
           nome: string
+          /** Gerada pelo banco: o nome sem acento e em minusculas. So leitura. */
+          nome_busca: string | null
           uf: string | null
           website: string | null
         }
@@ -805,6 +809,8 @@ export type Database = {
           criado_em: string
           id: string
           nome: string
+          /** Gerada pelo banco: o nome sem acento e em minusculas. So leitura. */
+          nome_busca: string | null
         }
         Insert: {
           criado_em?: string

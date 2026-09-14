@@ -62,9 +62,13 @@ export function ListaProdutos({
         </div>
 
         <div className="flex w-full items-center gap-2 md:w-auto">
+          {/* ⚠️ `minimo={1}`: aqui o filtro é EM MEMÓRIA, sobre a lista
+              já carregada. O piso de duas letras existe para poupar ida
+              ao banco — onde não há ida, ele só atrasaria o resultado. */}
           <CampoBusca
             valor={termo}
             aoBuscar={setTermo}
+            minimo={1}
             placeholder="Buscar produto"
             className="min-w-0 flex-1 md:w-56 md:flex-none"
           />

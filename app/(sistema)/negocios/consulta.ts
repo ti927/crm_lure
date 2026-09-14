@@ -1,4 +1,5 @@
 import type { Database } from "@/lib/supabase/types";
+import { termoDeBusca } from "@/lib/formato";
 
 export type Status = Database["public"]["Enums"]["status_negocio"];
 type Nomeado = { nome: string } | null;
@@ -105,9 +106,18 @@ export function buscaCrua(p: Busca): boolean {
   return !Object.keys(p).some((k) => CHAVES_RECONHECIDAS.includes(k));
 }
 
-/** Remove os caracteres que o PostgREST le como sintaxe de filtro. */
+/**
+ * O termo pronto para busca: sem acento, em minúsculas e sem sintaxe de
+ * filtro. Delega para `termoDeBusca`, em `lib/formato.ts`.
+ *
+ * ⚠️ Havia uma cópia desta limpeza AQUI e outra no módulo irmão, e as
+ * duas só coincidiam por sorte. Com a busca sem acento entrando nas duas
+ * telas ao mesmo tempo, manter duas definições era escolher o dia em que
+ * elas passariam a discordar — e busca que discorda não acusa erro, só
+ * deixa de achar.
+ */
 export function limparIlike(termo: string): string {
-  return termo.replace(/[%,()]/g, " ");
+  return termoDeBusca(termo);
 }
 
 /** Inicio do dia em America/Sao_Paulo, em ISO com o deslocamento explicito

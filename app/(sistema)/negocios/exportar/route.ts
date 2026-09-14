@@ -43,14 +43,14 @@ export async function GET(request: NextRequest) {
     .order(coluna.ordenacao, { ascending: filtros.crescente, nullsFirst: false });
 
   if (filtros.titulo) {
-    consulta = consulta.ilike("titulo", `%${limparIlike(filtros.titulo)}%`);
+    consulta = consulta.ilike("titulo_busca", `%${limparIlike(filtros.titulo)}%`);
   }
   if (filtros.organizacao) {
     const termo = limparIlike(filtros.organizacao);
     const { data: orgs } = await supabase
       .from("organizacao")
       .select("id")
-      .ilike("nome", `%${termo}%`)
+      .ilike("nome_busca", `%${termo}%`)
       .limit(LIMITE_ORGANIZACOES);
     const ids = (orgs ?? []).map((o) => o.id);
     consulta =

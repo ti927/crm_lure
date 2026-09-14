@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { local } from "@/lib/formato";
+import { local, termoDeBusca } from "@/lib/formato";
 import type { Database } from "@/lib/supabase/types";
 
 type NovaAtividade = Database["public"]["Tables"]["atividade"]["Insert"];
@@ -145,7 +145,7 @@ export type Candidato = {
  * é para escolher um, não para navegar.
  */
 export async function buscarVinculos(termo: string): Promise<Candidato[]> {
-  const limpo = termo.trim().replace(/[%,()]/g, " ");
+  const limpo = termoDeBusca(termo);
   if (limpo.length < 2) return [];
 
   const supabase = await createClient();
@@ -155,15 +155,15 @@ export async function buscarVinculos(termo: string): Promise<Candidato[]> {
     supabase
       .from("negocio")
       .select("id, titulo, organizacao(nome)")
-      .ilike("titulo", filtro)
+      .ilike("titulo_busca", filtro)
       .limit(6),
     // ⚠️ `uf` junto: é justamente aqui, escolhendo entre seis cadastros
     // de mesmo nome, que "Goiânia" e "Franca" precisam dizer o estado.
-    supabase.from("organizacao").select("id, nome, cidade, uf").ilike("nome", filtro).limit(6),
+    supabase.from("organizacao").select("id, nome, cidade, uf").ilike("nome_busca", filtro).limit(6),
     supabase
       .from("pessoa")
       .select("id, nome, pessoa_organizacao(organizacao(nome))")
-      .ilike("nome", filtro)
+      .ilike("nome_busca", filtro)
       .limit(6),
   ]);
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { normalizaUf } from "@/lib/uf";
+import { termoDeBusca } from "@/lib/formato";
 
 /* ---------- organização ---------- */
 
@@ -221,14 +222,14 @@ export async function removerFormaContato(id: string, pessoaId: string) {
 /* ---------- busca de organização (para vincular) ---------- */
 
 export async function buscarOrganizacoes(termo: string) {
-  const limpo = termo.trim().replace(/[%,()]/g, " ");
+  const limpo = termoDeBusca(termo);
   if (limpo.length < 2) return [];
 
   const supabase = await createClient();
   const { data } = await supabase
     .from("organizacao")
     .select("id, nome, cidade")
-    .ilike("nome", `%${limpo}%`)
+    .ilike("nome_busca", `%${limpo}%`)
     .order("nome")
     .limit(8);
 
@@ -236,14 +237,14 @@ export async function buscarOrganizacoes(termo: string) {
 }
 
 export async function buscarPessoas(termo: string) {
-  const limpo = termo.trim().replace(/[%,()]/g, " ");
+  const limpo = termoDeBusca(termo);
   if (limpo.length < 2) return [];
 
   const supabase = await createClient();
   const { data } = await supabase
     .from("pessoa")
     .select("id, nome")
-    .ilike("nome", `%${limpo}%`)
+    .ilike("nome_busca", `%${limpo}%`)
     .order("nome")
     .limit(8);
 

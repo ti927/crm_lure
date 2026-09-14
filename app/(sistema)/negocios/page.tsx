@@ -105,7 +105,7 @@ export default async function PaginaNegocios({
     .order(coluna.ordenacao, { ascending: filtros.crescente, nullsFirst: false });
 
   if (filtros.titulo) {
-    consulta = consulta.ilike("titulo", `%${limparIlike(filtros.titulo)}%`);
+    consulta = consulta.ilike("titulo_busca", `%${limparIlike(filtros.titulo)}%`);
   }
 
   /*
@@ -121,7 +121,7 @@ export default async function PaginaNegocios({
     const { data: orgs } = await supabase
       .from("organizacao")
       .select("id")
-      .ilike("nome", `%${termo}%`)
+      .ilike("nome_busca", `%${termo}%`)
       .limit(LIMITE_ORGANIZACOES);
     const ids = (orgs ?? []).map((o) => o.id);
     consulta =
@@ -146,26 +146,36 @@ export default async function PaginaNegocios({
   }
 
   const inicio = (filtros.pagina - 1) * POR_PAGINA;
-  const { data: linhas, count, error } = await consulta
-    .range(inicio, inicio + POR_PAGINA - 1)
-    .returns<LinhaNegocio[]>();
 
-  // Quem está logado, para o "Novo negócio" já nascer no nome de quem
-  // cadastra — é o padrão do Pipedrive e evita um clique repetido.
-  // Resolve por `auth_id`, nunca por `id`: a D-109 separou os dois, e
-  // confundi-los foi o que quebrou o log (C-05).
-  const {
-    data: { user: logado },
-  } = await supabase.auth.getUser();
-
+  /**
+   * ⚠️ UMA ONDA SÓ, e este é o ponto que decide se a tela parece rápida.
+   *
+   * Medido contra a base real, desta máquina: **uma ida ao PostgREST
+   * custa ~180 ms; seis em série custam 938 ms e seis em paralelo, 263
+   * ms.** A consulta em si custa menos de 11 ms. O que pesa é ida ao
+   * pooler — a mesma restrição que a D-124, a D-159 e a D-160 já
+   * registraram.
+   *
+   * Esta tela fazia TRÊS ondas em série a cada tecla digitada na busca:
+   * a consulta dos negócios, depois `auth.getUser()`, depois as listas
+   * dos filtros. Eram ~360 ms gastos em esperar, e nenhum dos três
+   * dependia do resultado do anterior.
+   *
+   * ⚠️ `usuario_atual()` no lugar de `auth.getUser()` + busca por
+   * `auth_id` é o que elimina a onda dependente: ela resolve o id pelo
+   * JWT, dentro do banco, numa ida. Continua respeitando a D-109 — casa
+   * por `auth_id` lá dentro, nunca confunde os dois ids, que foi a C-05.
+   */
   const [
+    { data: linhas, count, error },
     { data: etapas },
     { data: usuarios },
     { data: origens },
     { data: produtos },
     { data: motivos },
-    { data: eu },
+    { data: euId },
   ] = await Promise.all([
+    consulta.range(inicio, inicio + POR_PAGINA - 1).returns<LinhaNegocio[]>(),
     supabase.from("etapa").select("id, nome, ordem").order("ordem"),
     // Só quem está ativo entra no filtro: ex-integrante continua existindo
     // como responsável de negócio antigo (D-084), mas não faz sentido
@@ -174,14 +184,10 @@ export default async function PaginaNegocios({
     supabase.from("origem").select("id, nome").eq("ativo", true).order("ordem"),
     supabase.from("produto").select("id, nome").order("nome"),
     supabase.from("motivo_perda").select("id, nome").eq("ativo", true).order("ordem"),
-    supabase
-      .from("usuario")
-      .select("id")
-      .eq("auth_id", logado?.id ?? "")
-      .maybeSingle(),
+    // Quem está logado, para o "Novo negócio" já nascer no nome de quem
+    // cadastra — é o padrão do Pipedrive e evita um clique repetido.
+    supabase.rpc("usuario_atual"),
   ]);
-
-  const euId = eu?.id ?? null;
   const total = count ?? 0;
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA));
   const algumFiltro = temFiltro(filtros);

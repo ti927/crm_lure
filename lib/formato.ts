@@ -131,3 +131,33 @@ export function linkWhatsApp(numero: string): string {
   const comPais = so.startsWith("55") ? so : `55${so}`;
   return `whatsapp://send?phone=${comPais}`;
 }
+
+/**
+ * O termo de busca, na MESMA forma em que o banco guarda as colunas
+ * `organizacao.nome_busca`, `pessoa.nome_busca` e `negocio.titulo_busca`:
+ * sem acento, em minúsculas, e sem os caracteres que o PostgREST lê como
+ * sintaxe de filtro.
+ *
+ * ⚠️ **ESTA FUNÇÃO É METADE DE UM PAR.** A outra metade é `sem_acento()`
+ * no banco, que alimenta aquelas colunas geradas. Se as duas divergirem,
+ * a busca não dá erro — ela simplesmente não acha, calada. É a mesma
+ * armadilha da D-165, em que duas conversões de HTML precisavam ser a
+ * mesma função e não eram.
+ *
+ * `normalize("NFD")` separa a letra do acento e a faixa combinante é
+ * descartada: "José" → "jose", "Goiânia" → "goiania", "Aliança" →
+ * "alianca". É o que o `unaccent` do Postgres faz para o alfabeto
+ * latino, que é todo o conteúdo desta base.
+ *
+ * ⚠️ `*` entra na limpeza junto com `%`, `,` e `()`. No PostgREST o
+ * asterisco é sinônimo de `%` dentro de um `like`/`ilike`: sem tirá-lo,
+ * quem digitasse "*" pediria a base inteira sem saber.
+ */
+export function termoDeBusca(termo: string): string {
+  return termo
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[%*,()]/g, " ")
+    .trim();
+}
