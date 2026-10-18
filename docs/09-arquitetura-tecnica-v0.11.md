@@ -1,10 +1,10 @@
-﻿# 09 — Arquitetura Técnica (v0.10)
+﻿# 09 — Arquitetura Técnica (v0.11)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Arquitetura Técnica |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.10 |
+| **Versão** | v0.11 |
 | **Data** | 14/08/2026 |
 | **Status** | rascunho — **schema aplicado em produção em 14/08**; convenções validadas (D-099, D-100); seção 3.11 com as correções C-01 a C-17 |
 
@@ -531,6 +531,22 @@ Quatro migrações entraram, todas ensaiadas em transação com `rollback` antes
 
 ⚠️ **A repetição de organizações é estrutural na base, não um acidente:** 1.195 dos 2.889 cadastros são duplicata de nome, em 668 grupos. O agrupamento é de **apresentação** — mesclar continua fora do MVP.
 
+### 3.13 A porta de entrada dos leads do Painel de Marketing (18/10/2026, D-170)
+
+Migração `20261018120000_porta_de_leads_do_painel` — a **primeira escrita vinda de fora** do CRM. Quem chama é o servidor do Painel Lure (Vercel, projeto `painel-lure`), com uma chave secreta própria (`sb_secret_…`, nome "painel-lure" no Supabase), guardada só na Vercel em `CRM_SUPABASE_URL` e `CRM_SUPABASE_CHAVE`. Revogar essa chave desliga o painel sem tocar no CRM.
+
+| Objeto | O que é |
+|---|---|
+| `lead_marketing` | `lead_id text` PK (id do lead no quadro do Batuta), `situacao` (`no_crm` ou `arquivado`), `negocio_id` → `negocio` **`on delete cascade`**, `motivo`, `por_email`, `em`. Restrição `lead_marketing_negocio_coerente`: `no_crm` exige negócio, `arquivado` exige nulo. RLS por domínio, como as demais |
+| `importa_lead_marketing(dados jsonb) → jsonb` | `security definer`, `search_path = ''`, `execute` **só para `service_role`**. Cria ou reusa pessoa (por **e-mail**, nunca por nome), cria a organização ou recebe o `id`, faz o vínculo com o cargo, o negócio na primeira etapa com o `status_inicial` dela, `negocio_pessoa`, a anotação (autor = usuário de `por_email`) e a linha em `lead_marketing` — **tudo ou nada**. `pg_advisory_xact_lock` por `lead_id` impede dois negócios para dois cliques; lead já `no_crm` devolve o existente com `ja_existia = true` |
+| `origem` | Deixou de ser vazia: nove valores (Anúncio LinkedIn, Anúncio Google, Anúncio Meta, Página de links, Blog/site, Diagnóstico de IA, Material gratuito, Indicação, Direto) |
+
+⚠️ **Arquivar não passa pelo CRM** (revisão da D-170 no mesmo dia): a situação do lead mora no quadro "Comercial · Leads" do Batuta. `lead_marketing` é só a trava contra importar duas vezes, e o valor `arquivado` ficou sem uso.
+
+⚠️ **O `cascade` é de propósito:** excluir o negócio pela ficha devolve o lead a pendente no painel. Com `restrict`, a exclusão passaria a falhar para todo negócio importado.
+
+⚠️ **Como foi aplicada, e o que isso ensina sobre as ferramentas:** o Docker não subiu nesta máquina, então o ensaio foi em produção, dentro de transação desfeita — sete cenários terminando em `raise exception 'ENSAIO %'`, que desfaz tudo e traz o resultado na mensagem, conferido depois que nenhuma linha ficou. O maestro aplicou a migração pelo editor SQL, e ela foi registrada no histórico por `supabase migration repair --status applied 20261018120000`, senão o próximo `db push` tentaria de novo. **O conector Supabase do claude.ai recusa sozinho SQL com `insert`/`delete`** (o pedido de confirmação dele não chega pela extensão do VS Code); o caminho é a CLI, ligada ao projeto desde 18/10: `npx supabase db query --linked -f arquivo.sql`.
+
 ---
 
 **Nunca carregar a base inteira no navegador** (R-006): paginação no servidor, lista virtualizada na tela, e o Kanban carregando por partes conforme rola — especialmente a coluna Cold Lead, que será a mais cheia (D-086).
@@ -660,6 +676,7 @@ Rota `/api/bubble/clientes` faz o GET na Data API do Bubble com o token do servi
 
 ## Changelog
 
+- **v0.11** — 18/10/2026 — **Seção 3.13: a porta de entrada dos leads do Painel de Marketing (D-170).** `lead_marketing`, `importa_lead_marketing` e as nove origens. Registrado o caminho de aplicação: ensaio em produção com `rollback`, migração pelo editor SQL e `migration repair` para o histórico, e a CLI ligada como via de escrita, porque o conector do claude.ai recusa `insert`/`delete`.
 - **v0.10** — 27/08/2026 — **Sessão 13, quarta parte: o agente passou a enxergar.** Correção **C-14**: com `border-collapse: collapse` o Chromium pinta as linhas do corpo por cima do `<thead>` grudado, e uma linha fantasma atravessava a faixa de títulos. Duas hipóteses erradas antes da certa — e o que resolveu foi **medir** `getBoundingClientRect` no navegador, que mostrou geometria correta e ordem de pintura errada. Trocado para `border-separate`, com as divisórias movidas do `<tr>` para as células; ⚠️ no modelo separado, borda em `<tr>` não é desenhada.
 - **v0.9** — 27/08/2026 — **Sessão 13, terceira parte.** Correção **C-13**: a ficha da organização chamava as três ações de vínculo com `(organizacaoId, pessoaId)` onde a assinatura pede `(pessoaId, organizacaoId)`. Os dois são `uuid`, então nada no tipo acusava — e o efeito era diferente nas três: o `insert` falhava alto, o `update` do cargo e o `delete` casavam com **zero linhas e devolviam sucesso**. Corrige de passagem o veredito da **C-11**: o campo de cargo gravava pela ficha da pessoa, nunca pela da organização, que é justamente onde o usuário reclamou.
 - **v0.8** — 27/08/2026 — **Sessão 13.** Correção **C-12**: os rótulos das etapas do Kanban não paravam em lugar nenhum — cartão passava acima deles e rolar para baixo os levava junto. Duas causas somadas, e nenhuma era o `sticky` em si: a faixa de `padding` acima do ponto de trava, e o **segundo scroll** que o rodapé da D-146 criou no `main` (P-049). A faixa de rótulos saiu da rolagem dos cartões. Fica a regra: **`sticky` gruda no scrollport mais próximo**, e havendo dois scrolls aninhados, grudar no de dentro não protege quando é o de fora que se move — a pergunta antes de usar `sticky` é *qual* container rola, não *se* algum rola.
