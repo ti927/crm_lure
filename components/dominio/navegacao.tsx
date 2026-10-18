@@ -11,6 +11,7 @@ import {
   ChartColumn,
   Bell,
   Combine,
+  Megaphone,
 } from "lucide-react";
 
 /**
@@ -32,6 +33,8 @@ const DESTINOS = [
   { href: "/contatos", rotulo: "Contatos", Icone: Users },
   { href: "/produtos", rotulo: "Produtos", Icone: Package },
   { href: "/estatisticas", rotulo: "Estatísticas", Icone: ChartColumn },
+  // Painel Lure (Vercel) embutido, só exibição — ver a página.
+  { href: "/painel-marketing", rotulo: "Painel Marketing", Icone: Megaphone },
 ];
 
 /**
