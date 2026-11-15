@@ -21,8 +21,13 @@ import { NextResponse, type NextRequest } from "next/server";
  *
  * ⚠️ `/api/inscricao-push` NÃO entra: aquela precisa da sessão para
  * saber de quem é o aparelho.
+ *
+ * ⚠️ `/api/mcp` e `/.well-known` entram pelo mesmo motivo do cron (D-172):
+ * agente de IA não tem cookie. A rota do MCP se defende pelo token OAuth
+ * no cabeçalho e responde 401 sem ele; `/.well-known` só publica onde
+ * pedir o token. `/oauth/consent` NÃO entra: aprovar exige estar logado.
  */
-const PUBLICAS = ["/login", "/auth", "/api/enviar-push"];
+const PUBLICAS = ["/login", "/auth", "/api/enviar-push", "/api/mcp", "/.well-known"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -60,7 +65,10 @@ export async function proxy(request: NextRequest) {
   if (!user && !ehPublica) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("proximo", caminho);
+    // A query vai junto: sem ela /oauth/consent voltaria do login sem o
+    // `authorization_id` e o pedido do agente se perderia.
+    url.search = "";
+    url.searchParams.set("proximo", caminho + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 
