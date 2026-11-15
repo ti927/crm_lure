@@ -1,11 +1,11 @@
-﻿# 00 — Status e Retomada (v3.5)
+﻿# 00 — Status e Retomada (v3.6)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v3.5 |
-| **Última atualização** | 18/10/2026 — Sessão 18 |
+| **Versão** | v3.6 |
+| **Última atualização** | 15/11/2026 — Sessão 19 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
 | **Maestro** | quem decide tudo neste projeto |
@@ -32,10 +32,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v3.5.md` |
+| `00-status-e-retomada-v3.6.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.31.md` |
+| `03-log-de-decisoes-v0.32.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -47,6 +47,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
+| `16-plano-mcp-agentes-de-ia-v0.1.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
 | `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
@@ -488,6 +489,11 @@ Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-0
 | P-051 | **Os botões de anexo aparecem no celular, onde a fase 1 é só consulta (D-097)** | UX | **Criada 03/09.** Segui o que a ficha já fazia — o formulário de anotação e o "Agendar atividade" também aparecem lá —, então a incoerência é anterior aos anexos e vale para os três. Se o maestro quiser coerência estrita, é esconder os controles abaixo de `md` e manter as listas |
 | P-052 | **Duas anotações da extração não têm par no banco** | dados | **Criada 03/09.** Apareceram nos dois ensaios do `recupera-texto-html.mjs`, e são anteriores a esta sessão: a carga de 17/08 as descartou por algum motivo não investigado. São 2 de 928 — não bloqueia nada, mas é a única lacuna conhecida entre a extração e o banco |
 | P-053 | **Hospedar o banco na região BRASIL do Supabase** | infra | **Criada 14/09, pedido do maestro** — *"coloque como próxima fase também para hospedar no supabase brasil para que não tenhamos esse atraso de busca"*. ⚠️ **A medição desta sessão é a evidência:** uma ida vazia ao PostgREST custa **~180 ms** desta máquina, e a consulta em si **menos de 11 ms** — 95% é rede. Latência assim é compatível com região nos EUA; em região brasileira a mesma ida cairia para a casa de 20–30 ms, e o ganho seria **em toda tela de uma vez**, não numa consulta. ⚠️ **Exige projeto NOVO:** o Supabase não muda a região de um projeto existente, então é criar outro e migrar a base inteira — schema por `supabase db push` (o repositório é a descrição confiável, D-101) e dados por `pg_dump`/restore. ⚠️ **Mexe na D-101 e na regra 8:** haveria, por algumas horas, duas bases na nuvem, e é o único momento do projeto em que isso aconteceria. Precisa de janela combinada, backup verificado antes, e troca das três variáveis na Vercel. ⚠️ **Confirmar a região atual antes de planejar** — a latência é indício forte, não prova. |
+| P-054 | **O Supabase tem servidor OAuth pronto para clientes MCP**, aceitando o login Google que já existe? | MCP fase 1 | **Criada 15/11** (Doc 16 §9). Se sim, a fase 1 cai bastante; se não, a autorização é construída no Next.js |
+| P-055 | **Como o Grok bot se conecta ao MCP** — pelos conectores do grok.com ou por outro caminho? | MCP fase 1 | **Criada 15/11.** A xAI documenta conector próprio por URL com OAuth; nada específico do agente autônomo |
+| P-056 | **Onde guardar a marca "via Agente IA"** (D-174) — `evento_negocio`, `anotacao`, `atividade` | MCP fase 3 | **Criada 15/11.** O gatilho do log precisa saber de onde veio a escrita |
+| P-057 | **O interruptor de escrita sensível do agente nasce ligado ou desligado?** (D-176) | MCP fase 2 | **Criada 15/11.** Proposta: desligado |
+| P-058 | **Limite diário de escritas por usuário via agente** | MCP fase 3 | **Criada 15/11** |
 | P-033 | Curar os 107 motivos de perda | qualidade | 12 ativos, 95 inativos. Edição pelo painel do Supabase |
 | ~~P-034~~ | ~~Conferir as telas nos dois temas~~ | — | ✅ **encerrada 19/08** pelo maestro, agora incluindo as telas das sessões 07 a 09: "as telas para ambos os temas estão esteticamente agradáveis e ótimas". Era a dívida mais antiga do projeto — a regra 4 do `CLAUDE.md` estava em aberto desde a sessão 05 |
 | P-035 | Plano Hobby da Vercel para uso comercial | risco | Contraria os termos de uso |
@@ -543,6 +549,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v3.6** — 15/11/2026 — **Sessão 19: o MCP para agentes de IA foi planejado.** Entram a **D-172** a **D-177** e o **Doc 16** (plano do MCP); a E-012 sai de adiada; **177 decisões**. Abertas a **P-054** a **P-058**. Nada construído ainda: a próxima ação é a fase 1 do Doc 16, a prova técnica do OAuth com o Grok e o claude.ai.
 - **v3.5** — 18/10/2026 — **Sessão 18.** Entram a **D-170** (porta de entrada dos leads do Painel de Marketing) e a **D-171** (painel embutido no menu lateral); **171 decisões**. ⚠️ Registrado que as sessões 16 e 17 ficaram fora deste documento — as decisões delas estão no Doc 03. Doc 03 a v0.31, Doc 09 a v0.11, `CLAUDE.md` a v0.26. ⚠️ No fim da sessão, o painel mudou de endereço para um caminho que funciona como senha; a página do CRM passou a lê-lo de `PAINEL_MARKETING_URL`, só na Vercel.
 - **v3.4** — 03/09/2026 — **Fim da sessão 15, e o Doc 00 volta a existir.** ⚠️ **A sessão 14 (01/09) nunca foi registrada aqui** — as decisões D-160 a D-162 entraram no Doc 03 e no `CLAUDE.md`, e este documento ficou parado na sessão 13; a linha dela foi reconstituída na seção 10 a partir do changelog do `CLAUDE.md`. É a segunda vez que isso acontece (a sessão 12 corrigiu o mesmo da sessão 11), e o sintoma é sempre o mesmo: **o painel da seção 6 apodrece e vira link quebrado no `README.md`** — `03-log-de-decisoes-v0.24.md` estava apontado lá e não existia em disco. Painel corrigido em cinco linhas e com aviso escrito. Da sessão 15 entram **três decisões** (**D-163** anexos do negócio, **D-164** fusão para todo o domínio, **D-165** reconversão do HTML do Pipedrive) e **uma correção** (**C-15**). ⚠️ A lição da sessão: **"copiar e colar não funciona" era dado sujo com 17 dias, não escrita quebrada** — e o sintoma dos dois é indistinguível, então a primeira medição tem que ser *isto entrou hoje ou veio da carga?*. **P-051 e P-052 abertas.** Doc 03 a v0.28 (**165 decisões**), Doc 09 com a C-15, `CLAUDE.md` a v0.23. **Um commit, empurrado.**
 - **v3.3** — 27/08/2026 — **Fim da sessão 13, de verdade.** Fecha a sessão mais longa do projeto: **doze decisões** (D-147 a D-159, com a D-150 substituída pela D-151 e a **D-157 revertida no mesmo dia**), **três correções** (C-12, C-13, C-14) e uma pendência aberta e encerrada no mesmo dia (P-050). O divisor de águas foi a **D-153**: o agente passou a abrir as telas e olhar, e daí em diante os defeitos encontrados foram todos do tipo que nenhuma verificação anterior pegava. ⚠️ **A ferramenta de fusão (D-156) está de pé e NENHUMA fusão foi executada** — a base segue com 2.898 organizações e zero registros em `fusao_organizacao`. Doc 03 a v0.24 (**159 decisões**), Doc 08 a v0.2, Doc 09 a v0.10, `CLAUDE.md` a v0.19.
