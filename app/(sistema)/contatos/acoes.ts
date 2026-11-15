@@ -2,8 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { normalizaUf } from "@/lib/uf";
 import { termoDeBusca } from "@/lib/formato";
+import { normalizaUf } from "@/lib/uf";
+import {
+  adicionaFormaContato,
+  criaOrganizacao,
+  criaPessoa,
+  organizacoesComMesmoNome as homonimas,
+  vinculaPessoaOrganizacao,
+  type Homonima,
+} from "@/lib/regras/contatos";
 
 /* ---------- organização ---------- */
 
@@ -18,8 +26,7 @@ export type DadosOrganizacao = {
   bubbleId: string;
 };
 
-/** Um cadastro que já existe com o mesmo nome — o que o aviso mostra. */
-export type Homonima = { id: string; nome: string; cidade: string | null; uf: string | null };
+export type { Homonima };
 
 /**
  * Cadastros com o MESMO nome, ignorando acento e caixa.
@@ -32,18 +39,8 @@ export type Homonima = { id: string; nome: string; cidade: string | null; uf: st
  * tem 668 vezes.
  */
 export async function organizacoesComMesmoNome(nome: string): Promise<Homonima[]> {
-  const alvo = termoDeBusca(nome);
-  if (!alvo) return [];
-
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("organizacao")
-    .select("id, nome, cidade, uf")
-    .eq("nome_busca", alvo)
-    .order("nome")
-    .limit(10);
-
-  return data ?? [];
+  return homonimas(supabase, nome);
 }
 
 /**
@@ -65,34 +62,14 @@ export async function criarOrganizacao(
   d: DadosOrganizacao,
   opcoes?: { confirmado?: boolean }
 ) {
-  const nome = d.nome.trim();
-  if (!nome) return { erro: "O nome é obrigatório." };
-
-  if (!opcoes?.confirmado) {
-    const jaExistem = await organizacoesComMesmoNome(nome);
-    if (jaExistem.length > 0) return { duplicadas: jaExistem };
-  }
-
+  // A regra — aviso de homônima incluído — mora em lib/regras/contatos,
+  // a mesma que o agente de IA usa (D-172).
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("organizacao")
-    .insert({
-      nome,
-      cidade: d.cidade.trim() || null,
-      endereco: d.endereco.trim() || null,
-      // ⚠️ Normalizada no SERVIDOR, e não confiando na lista da tela: a
-      // ação é chamável direto, e a restrição do banco recusaria com uma
-      // mensagem de Postgres no lugar de um cadastro salvo.
-      uf: normalizaUf(d.uf),
-      website: d.website.trim() || null,
-      bubble_id: d.bubbleId.trim() || null,
-    })
-    .select("id")
-    .single();
-
-  if (error) return { erro: error.message };
+  const r = await criaOrganizacao(supabase, d, { confirmado: opcoes?.confirmado });
+  if ("erro" in r) return { erro: r.erro };
+  if ("duplicadas" in r) return { duplicadas: r.duplicadas };
   revalidatePath("/contatos");
-  return { ok: true, id: data.id };
+  return { ok: true, id: r.id! };
 }
 
 export async function editarOrganizacao(id: string, d: DadosOrganizacao) {
@@ -143,19 +120,11 @@ export async function excluirOrganizacao(id: string) {
 /* ---------- pessoa ---------- */
 
 export async function criarPessoa(nome: string) {
-  const limpo = nome.trim();
-  if (!limpo) return { erro: "O nome é obrigatório." };
-
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("pessoa")
-    .insert({ nome: limpo })
-    .select("id")
-    .single();
-
-  if (error) return { erro: error.message };
+  const r = await criaPessoa(supabase, nome);
+  if ("erro" in r) return { erro: r.erro };
   revalidatePath("/contatos");
-  return { ok: true, id: data.id };
+  return { ok: true, id: r.id! };
 }
 
 export async function editarPessoa(id: string, nome: string) {
@@ -191,16 +160,8 @@ export async function vincularOrganizacao(
   cargo: string
 ) {
   const supabase = await createClient();
-  const { error } = await supabase.from("pessoa_organizacao").insert({
-    pessoa_id: pessoaId,
-    organizacao_id: organizacaoId,
-    cargo: cargo.trim() || null,
-  });
-
-  if (error) {
-    if (error.code === "23505") return { erro: "Esta pessoa já está vinculada a essa organização." };
-    return { erro: error.message };
-  }
+  const r = await vinculaPessoaOrganizacao(supabase, pessoaId, organizacaoId, cargo);
+  if ("erro" in r) return { erro: r.erro };
   revalidatePath(`/contatos/pessoas/${pessoaId}`);
   revalidatePath(`/contatos/organizacoes/${organizacaoId}`);
   return { ok: true };
@@ -248,15 +209,9 @@ export async function adicionarFormaContato(
   tipo: "telefone" | "email",
   valor: string
 ) {
-  const limpo = valor.trim();
-  if (!limpo) return { erro: "O valor é obrigatório." };
-
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("forma_contato")
-    .insert({ pessoa_id: pessoaId, tipo, valor: limpo });
-
-  if (error) return { erro: error.message };
+  const r = await adicionaFormaContato(supabase, pessoaId, tipo, valor);
+  if ("erro" in r) return { erro: r.erro };
   revalidatePath(`/contatos/pessoas/${pessoaId}`);
   return { ok: true };
 }

@@ -85,17 +85,17 @@ export default async function PaginaNegocio({
     supabase.from("tipo_atividade").select("id, nome").eq("ativo", true).order("ordem"),
     supabase
       .from("evento_negocio")
-      .select("id, tipo, valor_anterior, valor_novo, ocorrido_em, origem_carga, usuario(nome, foto_url)")
+      .select("id, tipo, valor_anterior, valor_novo, ocorrido_em, origem_carga, via_agente, usuario(nome, foto_url)")
       .eq("negocio_id", id)
       .order("ocorrido_em", { ascending: false }),
     supabase
       .from("anotacao")
-      .select("id, texto, criado_em, usuario(nome, foto_url)")
+      .select("id, texto, criado_em, via_agente, usuario(nome, foto_url)")
       .eq("negocio_id", id)
       .order("criado_em", { ascending: false }),
     supabase
       .from("atividade")
-      .select("id, titulo, data, hora_inicio, concluida, tipo_atividade(nome), usuario(nome, foto_url)")
+      .select("id, titulo, data, hora_inicio, concluida, via_agente, tipo_atividade(nome), usuario(nome, foto_url)")
       .eq("negocio_id", id)
       .order("data", { ascending: false }),
     supabase
@@ -134,6 +134,7 @@ export default async function PaginaNegocio({
       de: rotulo(e.tipo, e.valor_anterior, nomeEtapa, nomeUsuario),
       para: rotulo(e.tipo, e.valor_novo, nomeEtapa, nomeUsuario),
       daCarga: e.origem_carga,
+      via: e.via_agente,
     })),
     ...(anotacoes ?? []).map((a) => ({
       id: `a${a.id}`,
@@ -144,6 +145,7 @@ export default async function PaginaNegocio({
       foto: a.usuario?.foto_url ?? null,
       texto: a.texto,
       anotacaoId: a.id,
+      via: a.via_agente,
     })),
     ...(atividades ?? []).map((t) => ({
       id: `t${t.id}`,
@@ -154,6 +156,7 @@ export default async function PaginaNegocio({
       foto: t.usuario?.foto_url ?? null,
       texto: t.titulo ?? t.tipo_atividade?.nome ?? "Atividade",
       concluida: t.concluida,
+      via: t.via_agente,
     })),
   ].sort((a, b) => (a.quando < b.quando ? 1 : -1));
 

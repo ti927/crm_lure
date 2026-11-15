@@ -142,6 +142,7 @@ export type Database = {
       }
       anotacao: {
         Row: {
+          via_agente: string | null
           autor_id: string | null
           criado_em: string
           id: string
@@ -151,6 +152,7 @@ export type Database = {
           texto: string
         }
         Insert: {
+          via_agente?: string | null
           autor_id?: string | null
           criado_em?: string
           id?: string
@@ -160,6 +162,7 @@ export type Database = {
           texto: string
         }
         Update: {
+          via_agente?: string | null
           autor_id?: string | null
           criado_em?: string
           id?: string
@@ -208,6 +211,7 @@ export type Database = {
       }
       atividade: {
         Row: {
+          via_agente: string | null
           concluida: boolean
           criado_em: string
           data: string
@@ -223,6 +227,7 @@ export type Database = {
           titulo: string | null
         }
         Insert: {
+          via_agente?: string | null
           concluida?: boolean
           criado_em?: string
           data: string
@@ -238,6 +243,7 @@ export type Database = {
           titulo?: string | null
         }
         Update: {
+          via_agente?: string | null
           concluida?: boolean
           criado_em?: string
           data?: string
@@ -279,9 +285,11 @@ export type Database = {
       chamada_agente: {
         Row: {
           agente: string
+          alvo: string | null
           argumentos: Json
           cliente_id: string | null
           erro: string | null
+          escrita: boolean
           ferramenta: string
           id: number
           ocorrido_em: string
@@ -335,6 +343,7 @@ export type Database = {
       }
       evento_negocio: {
         Row: {
+          via_agente: string | null
           autor_id: string | null
           id: number
           importado_do_pipedrive: boolean
@@ -346,6 +355,7 @@ export type Database = {
           valor_novo: string | null
         }
         Insert: {
+          via_agente?: string | null
           autor_id?: string | null
           id?: number
           importado_do_pipedrive?: boolean
@@ -357,6 +367,7 @@ export type Database = {
           valor_novo?: string | null
         }
         Update: {
+          via_agente?: string | null
           autor_id?: string | null
           id?: number
           importado_do_pipedrive?: boolean
@@ -585,6 +596,7 @@ export type Database = {
       }
       negocio: {
         Row: {
+          via_agente: string | null
           atualizado_em: string
           criado_em: string
           etapa_id: string | null
@@ -602,6 +614,7 @@ export type Database = {
           valor: number | null
         }
         Insert: {
+          via_agente?: string | null
           atualizado_em?: string
           criado_em?: string
           etapa_id?: string | null
@@ -617,6 +630,7 @@ export type Database = {
           valor?: number | null
         }
         Update: {
+          via_agente?: string | null
           atualizado_em?: string
           criado_em?: string
           etapa_id?: string | null
@@ -1103,13 +1117,17 @@ export type Database = {
       porta_permitida: { Args: never; Returns: boolean }
       registra_chamada_agente: {
         Args: {
+          p_alvo?: string
           p_argumentos: Json
           p_erro?: string
+          p_escrita?: boolean
           p_ferramenta: string
           p_sucesso: boolean
         }
         Returns: undefined
       }
+      agente_da_requisicao: { Args: never; Returns: string | null }
+      escritas_de_agente_hoje: { Args: never; Returns: number }
       usuario_atual: { Args: never; Returns: string | null }
       padrao_notificacao: {
         Args: { p_tipo: Database["public"]["Enums"]["tipo_notificacao"] }

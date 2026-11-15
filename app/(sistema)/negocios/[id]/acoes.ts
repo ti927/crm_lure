@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import type { Desfecho } from "@/app/(sistema)/kanban/constantes";
-import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
+import { mudaNegocio, type MudancaNegocio } from "@/lib/regras/negocio";
+import { criaAnotacao } from "@/lib/regras/anotacao";
+import { mudaAtividade } from "@/lib/regras/atividade";
 
 type Status = Database["public"]["Enums"]["status_negocio"];
-type MudancaNegocio = Database["public"]["Tables"]["negocio"]["Update"];
 
 /** Só estes campos são editáveis. Lista fechada, e não o que vier da tela. */
 const CAMPOS = [
@@ -59,24 +60,11 @@ export async function editarCampo(
       desfecho.status === "perdido" ? desfecho.motivoId ?? null : null;
   }
 
-  // Sair de Perdido larga o motivo junto: motivo sem perda é lixo que
-  // sobra na tela e mente no relatório.
-  if (campo === "status" && valor !== "perdido") mudanca.motivo_perda_id = null;
-
-  const { error } = await supabase
-    .from("negocio")
-    .update(mudanca)
-    .eq("id", negocioId);
-
-  if (error) return { erro: error.message };
-
-  // D-021. ⚠️ Este caminho ganha de DUAS formas: mudando a etapa para
-  // Aguardando Contrato com desfecho Ganho, ou editando o status
-  // direto. `mudanca.status` cobre as duas — foi por isso que a
-  // verificação ficou aqui e não em cada ramo acima.
-  if (mudanca.status === "ganho") {
-    await criarFollowUpDoGanho(supabase, negocioId);
-  }
+  // Sair de Perdido larga o motivo, e virar Ganho cria o follow-up
+  // (D-021) — os dois dentro de `mudaNegocio`, que é o caminho único
+  // de mudança do negócio para a tela, o Kanban e o agente de IA.
+  const r = await mudaNegocio(supabase, negocioId, mudanca);
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath(`/negocios/${negocioId}`);
   revalidatePath("/negocios");
@@ -104,22 +92,13 @@ export async function declararDesfecho(negocioId: string, desfecho: Desfecho) {
   // É também o princípio que o CLAUDE.md já enunciava: status e etapa
   // são dimensões independentes. A etapa diz até onde chegou; o status
   // diz como terminou.
-  const { error } = await supabase
-    .from("negocio")
-    .update({
-      status: desfecho.status as Status,
-      motivo_perda_id: desfecho.status === "perdido" ? desfecho.motivoId : null,
-    })
-    .eq("id", negocioId);
-
-  if (error) return { erro: error.message };
-
-  // D-021: ganhar cria o follow-up. Depois do update e nunca antes — se
-  // a declaração falhar, não pode sobrar tarefa de um ganho que não
-  // aconteceu.
-  if (desfecho.status === "ganho") {
-    await criarFollowUpDoGanho(supabase, negocioId);
-  }
+  // D-021: ganhar cria o follow-up — dentro de `mudaNegocio`, depois
+  // do update e nunca antes.
+  const r = await mudaNegocio(supabase, negocioId, {
+    status: desfecho.status as Status,
+    motivo_perda_id: desfecho.status === "perdido" ? desfecho.motivoId : null,
+  });
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath(`/negocios/${negocioId}`);
   revalidatePath("/negocios");
@@ -131,29 +110,15 @@ export async function declararDesfecho(negocioId: string, desfecho: Desfecho) {
 /* ---------- anotações (B-053) ---------- */
 
 export async function criarAnotacao(negocioId: string, texto: string) {
-  const corpo = texto.trim();
-  if (!corpo) return { erro: "Anotação vazia." };
-
   const supabase = await createClient();
 
   // O autor sai da sessão, não da tela: quem escreve não escolhe a
   // própria assinatura. Resolve por `auth_id` e não por `id` — a D-109
   // separou os dois, e confundi-los foi o que quebrou o log do Julio.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: eu } = await supabase.rpc("usuario_atual");
 
-  const { data: eu } = await supabase
-    .from("usuario")
-    .select("id")
-    .eq("auth_id", user?.id ?? "")
-    .maybeSingle();
-
-  const { error } = await supabase
-    .from("anotacao")
-    .insert({ negocio_id: negocioId, texto: corpo, autor_id: eu?.id ?? null });
-
-  if (error) return { erro: error.message };
+  const r = await criaAnotacao(supabase, { negocioId, texto, autorId: eu ?? null });
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath(`/negocios/${negocioId}`);
   return { ok: true };
@@ -189,9 +154,8 @@ export async function alternarAtividade(
   concluida: boolean
 ) {
   const supabase = await createClient();
-  const { error } = await supabase.from("atividade").update({ concluida }).eq("id", id);
-
-  if (error) return { erro: error.message };
+  const r = await mudaAtividade(supabase, id, { concluida });
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath(`/negocios/${negocioId}`);
   return { ok: true };

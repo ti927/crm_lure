@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { local, termoDeBusca } from "@/lib/formato";
 import type { Database } from "@/lib/supabase/types";
+import { criaAtividade, mudaAtividade } from "@/lib/regras/atividade";
 
 type NovaAtividade = Database["public"]["Tables"]["atividade"]["Insert"];
 
@@ -43,41 +44,22 @@ function paraColunas(d: DadosAtividade): NovaAtividade {
   };
 }
 
-/** Data é o único campo sem o qual a atividade não existe (schema). */
-function validar(d: DadosAtividade): string | null {
-  if (!d.data) return "A data é obrigatória.";
-  if (d.horaInicio && d.horaFim && d.horaFim < d.horaInicio) {
-    return "A hora de fim não pode ser antes da de início.";
-  }
-  return null;
-}
+// A validação (data obrigatória, fim depois do início) mora em
+// lib/regras/atividade — a mesma que o agente de IA usa (D-172).
 
 export async function criarAtividade(d: DadosAtividade) {
-  const erro = validar(d);
-  if (erro) return { erro };
-
   const supabase = await createClient();
 
   // Sem responsável escolhido, assume quem está criando — o caso comum
   // de anotar a própria tarefa. Resolve por auth_id, não por id (D-109).
   let responsavelId = d.responsavelId;
   if (!responsavelId) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data: eu } = await supabase
-      .from("usuario")
-      .select("id")
-      .eq("auth_id", user?.id ?? "")
-      .maybeSingle();
-    responsavelId = eu?.id ?? null;
+    const { data: eu } = await supabase.rpc("usuario_atual");
+    responsavelId = eu ?? null;
   }
 
-  const { error } = await supabase
-    .from("atividade")
-    .insert(paraColunas({ ...d, responsavelId }));
-
-  if (error) return { erro: error.message };
+  const r = await criaAtividade(supabase, paraColunas({ ...d, responsavelId }));
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath("/atividades");
   if (d.vinculoTipo === "negocio" && d.vinculoId) {
@@ -87,16 +69,9 @@ export async function criarAtividade(d: DadosAtividade) {
 }
 
 export async function editarAtividade(id: string, d: DadosAtividade) {
-  const erro = validar(d);
-  if (erro) return { erro };
-
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("atividade")
-    .update(paraColunas(d))
-    .eq("id", id);
-
-  if (error) return { erro: error.message };
+  const r = await mudaAtividade(supabase, id, paraColunas(d));
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath("/atividades");
   if (d.vinculoTipo === "negocio" && d.vinculoId) {
@@ -108,12 +83,8 @@ export async function editarAtividade(id: string, d: DadosAtividade) {
 /** Marcar concluída é a ação mais repetida — vale no desktop e no mobile. */
 export async function concluirAtividade(id: string, concluida: boolean) {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("atividade")
-    .update({ concluida })
-    .eq("id", id);
-
-  if (error) return { erro: error.message };
+  const r = await mudaAtividade(supabase, id, { concluida });
+  if ("erro" in r) return { erro: r.erro };
 
   revalidatePath("/atividades");
   return { ok: true };

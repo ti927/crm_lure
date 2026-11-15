@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { LIMITE_DIARIO_DE_ESCRITAS } from "@/lib/mcp/registro";
 import { PainelAgentes, type AgenteConectado, type Chamada } from "./painel-agentes";
 
 /**
@@ -15,10 +16,11 @@ export const dynamic = "force-dynamic";
 export default async function PaginaAgentes() {
   const supabase = await createClient();
 
-  const [{ data: eu }, grants, preferencia] = await Promise.all([
+  const [{ data: eu }, grants, preferencia, { data: escritasHoje }] = await Promise.all([
     supabase.rpc("usuario_atual"),
     supabase.auth.oauth.listGrants(),
     supabase.from("preferencia_agente").select("escrita_sensivel").maybeSingle(),
+    supabase.rpc("escritas_de_agente_hoje"),
   ]);
 
   // As chamadas são lidas no domínio inteiro pela RLS (D-049); aqui
@@ -26,7 +28,7 @@ export default async function PaginaAgentes() {
   const { data: chamadas } = eu
     ? await supabase
         .from("chamada_agente")
-        .select("id, agente, ferramenta, argumentos, sucesso, erro, ocorrido_em")
+        .select("id, agente, ferramenta, argumentos, sucesso, erro, escrita, alvo, ocorrido_em")
         .eq("usuario_id", eu)
         .order("ocorrido_em", { ascending: false })
         .limit(50)
@@ -49,6 +51,8 @@ export default async function PaginaAgentes() {
       conectados={conectados}
       falhaAoListar={Boolean(grants.error)}
       chamadas={(chamadas ?? []) as Chamada[]}
+      escritasHoje={escritasHoje ?? 0}
+      limiteDiario={LIMITE_DIARIO_DE_ESCRITAS}
     />
   );
 }

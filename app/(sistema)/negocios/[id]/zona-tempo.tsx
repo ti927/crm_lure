@@ -30,6 +30,8 @@ export type ItemTempo = {
   concluida?: boolean;
   daCarga?: boolean;
   anotacaoId?: string;
+  /** Nome do agente de IA que fez isto pelo MCP (D-174); nulo = pessoa. */
+  via?: string | null;
 };
 
 /** Seletor de tres posicoes (D-058, B-052). */
@@ -263,6 +265,14 @@ function ItemDaLinha({
               title="Evento gerado pela carga de migração, não por operação real"
             >
               migração
+            </span>
+          )}
+          {item.via && (
+            <span
+              className="border-border text-text-muted ml-1 rounded-full border px-1.5 text-[10px]"
+              title={`Feito por ${item.via}, agente de IA, em nome de ${item.autor ?? "um usuário"}`}
+            >
+              via {item.via}
             </span>
           )}
         </p>

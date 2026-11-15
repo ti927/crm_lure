@@ -2,11 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
 import type { Desfecho } from "@/app/(sistema)/kanban/constantes";
-import { criarFollowUpDoGanho } from "@/app/(sistema)/notificacoes/follow-up";
-
-type Status = Database["public"]["Enums"]["status_negocio"];
+import { criaNegocio } from "@/lib/regras/negocio";
 
 /**
  * Persiste a ultima combinacao de filtro e ordenacao da Lista para o
@@ -71,72 +68,34 @@ export type DadosNegocio = {
  * nascimento, que ja esta em `criado_em`.
  */
 export async function criarNegocio(d: DadosNegocio, desfecho?: Desfecho) {
-  const titulo = d.titulo.trim();
-  if (!titulo) return { erro: "O título é obrigatório." };
-  if (!d.organizacaoId) return { erro: "A organização é obrigatória." };
-  if (!d.etapaId) return { erro: "A etapa é obrigatória." };
-
-  const supabase = await createClient();
-
-  const { data: etapa } = await supabase
-    .from("etapa")
-    .select("nome, status_inicial")
-    .eq("id", d.etapaId)
-    .single();
-
-  if (!etapa) return { erro: "Etapa não encontrada." };
-
-  let status: Status = etapa.status_inicial;
-  let motivoPerdaId: string | null = null;
-
-  // ⚠️ D-145: criar em qualquer etapa não exige mais desfecho. Quem já
-  // sabe o resultado pode declarar na criação; quem não sabe, cria e o
-  // status vem de `etapa.status_inicial` (D-045).
-  if (desfecho) {
-    if (desfecho.status === "perdido" && !desfecho.motivoId) {
-      return { erro: "Negócio perdido exige motivo." };
-    }
-    status = desfecho.status;
-    motivoPerdaId = desfecho.status === "perdido" ? desfecho.motivoId ?? null : null;
-  }
-
   // Valor vem como texto do formulario. Vazio e nulo — e diferente de
   // zero, que seria negocio de R$ 0,00.
   const bruto = d.valor.trim().replace(/\./g, "").replace(",", ".");
   const valor = bruto === "" ? null : Number(bruto);
   if (valor !== null && !Number.isFinite(valor)) return { erro: "Valor inválido." };
 
-  const { data, error } = await supabase
-    .from("negocio")
-    .insert({
-      titulo,
-      organizacao_id: d.organizacaoId,
-      etapa_id: d.etapaId,
-      status,
-      motivo_perda_id: motivoPerdaId,
+  // A regra (status pela etapa, motivo da perda, follow-up do ganho)
+  // mora em lib/regras/negocio — a mesma que o agente de IA usa (D-172).
+  const supabase = await createClient();
+  const r = await criaNegocio(
+    supabase,
+    {
+      titulo: d.titulo,
+      organizacaoId: d.organizacaoId,
+      etapaId: d.etapaId,
       valor,
-      responsavel_id: d.responsavelId || null,
-      origem_id: d.origemId || null,
-      produto_id: d.produtoId || null,
-    })
-    .select("id")
-    .single();
+      responsavelId: d.responsavelId || null,
+      origemId: d.origemId || null,
+      produtoId: d.produtoId || null,
+    },
+    desfecho
+  );
+  if ("erro" in r) return { erro: r.erro };
 
-  if (error) return { erro: error.message };
-
-  // D-021. ⚠️ Sim, um negocio pode NASCER ganho: a D-017 deixa criar
-  // em qualquer etapa e quem ja sabe o resultado pode declara-lo aqui.
-  // Nascer ganho sem follow-up seria o unico caminho de desfecho sem a
-  // automacao — e o comprador que entra ja fechado e justamente o que
-  // mais merece retorno.
-  if (status === "ganho") {
-    await criarFollowUpDoGanho(supabase, data.id);
-    revalidatePath("/atividades");
-  }
-
+  if (r.status === "ganho") revalidatePath("/atividades");
   revalidatePath("/negocios");
   revalidatePath("/kanban");
-  return { ok: true, id: data.id };
+  return { ok: true, id: r.id! };
 }
 
 /**

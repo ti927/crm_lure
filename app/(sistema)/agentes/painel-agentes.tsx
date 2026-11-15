@@ -18,6 +18,8 @@ export type Chamada = {
   argumentos: Record<string, unknown>;
   sucesso: boolean;
   erro: string | null;
+  escrita: boolean;
+  alvo: string | null;
   ocorrido_em: string;
 };
 
@@ -29,6 +31,18 @@ const FERRAMENTAS: Record<string, string> = {
   ver_negocio: "Ficha de negócio",
   ver_organizacao: "Ficha de organização",
   ver_pessoa: "Ficha de pessoa",
+  listas_do_crm: "Listas do CRM",
+  criar_anotacao: "Criou anotação",
+  criar_atividade: "Criou atividade",
+  editar_atividade: "Editou atividade",
+  concluir_atividade: "Concluiu atividade",
+  criar_organizacao: "Criou organização",
+  criar_pessoa: "Criou pessoa",
+  criar_negocio: "Criou negócio",
+  mover_etapa: "Moveu etapa",
+  alterar_valor: "Alterou valor",
+  trocar_responsavel: "Trocou responsável",
+  declarar_desfecho: "Declarou desfecho",
 };
 
 export function PainelAgentes({
@@ -37,12 +51,16 @@ export function PainelAgentes({
   conectados,
   falhaAoListar,
   chamadas,
+  escritasHoje,
+  limiteDiario,
 }: {
   enderecoMcp: string;
   escritaSensivel: boolean;
   conectados: AgenteConectado[];
   falhaAoListar: boolean;
   chamadas: Chamada[];
+  escritasHoje: number;
+  limiteDiario: number;
 }) {
   const router = useRouter();
   const avisar = useAviso();
@@ -171,13 +189,19 @@ export function PainelAgentes({
             />
           </div>
           <p className="text-text-muted mt-3 text-sm">
-            Hoje os agentes só consultam o CRM. Esta escolha passa a valer quando a escrita chegar.
+            Anotar, agendar e criar cadastros seguem liberados. Tudo o que um agente grava aparece
+            na ficha com a marca <span className="font-medium">via</span> e o nome dele.
           </p>
         </section>
 
         {/* ---------- Registro ---------- */}
         <section className="border-border bg-surface rounded-md border p-4">
-          <h2 className="text-md font-semibold">Últimas chamadas</h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 className="text-md font-semibold">Últimas chamadas</h2>
+            <p className="text-text-muted text-sm tabular-nums">
+              Gravações hoje: {escritasHoje} de {limiteDiario}
+            </p>
+          </div>
           {chamadas.length === 0 ? (
             <p className="text-text-muted mt-2 text-sm">Nenhum agente usou o CRM em seu nome ainda.</p>
           ) : (
@@ -193,6 +217,19 @@ export function PainelAgentes({
                     <p className="text-sm">
                       <span className="font-medium">{FERRAMENTAS[c.ferramenta] ?? c.ferramenta}</span>
                       <span className="text-text-muted"> · {c.agente}</span>
+                      {c.argumentos?.ensaio === true && (
+                        <span
+                          className="border-border text-text-muted ml-1.5 rounded-full border px-1.5 text-[10px]"
+                          title="Ensaio: o agente conferiu o que faria, sem gravar nada"
+                        >
+                          ensaio
+                        </span>
+                      )}
+                      {c.alvo && (
+                        <a href={c.alvo} className="text-brand-ink ml-1.5 underline-offset-2 hover:underline">
+                          abrir
+                        </a>
+                      )}
                     </p>
                     {resumoArgumentos(c.argumentos) && (
                       <p className="text-text-secondary truncate text-sm">{resumoArgumentos(c.argumentos)}</p>
@@ -213,6 +250,7 @@ export function PainelAgentes({
 /** "texto: sicoob · onde: pessoas" — o que o agente pediu, em uma linha. */
 function resumoArgumentos(args: Record<string, unknown>): string {
   return Object.entries(args ?? {})
+    .filter(([k]) => k !== "ensaio")
     .map(([k, v]) => `${k.replace(/_/g, " ")}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`)
     .join(" · ");
 }
