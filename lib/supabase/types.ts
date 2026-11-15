@@ -276,6 +276,31 @@ export type Database = {
           },
         ]
       }
+      chamada_agente: {
+        Row: {
+          agente: string
+          argumentos: Json
+          cliente_id: string | null
+          erro: string | null
+          ferramenta: string
+          id: number
+          ocorrido_em: string
+          sessao_id: string | null
+          sucesso: boolean
+          usuario_id: string
+        }
+        Insert: never
+        Update: never
+        Relationships: [
+          {
+            foreignKeyName: "chamada_agente_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       etapa: {
         Row: {
           funil_id: string
@@ -902,6 +927,32 @@ export type Database = {
           },
         ]
       }
+      preferencia_agente: {
+        Row: {
+          atualizado_em: string
+          escrita_sensivel: boolean
+          usuario_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          escrita_sensivel?: boolean
+          usuario_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          escrita_sensivel?: boolean
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preferencia_agente_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       preferencia_notificacao: {
         Row: {
           ativo: boolean
@@ -1039,7 +1090,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      agente_atual: {
+        Args: never
+        Returns: {
+          agente: string
+          cliente_id: string
+          sessao_id: string
+          usuario_id: string
+        }[]
+      }
       dominio_empresa: { Args: never; Returns: string }
+      porta_permitida: { Args: never; Returns: boolean }
+      registra_chamada_agente: {
+        Args: {
+          p_argumentos: Json
+          p_erro?: string
+          p_ferramenta: string
+          p_sucesso: boolean
+        }
+        Returns: undefined
+      }
       usuario_atual: { Args: never; Returns: string | null }
       padrao_notificacao: {
         Args: { p_tipo: Database["public"]["Enums"]["tipo_notificacao"] }

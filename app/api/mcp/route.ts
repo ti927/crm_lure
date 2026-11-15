@@ -34,7 +34,7 @@ async function atende(request: Request): Promise<Response> {
     });
   }
 
-  const servidor = criaServidor(acesso);
+  const servidor = criaServidor(acesso, origemPublica(request));
   const transporte = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined, // sem sessão: cada chamada traz o token
     enableJsonResponse: true,
@@ -44,9 +44,9 @@ async function atende(request: Request): Promise<Response> {
   return transporte.handleRequest(request, {
     authInfo: {
       token: acesso.token,
-      clientId: acesso.clienteOAuth ?? "sessao",
+      clientId: acesso.agente,
       scopes: [],
-      extra: { usuarioId: acesso.usuarioId, email: acesso.email },
+      extra: { usuarioId: acesso.usuarioId, email: acesso.email, agente: acesso.agente },
     },
   });
 }

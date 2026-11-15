@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
 /**
- * Quem está do outro lado do MCP (D-173, D-175, Doc 16 §4).
+ * Quem está do outro lado do MCP (D-173, D-175, D-178, Doc 16 §4).
  *
  * O agente age COMO o usuário que o conectou: o token que ele traz é um
  * token do próprio Supabase, emitido pelo servidor OAuth depois que o
@@ -11,16 +11,22 @@ import type { Database } from "@/lib/supabase/types";
  * as mesmas políticas da tela — `pertence_ao_dominio()` lê o e-mail do
  * token, e o gatilho do log grava `autor_id = auth.uid()`.
  *
+ * ⚠️ O cliente leva também o cabeçalho `x-lure-mcp` com o segredo do
+ * servidor. Sem ele o banco recusa token de agente (`porta_permitida()`,
+ * migration 20261115120000): é o que impede o agente de usar o mesmo
+ * token direto no Supabase e pular o registro e as regras daqui.
+ *
  * ⛔ Nunca a chave de serviço: ela passa por cima das políticas e grava
  * o log sem autor.
  */
 
 export type Acesso = {
   supabase: SupabaseClient<Database>;
+  /** `usuario.id` do CRM — não o id da conta de login (D-109). */
   usuarioId: string;
   email: string;
-  /** Agente que pediu o acesso. Ausente quando o token é de sessão comum. */
-  clienteOAuth: string | null;
+  /** Nome com que o agente se cadastrou ("Claude", "Grok"…). */
+  agente: string;
   token: string;
 };
 
@@ -34,11 +40,14 @@ export function tokenDoCabecalho(request: Request): string | null {
 }
 
 export async function verificaAcesso(token: string): Promise<Acesso | Recusa> {
+  const segredo = process.env.MCP_SEGREDO_BANCO;
+  if (!segredo) return { motivo: "MCP sem configuração no servidor" };
+
   const supabase = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      global: { headers: { Authorization: `Bearer ${token}` } },
+      global: { headers: { Authorization: `Bearer ${token}`, "x-lure-mcp": segredo } },
       auth: { persistSession: false, autoRefreshToken: false },
     }
   );
@@ -70,11 +79,28 @@ export async function verificaAcesso(token: string): Promise<Acesso | Recusa> {
     return { motivo: "usuário fora do domínio da empresa" };
   }
 
+  // Só token emitido para um AGENTE entra. Token de sessão do navegador
+  // não tem `client_id`, e aceitá-lo deixaria as chamadas sem agente para
+  // registrar (D-178).
+  if (typeof claims.client_id !== "string") {
+    return { motivo: "o token não é de um agente conectado pelo OAuth" };
+  }
+
+  // ⚠️ A assinatura do token vale até ele vencer (~1 h), mesmo depois de
+  // o usuário desconectar o agente em /agentes. É a sessão viva no banco
+  // que decide — desconectar apaga a sessão, e daqui em diante esta
+  // função não devolve linha.
+  const { data: agente, error: erroAgente } = await supabase
+    .rpc("agente_atual")
+    .maybeSingle();
+  if (erroAgente) return { motivo: "falha ao conferir o agente" };
+  if (!agente) return { motivo: "agente desconectado ou sessão encerrada" };
+
   return {
     supabase,
-    usuarioId: claims.sub,
+    usuarioId: agente.usuario_id,
     email,
-    clienteOAuth: typeof claims.client_id === "string" ? claims.client_id : null,
+    agente: agente.agente,
     token,
   };
 }

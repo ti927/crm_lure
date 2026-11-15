@@ -184,7 +184,7 @@ function BlocoTipo({
  * próximo. Um checkbox estilizado daria o mesmo desenho e perderia o
  * `aria-checked`, que é o que o leitor de tela anuncia como "ligado".
  */
-function Interruptor({
+export function Interruptor({
   ligado,
   rotulo,
   aoAlternar,

@@ -52,7 +52,11 @@ export default async function Consentimento({
       <p className="text-text-secondary mt-2 text-md leading-relaxed">
         Ao aprovar, o agente passa a agir <strong className="text-text">como você</strong>{" "}
         ({data.user.email}): vê o que você vê, e o que ele fizer fica registrado no seu nome.
-        Você pode desconectá-lo depois.
+        Você pode desconectá-lo quando quiser em{" "}
+        <a href="/agentes" className="text-text underline underline-offset-2">
+          Agentes de IA
+        </a>
+        .
       </p>
 
       {falha && (

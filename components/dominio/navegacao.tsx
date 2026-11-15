@@ -12,6 +12,7 @@ import {
   Bell,
   Combine,
   Megaphone,
+  Bot,
 } from "lucide-react";
 
 /**
@@ -45,7 +46,12 @@ const DESTINOS = [
  * Doc 15 §5.2 pede a entrada no menu lateral; o agrupamento à parte é
  * que evita ler "Notificações" como sétima seção do CRM.
  */
-const PESSOAIS = [{ href: "/notificacoes", rotulo: "Notificações", Icone: Bell }];
+const PESSOAIS = [
+  { href: "/notificacoes", rotulo: "Notificações", Icone: Bell },
+  // Mesmo grupo e mesmo motivo: o agente é escolha de quem está logado
+  // sobre a própria conta (D-173), não administração do sistema.
+  { href: "/agentes", rotulo: "Agentes de IA", Icone: Bot },
+];
 
 /**
  * Ferramentas de manutenção.
