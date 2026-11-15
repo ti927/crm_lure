@@ -1,12 +1,12 @@
-﻿# 16 — Plano do MCP para Agentes de IA (v0.1)
+﻿# 16 — Plano do MCP para Agentes de IA (v0.2)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Plano de Implementação — servidor MCP do CRM para agentes de IA |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.1 |
+| **Versão** | v0.2 |
 | **Data** | 15/11/2026 |
-| **Status** | 🟡 **planejado — nada construído.** Decisões D-172 a D-177 validadas pelo maestro; P-054 a P-058 em aberto |
+| **Status** | 🟢 **fase 1 entregue e conferida em produção (15/11).** Decisões D-172 a D-178 validadas pelo maestro; P-054 e P-057 respondidas; P-055, P-056 e P-058 em aberto |
 
 > Tira do papel a **E-012** (API pública / MCP para agentes de IA), adiada para a fase 2 pela **D-074** e transformada em critério de arquitetura pela **R-009**. A **D-170** abriu a primeira porta externa, pela via mais estreita: uma função no banco. Este plano abre a segunda, para agentes de IA.
 
@@ -34,6 +34,7 @@
 | **D-175** | Atende **todos os agentes** — Grok bot (prioridade), claude.ai, Batuta e Claude Code. **Porta principal: login Google do domínio por OAuth**; porta secundária: **chave de agente** gerada pelo usuário em Configurações |
 | **D-176** | Escrita sensível (etapa, valor, responsável, desfecho) é **opção de cada usuário em Configurações** |
 | **D-177** | Primeiro uso real: **resumo diário de pendências**, só leitura. Ordem das fases na seção 6 |
+| **D-178** | O interruptor de escrita sensível **nasce ligado** — quem não quiser desliga o seu. Em troca, **toda chamada de agente fica registrada** (usuário, agente, ferramenta, quando, o que foi pedido — leitura inclusive), além da marca "via Agente IA" em cada escrita |
 
 ---
 
@@ -94,6 +95,34 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 | **3 — Escrita reversível** | Anotação e atividade, pessoa, organização, negócio; **modo ensaio**; **marca "via Agente IA"**; limite diário por usuário | baixo a médio |
 | **4 — Escrita sensível** | Etapa, valor, responsável, desfecho — atrás do interruptor | médio |
 
+### 6.1 Fase 1 — entregue em 15/11/2026
+
+**Endereço do conector:** `https://crm.lureconsultoria.com/api/mcp` (o `crm-lure.vercel.app` também responde).
+
+| Peça | Onde |
+|---|---|
+| Rota do MCP, sem sessão, uma requisição por chamada | `app/api/mcp/route.ts` |
+| Conferência do token (assinatura ES256, vencimento, e-mail do domínio) | `lib/mcp/acesso.ts` |
+| Ferramenta `minhas_atividades_pendentes` (só leitura, teto de 100 linhas) | `lib/mcp/servidor.ts` |
+| Onde o agente descobre como pedir acesso (RFC 9728) | `app/.well-known/oauth-protected-resource/` |
+| Página de aprovação | `app/oauth/consent/` |
+| `/api/mcp` e `/.well-known` fora do login por cookie; o login guarda a query de volta | `proxy.ts` |
+
+**Conferido em produção:** o claude.ai (pelo celular) cadastrou-se sozinho, o maestro entrou com o Google e aprovou, e a ferramenta devolveu **exatamente** as duas atividades pendentes que o banco tem para ele — conferido por consulta direta. Prova que o token traz o e-mail e que as políticas do banco valem para o agente como valem para a tela.
+
+**Configuração no Supabase** (*Authentication*):
+
+| Tela | Valor |
+|---|---|
+| *OAuth Server* | ligado; *Authorization Path* `/oauth/consent`; *Allow Dynamic OAuth Apps* ligado |
+| *URL Configuration* | *Site URL* = `https://crm.lureconsultoria.com` — é dele que o Supabase monta o endereço da página de aprovação |
+
+⚠️ **A chave do *OAuth Server* parece ligada e não salva.** Ligada pelo celular, ela voltou desligada ao recarregar a página, e o Supabase seguia respondendo `feature_disabled`. A prova de que está ligada é de fora: `/.well-known/oauth-authorization-server/auth/v1` do projeto devolve os endereços, e não erro 404.
+
+⚠️ **O cadastro automático de agentes não abre o CRM.** Qualquer agente consegue se cadastrar, mas para receber token ainda precisa que alguém do domínio entre com o Google e aprove na página do CRM.
+
+**Ficou para a fase 2:** a chave de agente (porta secundária do Claude Code e do Batuta) e o teste com o **Grok** (P-055). O adaptador de MCP da Vercel não foi usado: o próprio SDK já traz o transporte para `Request`/`Response` da Web, que é o que a rota do Next.js recebe.
+
 ---
 
 ## 7. Perigos e mitigação
@@ -125,14 +154,15 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 
 | # | Pergunta | Bloqueia |
 |---|---|---|
-| **P-054** | O **Supabase oferece servidor OAuth pronto** para clientes MCP, aceitando o login Google que já existe? Se sim, o trabalho da fase 1 cai bastante; se não, a autorização é construída no Next.js | fase 1 |
+| ~~**P-054**~~ | ✅ **Respondida em 15/11: sim.** O servidor OAuth 2.1 do Supabase, com cadastro automático de clientes e página de aprovação nossa, aceita o login Google existente e emite token com o e-mail. As chaves do projeto já eram ES256, sem preparação. Custo zero. Ver 6.1 | — |
 | **P-055** | Como o **Grok bot** (agente autônomo da xAI) se conecta — pelos mesmos conectores do grok.com, ou por outro caminho? Nada específico foi encontrado em 15/11 | fase 1 |
 | **P-056** | **Onde guardar a marca "via Agente IA"**: coluna no `evento_negocio` (o gatilho precisa saber de onde veio a escrita), e em `anotacao` e `atividade` | fase 3 |
-| **P-057** | O interruptor de escrita sensível **nasce ligado ou desligado**? Proposta: desligado | fase 2 |
+| ~~**P-057**~~ | ✅ **Respondida em 15/11 (D-178): nasce ligado.** O maestro recusou a proposta de nascer desligado | — |
 | **P-058** | **Limite diário** de escritas por usuário via agente — qual número? | fase 3 |
 
 ---
 
 ## Changelog
 
+- **v0.2** — 15/11/2026 — **Fase 1 entregue e conferida em produção.** Entra a **D-178** (interruptor nasce ligado; toda chamada de agente registrada), respondendo à P-057. Entra a seção 6.1: o que foi construído, a prova feita pelo claude.ai no celular, a configuração do Supabase e as duas armadilhas dela. P-054 respondida. Endereço oficial do conector no domínio da Lure.
 - **v0.1** — 15/11/2026 — Primeira versão. Plano discutido com o maestro na sessão 19: seis respostas dele viraram D-172 a D-177. A descoberta que mudou a ordem: Grok e claude.ai exigem OAuth, então o login Google do domínio virou porta principal e a fase 1 ataca justamente isso.

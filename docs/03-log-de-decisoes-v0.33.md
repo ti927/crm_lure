@@ -1,10 +1,10 @@
-﻿# 03 — Log de Decisões (v0.32)
+﻿# 03 — Log de Decisões (v0.33)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.32 |
+| **Versão** | v0.33 |
 | **Data** | 15/11/2026 |
 | **Status** | vivo |
 
@@ -358,6 +358,7 @@ Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões
 | D-175 | 15/11/2026 | **O MCP atende todos os agentes — Grok bot (prioridade), claude.ai, Batuta e Claude Code. Porta principal: login Google do domínio por OAuth; porta secundária: chave de agente gerada pelo usuário em Configurações** | Resposta do maestro: *"todos, em especial grok bot"* — um agente autônomo da xAI. ⚠️ **Grok e claude.ai cadastram conector pela URL e exigem OAuth**, então o OAuth deixou de ser fase opcional e virou a porta principal. É também o jeito mais limpo de o banco ver o usuário de verdade. A chave atende quem aceita cabeçalho (Batuta, Claude Code), guardada só em hash e revogável. ⚠️ Abertas a **P-054** (Supabase tem servidor OAuth pronto?) e a **P-055** (como o Grok bot se conecta) | ✅ |
 | D-176 | 15/11/2026 | **Escrita sensível pelo agente — mover etapa, alterar valor, trocar responsável, declarar desfecho — é opção de cada usuário em Configurações** | Resposta do maestro: *"opcional do usuário em configurações (o usuário é responsável pelo agente)"*. ⚠️ **O CRM só permite ou recusa**; pedir confirmação na conversa é papel do agente. ⚠️ Nasce ligada ou desligada fica na **P-057** | ✅ |
 | D-177 | 15/11/2026 | **Primeiro uso real: o resumo diário de pendências, só leitura.** Ordem: (1) prova técnica do OAuth com uma ferramenta de leitura; (2) resumo de pendências e tela de Configurações; (3) escrita reversível com modo ensaio e marca; (4) escrita sensível | Proposta aceita pelo maestro. ⚠️ **A fase 1 ataca primeiro a maior incerteza** — o login por OAuth — antes de qualquer refatoração das ações | ✅ |
+| D-178 | 15/11/2026 | **O interruptor de escrita sensível do agente nasce LIGADO, e toda ação de agente fica registrada.** Responde à P-057: o maestro recusou a proposta de nascer desligado — o agente é a secretária do usuário (D-173), e quem não quiser desliga o seu em Configurações. A contrapartida é o registro: **cada chamada de agente fica gravada** com usuário, agente, ferramenta, quando e o que foi pedido, leitura inclusive; e toda escrita leva a marca "via Agente IA" (D-174). Nada que o agente faça pode ficar sem rastro | Maestro |
 
 ⚠️ **O funil encolhe de 2.460 para 307 negócios**, e é essa a medida certa: os outros 2.153 estão ganhos ou perdidos. Com eles dentro, o Kanban deixava de ser funil e virava arquivo — e a Lista já é o arquivo, com filtro de status e de motivo de perda.
 
@@ -437,7 +438,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 | E-009 | **Indicadores 6 a 13** do catálogo | Médio | Fora do MVP junto com todo o módulo (D-093). O **log que os alimenta permanece** | ⏸ fase 2 |
 | E-010 | **Acompanhamento de metas** | Médio | Fase 2, por decisão do maestro (D-065) | ⏸ adiado |
 | E-011 | **Integração com Google Agenda** | Médio | Fase 2, por decisão do maestro (D-071) | ⏸ adiado |
-| E-012 | **API pública / MCP para agentes de IA** | Alto | Fase 2 (D-074). Condiciona a arquitetura — ver R-009. **Planejado em 15/11** (D-172 a D-177, Doc 16) | 🟡 **planejado** |
+| E-012 | **API pública / MCP para agentes de IA** | Alto | Fase 2 (D-074). Condiciona a arquitetura — ver R-009. **Planejado em 15/11** (D-172 a D-178, Doc 16) | 🟢 **fase 1 no ar** (15/11) |
 | E-013 | **Versão mobile das telas densas** | Alto | **Parcialmente no MVP** (D-097): consulta e marcação entram; criação e edição vão para a fase 2 | 🟡 **parcial** |
 
 ---
@@ -460,6 +461,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.33** — 15/11/2026 — **D-178:** o interruptor de escrita sensível do agente nasce ligado (responde à P-057, contra a proposta de nascer desligado), e toda chamada de agente fica registrada. **178 decisões.** A E-012 passa a "fase 1 no ar".
 - **v0.32** — 15/11/2026 — **O MCP para agentes de IA sai do adiamento.** **D-172** (MCP dentro do app, com as regras das telas), **D-173** (o agente é a secretária do usuário e age com a conta dele), **D-174** (marca "via Agente IA" na ação, não no campo Origem), **D-175** (todos os agentes, Grok em especial; OAuth como porta principal), **D-176** (escrita sensível opcional por usuário), **D-177** (primeiro uso e ordem das fases). A **E-012** passa a planejada. Plano completo no Doc 16. **177 decisões.**
 - **v0.31** — 18/10/2026 — **A primeira porta de entrada externa.** **D-170**: os leads do Painel de Marketing entram no CRM por `importa_lead_marketing`, função de contrato fechado e só para a chave de serviço, com a situação de cada lead em `lead_marketing`; a tabela `origem` ganha seus nove valores. **D-171**: o Painel Lure aparece embutido no menu lateral, só exibição. ⚠️ É o que a D-074 deixava para a fase 2, pela porta mais estreita: uma função, não API. ⚠️ Revisto no mesmo dia: **arquivar mora no Batuta**, e `lead_marketing` fica só como trava de importação. **171 decisões.** ⚠️ A D-171 ganhou a revisão do endereço: ele mora em `PAINEL_MARKETING_URL`, na Vercel, e nunca no repositório público.
 - **v0.30** — 14/09/2026 — **Sessão 17: a busca, e o que medir mudou.** **D-167** (busca sem acento e indexada, piso de duas letras, e o campo que parou de comer letras), **D-168** (negócio nasce na ficha da organização; nome repetido avisa antes de criar) e **D-169** (fundir contatos homônimos na ferramenta; apagar contato pela ficha da organização). ⚠️ A medição corrigiu o diagnóstico: **uma ida ao PostgREST custa ~180 ms e a consulta em si menos de 11 ms** — o custo é ida-e-volta, não banco, e o Kanban fazia seis idas em série a cada tecla. ⚠️ O campo comia letras porque **dependia da rede**: ele ressincronizava com a URL, que é o que a busca anterior escreveu. ⚠️ E o ensaio da fusão de pessoas achou o risco de produto que mudou a tela: **“Gustavo” aparece 20 vezes** — nome igual prova menos em pessoa do que em empresa. **169 decisões.**
