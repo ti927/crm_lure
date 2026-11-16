@@ -1,12 +1,12 @@
-﻿# 16 — Plano do MCP para Agentes de IA (v0.3)
+﻿# 16 — Plano do MCP para Agentes de IA (v0.4)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Plano de Implementação — servidor MCP do CRM para agentes de IA |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.3 |
+| **Versão** | v0.4 |
 | **Data** | 15/11/2026 |
-| **Status** | 🟢 **fases 1 a 4 construídas (15/11)** — fase 1 conferida em produção pelo maestro; fases 2 a 4 aguardam o teste geral dele. P-056 e P-058 com **proposta aplicada, a validar**; P-055 e P-059 em aberto |
+| **Status** | 🟢 **fases 1 a 4 no ar (16/11)** — fase 1 conferida em produção pelo maestro; fases 2 a 4 publicadas e aguardando o teste geral dele. P-056 e P-058 com **proposta aplicada, a validar**; P-055 e P-059 em aberto |
 
 > Tira do papel a **E-012** (API pública / MCP para agentes de IA), adiada para a fase 2 pela **D-074** e transformada em critério de arquitetura pela **R-009**. A **D-170** abriu a primeira porta externa, pela via mais estreita: uma função no banco. Este plano abre a segunda, para agentes de IA.
 
@@ -119,6 +119,8 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 
 ⚠️ **A chave do *OAuth Server* parece ligada e não salva.** Ligada pelo celular, ela voltou desligada ao recarregar a página, e o Supabase seguia respondendo `feature_disabled`. A prova de que está ligada é de fora: `/.well-known/oauth-authorization-server/auth/v1` do projeto devolve os endereços, e não erro 404.
 
+⚠️ **A página de aprovação usa a sessão do CRM que já está aberta no navegador.** Quem tem mais de uma conta Google via sempre a mesma (caso do Cursor, em 16/11). Correção: o link **"Não é esta conta? Entrar com outra"** encerra a sessão e volta ao login com o mesmo pedido, e o botão do Google passa a pedir a escolha de conta (`prompt=select_account`) — em todo login do CRM, não só no do agente. Se o Supabase recusar o pedido depois da troca, basta o agente conectar de novo.
+
 ⚠️ **O cadastro automático de agentes não abre o CRM.** Qualquer agente consegue se cadastrar, mas para receber token ainda precisa que alguém do domínio entre com o Google e aprove na página do CRM.
 
 **Ficou para depois:** o teste com o **Grok** (P-055) e a chave de agente, que a P-059 propõe dispensar. O adaptador de MCP da Vercel não foi usado: o próprio SDK já traz o transporte para `Request`/`Response` da Web, que é o que a rota do Next.js recebe.
@@ -199,6 +201,7 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 
 ## Changelog
 
+- **v0.4** — 16/11/2026 — Fases 2 a 4 **publicadas** (commit `afde271`). Na seção 6.1, a armadilha da conta única na página de aprovação, achada ao conectar o Cursor, e a correção: trocar de conta na própria página e escolha de conta no login com Google.
 - **v0.3** — 15/11/2026 — **Fases 2, 3 e 4 construídas.** Seções 6.2 e 6.3. Leitura completa, tela Agentes de IA e a trava `porta_permitida()` contra o uso do token direto no Supabase. Camada comum de regras (`lib/regras`), que telas e MCP passam a chamar. Escrita reversível e sensível, com ensaio, marca "via agente" e limite diário. P-056 e P-058 recebem proposta aplicada, a validar. Entra a P-059 (dispensar a chave de agente).
 - **v0.2** — 15/11/2026 — **Fase 1 entregue e conferida em produção.** Entra a **D-178** (interruptor nasce ligado; toda chamada de agente registrada), respondendo à P-057. Entra a seção 6.1: o que foi construído, a prova feita pelo claude.ai no celular, a configuração do Supabase e as duas armadilhas dela. P-054 respondida. Endereço oficial do conector no domínio da Lure.
 - **v0.1** — 15/11/2026 — Primeira versão. Plano discutido com o maestro na sessão 19: seis respostas dele viraram D-172 a D-177. A descoberta que mudou a ordem: Grok e claude.ai exigem OAuth, então o login Google do domínio virou porta principal e a fase 1 ataca justamente isso.

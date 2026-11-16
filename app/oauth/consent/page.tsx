@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LogoLure } from "@/components/dominio/marca";
-import { decide } from "./acoes";
+import { decide, trocaConta } from "./acoes";
 
 /**
  * Página de autorização do MCP (D-175, Doc 16 §4).
@@ -73,6 +73,13 @@ export default async function Consentimento({
         <Button type="submit" name="decisao" value="recusar" size="lg" variant="outline" className="sm:flex-1">
           Recusar
         </Button>
+      </form>
+
+      <form action={trocaConta} className="mt-4 text-center">
+        <input type="hidden" name="autorizacao" value={autorizacao} />
+        <button type="submit" className="text-text-secondary hover:text-text text-sm underline underline-offset-2">
+          Não é esta conta? Entrar com outra
+        </button>
       </form>
     </Moldura>
   );

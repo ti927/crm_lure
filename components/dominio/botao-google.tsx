@@ -15,6 +15,9 @@ export function BotaoGoogle({ proximo }: { proximo: string }) {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?proximo=${encodeURIComponent(proximo)}`,
+        // Quem tem mais de uma conta Google no navegador escolhe qual usar,
+        // em vez de o Google entrar direto na última.
+        queryParams: { prompt: "select_account" },
       },
     });
 

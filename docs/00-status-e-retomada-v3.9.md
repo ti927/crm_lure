@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v3.8)
+﻿# 00 — Status e Retomada (v3.9)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v3.8 |
+| **Versão** | v3.9 |
 | **Última atualização** | 15/11/2026 — Sessão 19 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,7 +32,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v3.8.md` |
+| `00-status-e-retomada-v3.9.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
 | `03-log-de-decisoes-v0.33.md` |
@@ -47,7 +47,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
-| `16-plano-mcp-agentes-de-ia-v0.3.md` |
+| `16-plano-mcp-agentes-de-ia-v0.4.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
 | `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
@@ -148,7 +148,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ### 4.2 Próxima ação
 
-🤖 **MCP para agentes de IA (Doc 16): fases 1 a 4 construídas em 15/11.** Falta o **teste geral do maestro** pelo claude.ai: ler, escrever, ensaio, interruptor, selo "via Claude" na ficha e registro na tela Agentes de IA. Reconecte o conector antes, porque o claude.ai guarda a lista antiga de ferramentas. Depois, validar as propostas da **P-056** (onde mora a marca) e da **P-058** (100 gravações por dia), e responder a **P-059** (dispensar a chave de agente). Ainda em aberto: o Grok (**P-055**).
+🤖 **MCP para agentes de IA (Doc 16): fases 1 a 4 no ar desde 16/11** (o Cursor também já conecta). Falta o **teste geral do maestro** pelo claude.ai: ler, escrever, ensaio, interruptor, selo "via Claude" na ficha e registro na tela Agentes de IA. Reconecte o conector antes, porque o claude.ai guarda a lista antiga de ferramentas. Depois, validar as propostas da **P-056** (onde mora a marca) e da **P-058** (100 gravações por dia), e responder a **P-059** (dispensar a chave de agente). Ainda em aberto: o Grok (**P-055**).
 
 ⭐ **O que falta é o critério 2: os dois sócios operarem um dia inteiro sem abrir o Pipedrive.** Com a C-08 corrigida, não há mais impedimento técnico conhecido para isso — antes havia, e ninguém sabia.
 
@@ -552,6 +552,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v3.9** — 16/11/2026 — **Sessão 19, continuação: fases 2 a 4 do MCP publicadas.** O maestro conectou o Cursor e achou a página de aprovação presa a uma conta só. Ela ganha "Entrar com outra conta", e o login com Google passa a pedir a escolha de conta. Doc 16 a v0.4. Próximo: o teste geral do maestro.
 - **v3.8** — 15/11/2026 — **Sessão 19, continuação: fases 2, 3 e 4 do MCP construídas.** São 18 ferramentas: leitura completa e escrita reversível e sensível, com modo ensaio. A tela **Agentes de IA** mostra agentes conectados, interruptor e registro. A trava `porta_permitida()` impede o agente de usar o token direto no Supabase. A **camada comum de regras** (`lib/regras`) passa a servir tela e agente. A marca "via agente" é posta por gatilho, e o limite diário é de 100 gravações. P-056 e P-058 recebem proposta aplicada, a validar; abre a **P-059**. Doc 16 a v0.3. Próximo: o teste geral do maestro.
 - **v3.7** — 15/11/2026 — **Sessão 19, continuação: a fase 1 do MCP está no ar.** O claude.ai, pelo celular do maestro, conectou em `https://crm.lureconsultoria.com/api/mcp`, passou pelo login Google e pela página de aprovação, e listou as duas atividades pendentes que o banco tem para ele. **P-054 encerrada.** No Supabase: servidor OAuth ligado (a chave não tinha salvado na primeira tentativa) e *Site URL* corrigido de `localhost:3000` para o domínio de produção. Entra a **D-178** (P-057 encerrada: o interruptor de escrita sensível nasce ligado, e toda chamada de agente fica registrada) — **178 decisões**, Doc 03 a v0.33, Doc 16 a v0.2. Próximo: Grok (P-055) e fase 2.
 - **v3.6** — 15/11/2026 — **Sessão 19: o MCP para agentes de IA foi planejado.** Entram a **D-172** a **D-177** e o **Doc 16** (plano do MCP); a E-012 sai de adiada; **177 decisões**. Abertas a **P-054** a **P-058**. Nada construído ainda: a próxima ação é a fase 1 do Doc 16, a prova técnica do OAuth com o Grok e o claude.ai.
