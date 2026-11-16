@@ -1,10 +1,10 @@
-﻿# 00 — Status e Retomada (v3.9)
+﻿# 00 — Status e Retomada (v3.10)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Status e Retomada da Consultoria |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v3.9 |
+| **Versão** | v3.10 |
 | **Última atualização** | 15/11/2026 — Sessão 19 |
 | **Status** | vivo — atualizado ao fim de cada sessão |
 | **Consultor** | Claude |
@@ -32,10 +32,10 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 | Arquivo (a versão faz parte do nome) |
 |---|
-| `00-status-e-retomada-v3.9.md` |
+| `00-status-e-retomada-v3.10.md` |
 | `01-plano-de-execucao-v0.3.md` |
 | `02-roteiro-de-entrevistas-v1.1.md` |
-| `03-log-de-decisoes-v0.33.md` |
+| `03-log-de-decisoes-v0.34.md` |
 | `06-modelo-de-dominio-v0.5.md` |
 | `04-visao-de-produto-v0.1.md` |
 | `05-requisitos-funcionais-v0.1.md` |
@@ -47,7 +47,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 | `13-glossario-v0.1.md` |
 | `14-migracao-do-pipedrive-v0.2.md` |
 | `15-plano-central-de-notificacoes-v0.3.md` |
-| `16-plano-mcp-agentes-de-ia-v0.4.md` |
+| `16-plano-mcp-agentes-de-ia-v0.5.md` |
 | `14-referencia-api-pipedrive-v0.1.md` *(rascunho técnico de apoio — não é o Doc 14 oficial)* |
 | `lure-crm-tokens.css` e `tailwind.config.ts` *(insumos do Doc 08 — versão anterior à revisão da seção 3; os tokens em uso estão em `app/tokens.css`)* |
 
@@ -98,7 +98,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 ## 4. ONDE ESTAMOS
 
 **Fase:** **F10, a virada — em andamento.** **F0 a F9 concluídas** — a F8 saiu de "adiada" (D-124) e foi construída em 20/08. Falta o dia de operação real dos sócios.
-**Perguntas respondidas:** 80 · 12 blocos · **178 decisões** · 153 requisitos · 126 itens de backlog
+**Perguntas respondidas:** 80 · 12 blocos · **181 decisões** · 153 requisitos · 126 itens de backlog
 
 ✅ **Não há mais contagem regressiva** (D-125, 19/08/2026). Os dados estão no Supabase desde 17/08, conferidos — a virada é decidida por prontidão, não por data.
 
@@ -148,7 +148,7 @@ Aí sim é preciso anexar os arquivos da tabela abaixo. Fora do repositório o C
 
 ### 4.2 Próxima ação
 
-🤖 **MCP para agentes de IA (Doc 16): fases 1 a 4 no ar desde 16/11** (o Cursor também já conecta). Falta o **teste geral do maestro** pelo claude.ai: ler, escrever, ensaio, interruptor, selo "via Claude" na ficha e registro na tela Agentes de IA. Reconecte o conector antes, porque o claude.ai guarda a lista antiga de ferramentas. Depois, validar as propostas da **P-056** (onde mora a marca) e da **P-058** (100 gravações por dia), e responder a **P-059** (dispensar a chave de agente). Ainda em aberto: o Grok (**P-055**).
+🤖 **MCP para agentes de IA (Doc 16): fases 1 a 4 no ar desde 16/11** (o Cursor também já conecta). Falta o **teste geral do maestro** pelo claude.ai: ler, escrever, ensaio, interruptor, selo "via Claude" na ficha e registro na tela Agentes de IA. Reconecte o conector antes, porque o claude.ai guarda a lista antiga de ferramentas. P-056, P-058 e P-059 respondidas em 16/11 (D-179 a D-181: marca como está, 300 gravações por dia, sem chave de agente). Ainda em aberto: o Grok (**P-055**).
 
 ⭐ **O que falta é o critério 2: os dois sócios operarem um dia inteiro sem abrir o Pipedrive.** Com a C-08 corrigida, não há mais impedimento técnico conhecido para isso — antes havia, e ninguém sabia.
 
@@ -493,10 +493,10 @@ Registro completo no documento **03 — Log de Decisões**: **145 decisões (D-0
 | P-053 | **Hospedar o banco na região BRASIL do Supabase** | infra | **Criada 14/09, pedido do maestro** — *"coloque como próxima fase também para hospedar no supabase brasil para que não tenhamos esse atraso de busca"*. ⚠️ **A medição desta sessão é a evidência:** uma ida vazia ao PostgREST custa **~180 ms** desta máquina, e a consulta em si **menos de 11 ms** — 95% é rede. Latência assim é compatível com região nos EUA; em região brasileira a mesma ida cairia para a casa de 20–30 ms, e o ganho seria **em toda tela de uma vez**, não numa consulta. ⚠️ **Exige projeto NOVO:** o Supabase não muda a região de um projeto existente, então é criar outro e migrar a base inteira — schema por `supabase db push` (o repositório é a descrição confiável, D-101) e dados por `pg_dump`/restore. ⚠️ **Mexe na D-101 e na regra 8:** haveria, por algumas horas, duas bases na nuvem, e é o único momento do projeto em que isso aconteceria. Precisa de janela combinada, backup verificado antes, e troca das três variáveis na Vercel. ⚠️ **Confirmar a região atual antes de planejar** — a latência é indício forte, não prova. |
 | P-054 | **O Supabase tem servidor OAuth pronto para clientes MCP**, aceitando o login Google que já existe? | MCP fase 1 | ✅ **Encerrada 15/11: sim.** Servidor OAuth do Supabase ligado e conferido em produção pelo claude.ai — Doc 16 §6.1 |
 | P-055 | **Como o Grok bot se conecta ao MCP** — pelos conectores do grok.com ou por outro caminho? | MCP fase 1 | **Criada 15/11.** A xAI documenta conector próprio por URL com OAuth; nada específico do agente autônomo |
-| P-056 | **Onde guardar a marca "via Agente IA"** (D-174) — `evento_negocio`, `anotacao`, `atividade` | MCP fase 3 | 🟡 **Proposta aplicada 15/11, a validar:** coluna `via_agente` preenchida por gatilho em `negocio`, `anotacao`, `atividade` e `evento_negocio` — Doc 16 §6.3 |
+| P-056 | **Onde guardar a marca "via Agente IA"** (D-174) | MCP fase 3 | ✅ **Respondida 16/11 → D-179** |
 | P-057 | **O interruptor de escrita sensível do agente nasce ligado ou desligado?** (D-176) | MCP fase 2 | ✅ **Encerrada 15/11 pela D-178: ligado**, e toda chamada de agente fica registrada |
-| P-058 | **Limite diário de escritas por usuário via agente** | MCP fase 3 | 🟡 **Proposta aplicada 15/11, a validar: 100 por dia**, agentes somados, ensaio fora |
-| P-059 | **Dispensar a chave de agente?** Claude Code e Batuta conectam por OAuth como o claude.ai | MCP | **Criada 15/11.** Proposta: dispensar — Doc 16 §9 |
+| P-058 | **Limite diário de escritas por usuário via agente** | MCP fase 3 | ✅ **Respondida 16/11 → D-180: 300 por dia** |
+| P-059 | **Dispensar a chave de agente?** | MCP | ✅ **Respondida 16/11 → D-181: dispensada** |
 | P-033 | Curar os 107 motivos de perda | qualidade | 12 ativos, 95 inativos. Edição pelo painel do Supabase |
 | ~~P-034~~ | ~~Conferir as telas nos dois temas~~ | — | ✅ **encerrada 19/08** pelo maestro, agora incluindo as telas das sessões 07 a 09: "as telas para ambos os temas estão esteticamente agradáveis e ótimas". Era a dívida mais antiga do projeto — a regra 4 do `CLAUDE.md` estava em aberto desde a sessão 05 |
 | P-035 | Plano Hobby da Vercel para uso comercial | risco | Contraria os termos de uso |
@@ -552,6 +552,7 @@ Pendências encerradas: P-001 (stack), P-002 (migração), P-003 (identidade), P
 
 ## Changelog
 
+- **v3.10** — 16/11/2026 — O maestro respondeu P-056, P-058 e P-059: **D-179** (marca "via agente" fica como está), **D-180** (limite sobe para 300 gravações por dia, já no código) e **D-181** (sem chave de agente). **181 decisões.** Doc 03 a v0.34, Doc 16 a v0.5.
 - **v3.9** — 16/11/2026 — **Sessão 19, continuação: fases 2 a 4 do MCP publicadas.** O maestro conectou o Cursor e achou a página de aprovação presa a uma conta só. Ela ganha "Entrar com outra conta", e o login com Google passa a pedir a escolha de conta. Doc 16 a v0.4. Próximo: o teste geral do maestro.
 - **v3.8** — 15/11/2026 — **Sessão 19, continuação: fases 2, 3 e 4 do MCP construídas.** São 18 ferramentas: leitura completa e escrita reversível e sensível, com modo ensaio. A tela **Agentes de IA** mostra agentes conectados, interruptor e registro. A trava `porta_permitida()` impede o agente de usar o token direto no Supabase. A **camada comum de regras** (`lib/regras`) passa a servir tela e agente. A marca "via agente" é posta por gatilho, e o limite diário é de 100 gravações. P-056 e P-058 recebem proposta aplicada, a validar; abre a **P-059**. Doc 16 a v0.3. Próximo: o teste geral do maestro.
 - **v3.7** — 15/11/2026 — **Sessão 19, continuação: a fase 1 do MCP está no ar.** O claude.ai, pelo celular do maestro, conectou em `https://crm.lureconsultoria.com/api/mcp`, passou pelo login Google e pela página de aprovação, e listou as duas atividades pendentes que o banco tem para ele. **P-054 encerrada.** No Supabase: servidor OAuth ligado (a chave não tinha salvado na primeira tentativa) e *Site URL* corrigido de `localhost:3000` para o domínio de produção. Entra a **D-178** (P-057 encerrada: o interruptor de escrita sensível nasce ligado, e toda chamada de agente fica registrada) — **178 decisões**, Doc 03 a v0.33, Doc 16 a v0.2. Próximo: Grok (P-055) e fase 2.

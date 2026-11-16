@@ -20,7 +20,7 @@ export type Saida = Resultado & { alvo?: string };
  * cópia de teste — de um agente em laço ou de instrução escondida num
  * texto que ele leu.
  */
-export const LIMITE_DIARIO_DE_ESCRITAS = 100;
+export const LIMITE_DIARIO_DE_ESCRITAS = 300;
 
 export function texto(dados: unknown): Saida {
   return { content: [{ type: "text", text: JSON.stringify(dados, null, 2) }] };

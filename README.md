@@ -10,14 +10,14 @@ Leia [CLAUDE.md](CLAUDE.md) por inteiro. Ele carrega as regras que não podem se
 
 ## Biblioteca de documentos
 
-Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v3.9.md), que diz onde o projeto está e qual é a próxima ação.
+Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e Retomada](docs/00-status-e-retomada-v3.10.md), que diz onde o projeto está e qual é a próxima ação.
 
 | # | Documento | Para quê |
 |---|---|---|
-| 00 | [Status e Retomada](docs/00-status-e-retomada-v3.9.md) | Onde o projeto está e o que vem a seguir |
+| 00 | [Status e Retomada](docs/00-status-e-retomada-v3.10.md) | Onde o projeto está e o que vem a seguir |
 | 01 | [Plano de Execução](docs/01-plano-de-execucao-v0.3.md) | Método da consultoria — encerrada na Fase 6 |
 | 02 | [Roteiro de Entrevistas](docs/02-roteiro-de-entrevistas-v1.1.md) | As 80 perguntas e suas respostas |
-| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.33.md) | **178 decisões com justificativa.** Consulte antes de perguntar |
+| 03 | [Log de Decisões](docs/03-log-de-decisoes-v0.34.md) | **181 decisões com justificativa.** Consulte antes de perguntar |
 | 04 | [Visão de Produto](docs/04-visao-de-produto-v0.1.md) | Por que o sistema existe |
 | 05 | [Requisitos Funcionais](docs/05-requisitos-funcionais-v0.1.md) | 153 requisitos |
 | 06 | [Modelo de Domínio](docs/06-modelo-de-dominio-v0.5.md) | Entidades e regras, conceitual |
@@ -28,7 +28,7 @@ Toda a documentação viva está em [docs/](docs/). Comece por [00 — Status e 
 | 12 | [CLAUDE.md](docs/12-claude-md-v0.26.md) | Cópia do `CLAUDE.md` da raiz. ⚠️ **A raiz é a que vale** — esta é espelho, e envelhece sem que nada acuse; em dia em 14/09 |
 | 13 | [Glossário](docs/13-glossario-v0.1.md) | Vocabulário do projeto |
 | 15 | [Plano da Central de Notificações](docs/15-plano-central-de-notificacoes-v0.3.md) | A F8, **construída** — sino, painel e follow-up ao ganhar |
-| 16 | [Plano do MCP para Agentes de IA](docs/16-plano-mcp-agentes-de-ia-v0.4.md) | Agentes de IA no CRM — **fases 1 a 4 no ar** (leitura, escrita com ensaio, marca "via agente") |
+| 16 | [Plano do MCP para Agentes de IA](docs/16-plano-mcp-agentes-de-ia-v0.5.md) | Agentes de IA no CRM — **fases 1 a 4 no ar** (leitura, escrita com ensaio, marca "via agente") |
 | 14 | [Migração do Pipedrive](docs/14-migracao-do-pipedrive-v0.2.md) | Mapeamento campo a campo |
 | 14* | [Referência da API Pipedrive](docs/14-referencia-api-pipedrive-v0.1.md) | Endpoints para a extração |
 

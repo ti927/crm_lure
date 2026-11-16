@@ -1,12 +1,12 @@
-﻿# 16 — Plano do MCP para Agentes de IA (v0.4)
+﻿# 16 — Plano do MCP para Agentes de IA (v0.5)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Plano de Implementação — servidor MCP do CRM para agentes de IA |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.4 |
+| **Versão** | v0.5 |
 | **Data** | 15/11/2026 |
-| **Status** | 🟢 **fases 1 a 4 no ar (16/11)** — fase 1 conferida em produção pelo maestro; fases 2 a 4 publicadas e aguardando o teste geral dele. P-056 e P-058 com **proposta aplicada, a validar**; P-055 e P-059 em aberto |
+| **Status** | 🟢 **fases 1 a 4 no ar (16/11)** — fase 1 conferida em produção pelo maestro; fases 2 a 4 publicadas e aguardando o teste geral dele. P-056, P-058 e P-059 respondidas (D-179 a D-181); P-055 (Grok) em aberto |
 
 > Tira do papel a **E-012** (API pública / MCP para agentes de IA), adiada para a fase 2 pela **D-074** e transformada em critério de arquitetura pela **R-009**. A **D-170** abriu a primeira porta externa, pela via mais estreita: uma função no banco. Este plano abre a segunda, para agentes de IA.
 
@@ -123,7 +123,7 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 
 ⚠️ **O cadastro automático de agentes não abre o CRM.** Qualquer agente consegue se cadastrar, mas para receber token ainda precisa que alguém do domínio entre com o Google e aprove na página do CRM.
 
-**Ficou para depois:** o teste com o **Grok** (P-055) e a chave de agente, que a P-059 propõe dispensar. O adaptador de MCP da Vercel não foi usado: o próprio SDK já traz o transporte para `Request`/`Response` da Web, que é o que a rota do Next.js recebe.
+**Ficou para depois:** o teste com o **Grok** (P-055) A chave de agente foi dispensada (D-181): todo agente entra por OAuth. O adaptador de MCP da Vercel não foi usado: o próprio SDK já traz o transporte para `Request`/`Response` da Web, que é o que a rota do Next.js recebe.
 
 ### 6.2 Fase 2 — leitura e tela Agentes de IA (15/11/2026)
 
@@ -149,11 +149,11 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 | **Modo ensaio** em toda escrita (`ensaio=true`): confere tudo e diz o que faria, sem gravar | `lib/regras/` |
 | **Marca "via agente"** (D-174) e o limite diário | migration `20261115140000_escrita_de_agentes.sql` |
 
-**A marca "via agente" (proposta para a P-056).** Coluna `via_agente` com o **nome** do agente em `negocio`, `anotacao`, `atividade` e `evento_negocio`. Quem preenche é um **gatilho no banco**, a partir do `client_id` do token — nunca o que vem na requisição. Assim o agente não apaga a própria marca e uma pessoa não se passa por agente. Ela diz quem **criou**; num update fica como estava, e quem mudou o quê depois está no `evento_negocio`, que tem a marca própria. Na ficha do negócio, a linha do tempo mostra o selo "via Claude".
+**A marca "via agente" (D-179).** Coluna `via_agente` com o **nome** do agente em `negocio`, `anotacao`, `atividade` e `evento_negocio`. Quem preenche é um **gatilho no banco**, a partir do `client_id` do token — nunca o que vem na requisição. Assim o agente não apaga a própria marca e uma pessoa não se passa por agente. Ela diz quem **criou**; num update fica como estava, e quem mudou o quê depois está no `evento_negocio`, que tem a marca própria. Na ficha do negócio, a linha do tempo mostra o selo "via Claude".
 
 ⚠️ **`organizacao` e `pessoa` ficaram sem a coluna, de propósito.** Campo novo em `organizacao` obriga a mexer na fusão (CLAUDE.md). Quem criou o cadastro fica em `chamada_agente.alvo`, o link do registro.
 
-**Limite diário (proposta para a P-058): 100 gravações por usuário por dia**, somando todos os agentes dele. Ensaio não conta. O teto mora em `LIMITE_DIARIO_DE_ESCRITAS` (`lib/mcp/registro.ts`). A contagem é `escritas_de_agente_hoje()`, pelo dia de São Paulo. A tela mostra "Gravações hoje: X de 100".
+**Limite diário (D-180): 300 gravações por usuário por dia**, somando todos os agentes dele. Ensaio não conta. O teto mora em `LIMITE_DIARIO_DE_ESCRITAS` (`lib/mcp/registro.ts`). A contagem é `escritas_de_agente_hoje()`, pelo dia de São Paulo. A tela mostra "Gravações hoje: X de 300".
 
 **Conferido antes de publicar.** A migration foi ensaiada contra o banco real, numa transação desfeita no fim, e a marca saiu certa nos quatro caminhos: agente, pessoa, script e chave de serviço. As 18 ferramentas montam com esquema válido, e as recusas de regra passam pelo registro. **Não conferido:** uma escrita de ponta a ponta por um agente de verdade. É o teste geral do maestro.
 
@@ -192,15 +192,16 @@ O agente age **como o usuário** (D-173). As políticas de acesso olham o e-mail
 |---|---|---|
 | ~~**P-054**~~ | ✅ **Respondida em 15/11: sim.** O servidor OAuth 2.1 do Supabase, com cadastro automático de clientes e página de aprovação nossa, aceita o login Google existente e emite token com o e-mail. As chaves do projeto já eram ES256, sem preparação. Custo zero. Ver 6.1 | — |
 | **P-055** | Como o **Grok bot** (agente autônomo da xAI) se conecta — pelos mesmos conectores do grok.com, ou por outro caminho? Nada específico foi encontrado em 15/11 | fase 1 |
-| **P-056** | 🟡 **Proposta aplicada em 15/11, a validar:** coluna `via_agente` (nome do agente) em `negocio`, `anotacao`, `atividade` e `evento_negocio`, preenchida por gatilho a partir do token. Ver 6.3 | — |
+| **P-056** | ✅ **Respondida em 16/11 → D-179:** marca em `negocio`, `anotacao`, `atividade` e `evento_negocio`; organização e pessoa sem ela | — |
 | ~~**P-057**~~ | ✅ **Respondida em 15/11 (D-178): nasce ligado.** O maestro recusou a proposta de nascer desligado | — |
-| **P-058** | 🟡 **Proposta aplicada em 15/11, a validar: 100 gravações por usuário por dia**, todos os agentes somados, ensaio fora. Mudar é trocar uma constante | — |
-| **P-059** | **A chave de agente ainda é necessária?** Ela existia para o Claude Code e o Batuta (D-175), mas os dois conectam por OAuth com cadastro automático, como o claude.ai — o Batuta pelo modo "Entrar com a conta" do instrumento MCP. Proposta: **dispensar a chave**, que seria um segredo a mais para vazar num repositório público | — |
+| **P-058** | ✅ **Respondida em 16/11 → D-180: 300 gravações por usuário por dia**, agentes somados, ensaio fora | — |
+| **P-059** | ✅ **Respondida em 16/11 → D-181:** sem chave de agente; Claude Code, Batuta e Cursor entram por OAuth como o claude.ai | — |
 
 ---
 
 ## Changelog
 
+- **v0.5** — 16/11/2026 — P-056, P-058 e P-059 respondidas pelo maestro: **D-179** (onde mora a marca), **D-180** (limite sobe para 300 por dia) e **D-181** (sem chave de agente).
 - **v0.4** — 16/11/2026 — Fases 2 a 4 **publicadas** (commit `afde271`). Na seção 6.1, a armadilha da conta única na página de aprovação, achada ao conectar o Cursor, e a correção: trocar de conta na própria página e escolha de conta no login com Google.
 - **v0.3** — 15/11/2026 — **Fases 2, 3 e 4 construídas.** Seções 6.2 e 6.3. Leitura completa, tela Agentes de IA e a trava `porta_permitida()` contra o uso do token direto no Supabase. Camada comum de regras (`lib/regras`), que telas e MCP passam a chamar. Escrita reversível e sensível, com ensaio, marca "via agente" e limite diário. P-056 e P-058 recebem proposta aplicada, a validar. Entra a P-059 (dispensar a chave de agente).
 - **v0.2** — 15/11/2026 — **Fase 1 entregue e conferida em produção.** Entra a **D-178** (interruptor nasce ligado; toda chamada de agente registrada), respondendo à P-057. Entra a seção 6.1: o que foi construído, a prova feita pelo claude.ai no celular, a configuração do Supabase e as duas armadilhas dela. P-054 respondida. Endereço oficial do conector no domínio da Lure.

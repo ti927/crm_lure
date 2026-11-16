@@ -1,10 +1,10 @@
-﻿# 03 — Log de Decisões (v0.33)
+﻿# 03 — Log de Decisões (v0.34)
 
 | Campo | Valor |
 |---|---|
 | **Documento** | Log de Decisões |
 | **Projeto** | CRM próprio (substituição do Pipedrive) |
-| **Versão** | v0.33 |
+| **Versão** | v0.34 |
 | **Data** | 15/11/2026 |
 | **Status** | vivo |
 
@@ -359,6 +359,9 @@ Esta sessão é a primeira em que **os dados mandaram**. Sete das oito decisões
 | D-176 | 15/11/2026 | **Escrita sensível pelo agente — mover etapa, alterar valor, trocar responsável, declarar desfecho — é opção de cada usuário em Configurações** | Resposta do maestro: *"opcional do usuário em configurações (o usuário é responsável pelo agente)"*. ⚠️ **O CRM só permite ou recusa**; pedir confirmação na conversa é papel do agente. ⚠️ Nasce ligada ou desligada fica na **P-057** | ✅ |
 | D-177 | 15/11/2026 | **Primeiro uso real: o resumo diário de pendências, só leitura.** Ordem: (1) prova técnica do OAuth com uma ferramenta de leitura; (2) resumo de pendências e tela de Configurações; (3) escrita reversível com modo ensaio e marca; (4) escrita sensível | Proposta aceita pelo maestro. ⚠️ **A fase 1 ataca primeiro a maior incerteza** — o login por OAuth — antes de qualquer refatoração das ações | ✅ |
 | D-178 | 15/11/2026 | **O interruptor de escrita sensível do agente nasce LIGADO, e toda ação de agente fica registrada.** Responde à P-057: o maestro recusou a proposta de nascer desligado — o agente é a secretária do usuário (D-173), e quem não quiser desliga o seu em Configurações. A contrapartida é o registro: **cada chamada de agente fica gravada** com usuário, agente, ferramenta, quando e o que foi pedido, leitura inclusive; e toda escrita leva a marca "via Agente IA" (D-174). Nada que o agente faça pode ficar sem rastro | Maestro |
+| D-179 | 16/11/2026 | **A marca "via agente" fica em `negocio`, `anotacao`, `atividade` e `evento_negocio`; organização e pessoa ficam sem ela.** Responde à P-056, validando a proposta aplicada em 15/11. Coluna `via_agente` com o nome do agente, preenchida por gatilho a partir do `client_id` do token, nunca pelo que vem na requisição | ⚠️ **Organização e pessoa sem a coluna, de propósito:** campo novo em `organizacao` obriga a mexer na fusão de cadastros. Quem criou o cadastro fica em `chamada_agente.alvo`. ⚠️ A marca diz quem **criou**; num update ela não muda, e quem mudou depois está no `evento_negocio` | Maestro |
+| D-180 | 16/11/2026 | **Limite de 300 gravações por usuário por dia pelos agentes**, todos os agentes somados, ensaio fora. Responde à P-058: o maestro preferiu 300 aos 100 propostos, para caber uso em lote (ex.: cadastrar muitos contatos) | O teto é `LIMITE_DIARIO_DE_ESCRITAS` em `lib/mcp/registro.ts`; a contagem, `escritas_de_agente_hoje()`, pelo dia de São Paulo. O limite segue sendo a trava contra agente em loop | Maestro |
+| D-181 | 16/11/2026 | **Não haverá chave de agente: todo agente entra pelo login Google do domínio (OAuth).** Responde à P-059 e revoga a porta secundária prevista na D-175. Claude Code, Batuta e Cursor conectam por OAuth com cadastro automático, como o claude.ai | Um segredo fixo a menos para vazar, com o repositório público. Se um dia surgir agente que rode sem ninguém para fazer login, a pergunta volta | Maestro |
 
 ⚠️ **O funil encolhe de 2.460 para 307 negócios**, e é essa a medida certa: os outros 2.153 estão ganhos ou perdidos. Com eles dentro, o Kanban deixava de ser funil e virava arquivo — e a Lista já é o arquivo, com filtro de status e de motivo de perda.
 
@@ -438,7 +441,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 | E-009 | **Indicadores 6 a 13** do catálogo | Médio | Fora do MVP junto com todo o módulo (D-093). O **log que os alimenta permanece** | ⏸ fase 2 |
 | E-010 | **Acompanhamento de metas** | Médio | Fase 2, por decisão do maestro (D-065) | ⏸ adiado |
 | E-011 | **Integração com Google Agenda** | Médio | Fase 2, por decisão do maestro (D-071) | ⏸ adiado |
-| E-012 | **API pública / MCP para agentes de IA** | Alto | Fase 2 (D-074). Condiciona a arquitetura — ver R-009. **Planejado em 15/11** (D-172 a D-178, Doc 16) | 🟢 **fase 1 no ar** (15/11) |
+| E-012 | **API pública / MCP para agentes de IA** | Alto | Fase 2 (D-074). Condiciona a arquitetura — ver R-009. **Planejado em 15/11** (D-172 a D-178, Doc 16) | 🟢 **fases 1 a 4 no ar** (16/11) |
 | E-013 | **Versão mobile das telas densas** | Alto | **Parcialmente no MVP** (D-097): consulta e marcação entram; criação e edição vão para a fase 2 | 🟡 **parcial** |
 
 ---
@@ -461,6 +464,7 @@ O item 2 é o único não-técnico e o mais importante: é ensaio de operação 
 
 ## Changelog
 
+- **v0.34** — 16/11/2026 — **D-179** (marca "via agente" em negócio, anotação, atividade e histórico; responde à P-056), **D-180** (300 gravações por dia; responde à P-058) e **D-181** (sem chave de agente, só OAuth; responde à P-059 e revoga essa parte da D-175). **181 decisões.** A E-012 passa a "fases 1 a 4 no ar".
 - **v0.33** — 15/11/2026 — **D-178:** o interruptor de escrita sensível do agente nasce ligado (responde à P-057, contra a proposta de nascer desligado), e toda chamada de agente fica registrada. **178 decisões.** A E-012 passa a "fase 1 no ar".
 - **v0.32** — 15/11/2026 — **O MCP para agentes de IA sai do adiamento.** **D-172** (MCP dentro do app, com as regras das telas), **D-173** (o agente é a secretária do usuário e age com a conta dele), **D-174** (marca "via Agente IA" na ação, não no campo Origem), **D-175** (todos os agentes, Grok em especial; OAuth como porta principal), **D-176** (escrita sensível opcional por usuário), **D-177** (primeiro uso e ordem das fases). A **E-012** passa a planejada. Plano completo no Doc 16. **177 decisões.**
 - **v0.31** — 18/10/2026 — **A primeira porta de entrada externa.** **D-170**: os leads do Painel de Marketing entram no CRM por `importa_lead_marketing`, função de contrato fechado e só para a chave de serviço, com a situação de cada lead em `lead_marketing`; a tabela `origem` ganha seus nove valores. **D-171**: o Painel Lure aparece embutido no menu lateral, só exibição. ⚠️ É o que a D-074 deixava para a fase 2, pela porta mais estreita: uma função, não API. ⚠️ Revisto no mesmo dia: **arquivar mora no Batuta**, e `lead_marketing` fica só como trava de importação. **171 decisões.** ⚠️ A D-171 ganhou a revisão do endereço: ele mora em `PAINEL_MARKETING_URL`, na Vercel, e nunca no repositório público.
